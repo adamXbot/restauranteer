@@ -131,7 +131,7 @@
 
 		{#if !googleUnavailable}
 			<div>
-				<p class="mb-2 text-[10px] tracking-widest text-tertiary uppercase">Google Maps</p>
+				<p class="mb-2 text-[10px] tracking-widest text-tertiary uppercase">Maps search</p>
 				<div class="flex gap-2">
 					<input
 						type="text"
@@ -196,7 +196,7 @@
 			{#if googleUnavailable}
 				<p class="mb-2 text-[10px] tracking-widest text-tertiary uppercase">Paste a URL</p>
 				<p class="mb-2 text-[11px] text-tertiary">
-					Google Places search isn't configured. Paste any source URL to link it.
+					Google search isn't configured. Paste Google Maps, Apple Maps, or any source URL.
 				</p>
 			{/if}
 			<input

@@ -8,8 +8,20 @@ type Row = {
 	lat: number;
 	lng: number;
 	suburb: string | null;
+	address: string | null;
 	rating: number | null;
+	cuisine_json: string | null;
 };
+
+function parseCuisine(json: string | null): string[] {
+	if (!json) return [];
+	try {
+		const parsed = JSON.parse(json);
+		return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
+	} catch {
+		return [];
+	}
+}
 
 export const GET: RequestHandler = ({ url }) => {
 	const bbox = url.searchParams.get('bbox');
@@ -26,7 +38,9 @@ export const GET: RequestHandler = ({ url }) => {
 			.prepare(
 				`SELECT uuid, name, lat, lng,
 				        json_extract(frontmatter_json, '$.suburb') AS suburb,
-				        json_extract(frontmatter_json, '$.rating') AS rating
+				        json_extract(frontmatter_json, '$.address') AS address,
+				        json_extract(frontmatter_json, '$.rating') AS rating,
+				        json_extract(frontmatter_json, '$.cuisine') AS cuisine_json
 				 FROM restaurants
 				 WHERE lat IS NOT NULL AND lng IS NOT NULL
 				   AND lat BETWEEN ? AND ?
@@ -39,7 +53,9 @@ export const GET: RequestHandler = ({ url }) => {
 			.prepare(
 				`SELECT uuid, name, lat, lng,
 				        json_extract(frontmatter_json, '$.suburb') AS suburb,
-				        json_extract(frontmatter_json, '$.rating') AS rating
+				        json_extract(frontmatter_json, '$.address') AS address,
+				        json_extract(frontmatter_json, '$.rating') AS rating,
+				        json_extract(frontmatter_json, '$.cuisine') AS cuisine_json
 				 FROM restaurants
 				 WHERE lat IS NOT NULL AND lng IS NOT NULL
 				 LIMIT 2000`
@@ -54,7 +70,9 @@ export const GET: RequestHandler = ({ url }) => {
 			lat: r.lat,
 			lng: r.lng,
 			suburb: r.suburb,
-			rating: typeof r.rating === 'number' ? r.rating : null
+			address: r.address,
+			rating: typeof r.rating === 'number' ? r.rating : null,
+			cuisine: parseCuisine(r.cuisine_json)
 		}))
 	});
 };

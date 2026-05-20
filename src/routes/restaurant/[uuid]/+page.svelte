@@ -162,6 +162,13 @@
 		else next.add(url);
 		expandedSourceUrls = next;
 	}
+
+	function shortVisitDate(iso: string): string {
+		const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+		if (!match) return iso;
+		const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+		return `${months[Number(match[2]) - 1]} ${Number(match[3])}`;
+	}
 </script>
 
 <header class="px-5 pt-6 pb-2">
@@ -212,14 +219,56 @@
 	onEnrich={(field) => (enrichingField = field)}
 />
 
-<div class="px-5 pt-4">
-	<a
-		href={`/restaurant/${data.uuid}/visit`}
-		class="block w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent"
-	>
-		📝 Start visit
-	</a>
-</div>
+<section class="px-5 pt-4">
+	<div class="rounded-2xl border border-line bg-panel/50 p-4">
+		<div class="flex items-start justify-between gap-3">
+			<div>
+				<p class="text-xs tracking-widest text-tertiary uppercase">Visits</p>
+				{#if data.visitSummary.count > 0 && data.visitSummary.latest}
+					<p class="mt-1 text-sm text-primary">
+						Latest {shortVisitDate(data.visitSummary.latest.date)}
+						{#if data.visitSummary.latest.meal} · {data.visitSummary.latest.meal}{/if}
+					</p>
+					<p class="mt-0.5 text-xs text-tertiary">
+						{data.visitSummary.count}
+						{data.visitSummary.count === 1 ? 'visit' : 'visits'}
+					</p>
+				{:else}
+					<p class="mt-1 text-sm text-secondary">No visits yet.</p>
+				{/if}
+			</div>
+			{#if data.visitSummary.average != null}
+				<span class="shrink-0 text-sm text-rating">Avg ★ {data.visitSummary.average}</span>
+			{:else if data.visitSummary.latest?.rating != null}
+				<span class="shrink-0 text-sm text-rating">★ {data.visitSummary.latest.rating}</span>
+			{/if}
+		</div>
+		<div class="mt-3 grid grid-cols-2 gap-2">
+			<a
+				href={`/restaurant/${data.uuid}/visit`}
+				class="rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent"
+			>
+				Start visit
+			</a>
+			{#if latestVisit}
+				<a
+					href={`/restaurant/${data.uuid}/visit/${latestVisit.index}/edit`}
+					class="rounded-2xl border border-line bg-panel/70 px-5 py-3 text-center text-sm font-medium text-secondary"
+				>
+					Edit latest
+				</a>
+			{:else}
+				<button
+					type="button"
+					onclick={() => (editingNotes = true)}
+					class="rounded-2xl border border-line bg-panel/70 px-5 py-3 text-sm font-medium text-secondary"
+				>
+					Add note
+				</button>
+			{/if}
+		</div>
+	</div>
+</section>
 
 <section class="px-5 pt-4 pb-2">
 	<div class="flex items-center justify-between gap-2">
@@ -291,7 +340,19 @@
 		</div>
 	</div>
 	{#if sourceCount === 0}
-		<p class="mt-1 text-xs text-tertiary">No sources linked.</p>
+		<div class="mt-2 rounded-xl border border-dashed border-line-strong bg-panel/30 p-3">
+			<p class="text-xs text-secondary">No sources linked.</p>
+			<p class="mt-1 text-[11px] text-tertiary">
+				Paste Google Maps, Apple Maps, review pages, articles, or social links.
+			</p>
+			<button
+				type="button"
+				onclick={() => (linkingArticle = true)}
+				class="mt-3 rounded-xl bg-accent px-4 py-2 text-xs font-medium text-on-accent"
+			>
+				Add source
+			</button>
+		</div>
 	{:else}
 		<ul class="mt-2 space-y-2">
 			{#if googlePlaceId}

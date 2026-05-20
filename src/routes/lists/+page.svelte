@@ -5,7 +5,8 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let creatingList = $state(false);
+	// svelte-ignore state_referenced_locally
+	let creatingList = $state(data.create);
 	let newListName = $state('');
 	let createError = $state<string | null>(null);
 	let saving = $state(false);

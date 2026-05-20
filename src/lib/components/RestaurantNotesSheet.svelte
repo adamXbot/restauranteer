@@ -47,8 +47,10 @@
 		aria-label="Close"
 		onclick={() => onClose?.()}
 	></button>
-	<section class="rounded-t-3xl border-t border-line bg-panel p-5 pb-8">
-		<header class="mb-3 flex items-center justify-between">
+	<section
+		class="max-h-[88dvh] overflow-y-auto rounded-t-3xl border-t border-line bg-panel p-5 pb-[calc(2rem+env(safe-area-inset-bottom))]"
+	>
+		<header class="sticky top-0 z-10 -mx-5 -mt-5 mb-3 flex items-center justify-between bg-panel px-5 pt-5 pb-3">
 			<h2 class="text-base font-medium text-primary">Notes</h2>
 			<button type="button" onclick={() => onClose?.()} class="text-xs text-secondary">Cancel</button>
 		</header>

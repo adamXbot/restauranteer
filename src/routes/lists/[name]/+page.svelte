@@ -13,11 +13,20 @@
 	}
 
 	type AddResult = { url: string; status: 'added' | 'skipped' | 'error'; reason?: string };
+	type VaultHit = { uuid: string; name: string; suburb: string | null; address: string | null };
 
-	let showAdd = $state(false);
+	// svelte-ignore state_referenced_locally
+	let showAdd = $state(data.restaurants.length === 0);
 	let pasteText = $state('');
 	let adding = $state(false);
 	let addResults = $state<AddResult[]>([]);
+	let vaultQuery = $state('');
+	let vaultMatches = $state<VaultHit[]>([]);
+	let vaultSearching = $state(false);
+	let vaultAddUuid = $state<string | null>(null);
+	let listNote = $state('');
+	let vaultErr = $state<string | null>(null);
+	let vaultTimer: ReturnType<typeof setTimeout> | null = null;
 
 	async function importUrls() {
 		const urls = pasteText
@@ -72,6 +81,53 @@
 			adding = false;
 		}
 	}
+
+	function onVaultSearchInput() {
+		if (vaultTimer) clearTimeout(vaultTimer);
+		vaultTimer = setTimeout(runVaultSearch, 200);
+	}
+
+	async function runVaultSearch() {
+		const q = vaultQuery.trim();
+		vaultErr = null;
+		if (q.length < 2) {
+			vaultMatches = [];
+			return;
+		}
+		vaultSearching = true;
+		try {
+			const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+			if (!res.ok) throw new Error(`Search failed: ${res.status}`);
+			const payload = (await res.json()) as { vault: VaultHit[] };
+			const existing = new Set(data.restaurants.map((r) => r.uuid));
+			vaultMatches = payload.vault.filter((r) => !existing.has(r.uuid));
+		} catch (e) {
+			vaultErr = String(e instanceof Error ? e.message : e);
+		} finally {
+			vaultSearching = false;
+		}
+	}
+
+	async function addExisting(uuid: string) {
+		vaultAddUuid = uuid;
+		vaultErr = null;
+		try {
+			const res = await fetch(`/api/lists/${encodeURIComponent(data.name)}/restaurants`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ uuid, note: listNote })
+			});
+			if (!res.ok) throw new Error((await res.text()) || `Failed: ${res.status}`);
+			vaultQuery = '';
+			vaultMatches = [];
+			listNote = '';
+			await invalidateAll();
+		} catch (e) {
+			vaultErr = String(e instanceof Error ? e.message : e);
+		} finally {
+			vaultAddUuid = null;
+		}
+	}
 </script>
 
 <header class="px-5 pt-6 pb-3">
@@ -112,13 +168,78 @@
 		onclick={() => (showAdd = !showAdd)}
 		class="w-full rounded-xl border border-dashed border-line-strong bg-panel/30 px-3 py-2 text-xs text-secondary hover:border-accent/60 hover:text-accent"
 	>
-		{showAdd ? '− Hide add places' : '+ Add places by URL'}
+		{showAdd ? '− Hide add places' : '+ Add places'}
 	</button>
 	{#if showAdd}
 		<div class="mt-2 rounded-2xl border border-line bg-panel/40 p-3">
-			<p class="text-[11px] text-tertiary">
-				Paste Google Maps, Apple Maps, or Broadsheet / Good Food / Time Out URLs — one per line.
-				Each resolves to a restaurant and gets added to this list.
+			<p class="text-xs font-medium text-secondary">Add from vault</p>
+			<div class="mt-2 flex gap-2">
+				<input
+					type="search"
+					bind:value={vaultQuery}
+					placeholder="Search restaurants"
+					class="min-w-0 flex-1 rounded-xl border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
+					autocomplete="off"
+					autocorrect="off"
+					autocapitalize="off"
+					spellcheck="false"
+					oninput={onVaultSearchInput}
+					onkeydown={(e) => {
+						if (e.key === 'Enter') {
+							e.preventDefault();
+							void runVaultSearch();
+						}
+					}}
+				/>
+				<button
+					type="button"
+					onclick={runVaultSearch}
+					disabled={vaultSearching || vaultQuery.trim().length < 2}
+					class="rounded-xl border border-line-strong bg-panel-2 px-3 py-2 text-xs text-secondary disabled:opacity-50"
+				>
+					{vaultSearching ? '…' : 'Search'}
+				</button>
+			</div>
+			{#if vaultMatches.length > 0}
+				<textarea
+					bind:value={listNote}
+					rows="2"
+					placeholder="Why on this list?"
+					class="mt-2 w-full resize-none rounded-xl border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
+				></textarea>
+				<ul class="mt-2 space-y-2">
+					{#each vaultMatches as match (match.uuid)}
+						<li>
+							<button
+								type="button"
+								onclick={() => addExisting(match.uuid)}
+								disabled={vaultAddUuid !== null}
+								class="block w-full rounded-xl border border-line bg-panel/50 px-3 py-2 text-left disabled:opacity-50"
+							>
+								<span class="block text-sm font-medium text-primary">{match.name}</span>
+								{#if match.suburb || match.address}
+									<span class="mt-0.5 block truncate text-xs text-tertiary"
+										>{match.suburb ?? match.address}</span
+									>
+								{/if}
+								<span class="mt-1 block text-[11px] text-accent">
+									{vaultAddUuid === match.uuid ? 'Adding…' : 'Add to list'}
+								</span>
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{:else if vaultQuery.trim().length >= 2 && !vaultSearching && !vaultErr}
+				<p class="mt-2 text-xs text-tertiary">No vault matches.</p>
+			{/if}
+			{#if vaultErr}
+				<p class="mt-2 text-xs text-danger">{vaultErr}</p>
+			{/if}
+
+			<div class="my-4 h-px bg-line"></div>
+			<p class="text-xs font-medium text-secondary">Add by URL</p>
+			<p class="mt-0.5 text-[11px] text-tertiary">
+				Google Maps, Apple Maps, review links, and articles.
 			</p>
 			<textarea
 				bind:value={pasteText}
@@ -164,13 +285,14 @@
 	{#if data.restaurants.length === 0}
 		<div class="rounded-2xl border border-dashed border-line-strong bg-panel/30 p-6">
 			<h2 class="text-base font-medium text-primary">No restaurants yet</h2>
-			<p class="mt-1 text-sm text-secondary">Add this list from a restaurant's Organise section.</p>
-			<a
-				href="/"
+			<p class="mt-1 text-sm text-secondary">Search your vault or paste a Maps/article URL above.</p>
+			<button
+				type="button"
+				onclick={() => (showAdd = true)}
 				class="mt-4 inline-flex rounded-xl bg-accent px-4 py-2 text-sm font-medium text-on-accent"
 			>
-				Find restaurant
-			</a>
+				Add places
+			</button>
 		</div>
 	{:else}
 		{#each data.restaurants as r (r.uuid)}

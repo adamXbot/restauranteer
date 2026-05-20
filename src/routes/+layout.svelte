@@ -4,6 +4,7 @@
 	import '../app.css';
 	import PendingVisitsBanner from '$lib/components/PendingVisitsBanner.svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
+	import QuickAdd from '$lib/components/QuickAdd.svelte';
 	import { buildManifestHref, buildThemeColors } from '$lib/theme';
 	import { installTheme } from '$lib/themeRuntime';
 	import type { LayoutData } from './$types';
@@ -36,5 +37,6 @@
 
 <main class="mx-auto flex min-h-dvh max-w-3xl flex-col">
 	{@render children()}
+	<QuickAdd />
 	<BottomNav inboxCount={data.inboxCount} />
 </main>

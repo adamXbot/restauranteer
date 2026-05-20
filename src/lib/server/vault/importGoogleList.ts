@@ -3,7 +3,7 @@ import { readRestaurant } from './reader';
 import { saveRestaurant } from './save';
 import { createRestaurantFromGooglePlace } from './create';
 import { setListMetadata } from './moc';
-import type { Frontmatter } from './types';
+import type { Frontmatter, ListMembership } from './types';
 import { log } from '../log';
 
 export type ImportListInput = {
@@ -93,17 +93,50 @@ export async function importGoogleList(input: ImportListInput): Promise<ImportLi
 	return { list_name: listName, places: results, created, linked, errors };
 }
 
+function membershipHasMetadata(membership: ListMembership): boolean {
+	return Boolean(
+		membership.notes || membership.icon || membership.source_url || membership.imported_at
+	);
+}
+
 /** Append a list_name to a restaurant's `lists[]` if not already present. */
-export async function addRestaurantToList(uuid: string, listName: string): Promise<void> {
+export async function addRestaurantToList(
+	uuid: string,
+	listName: string,
+	note?: string
+): Promise<void> {
 	const indexed = getRestaurantByUuid(uuid);
 	if (!indexed) throw new Error(`Restaurant ${uuid} not found`);
 	const rf = await readRestaurant(indexed.file_path);
 	const fm: Frontmatter = { ...rf.frontmatter };
 
 	const lists = Array.isArray(fm.lists) ? [...fm.lists] : [];
-	if (lists.includes(listName)) return;
-	lists.push(listName);
+	const alreadyListed = lists.includes(listName);
+	if (!alreadyListed) lists.push(listName);
 	fm.lists = lists;
+
+	if (note !== undefined) {
+		const trimmedNote = note.trim();
+		const memberships = Array.isArray(fm.list_memberships)
+			? (fm.list_memberships as ListMembership[]).filter(
+					(m) => m && typeof m === 'object' && typeof m.list === 'string'
+				)
+			: [];
+		const key = listName.toLowerCase();
+		const existingIdx = memberships.findIndex((m) => m.list.toLowerCase() === key);
+		const membership: ListMembership =
+			existingIdx >= 0 ? { ...memberships[existingIdx], list: listName } : { list: listName };
+		if (trimmedNote) membership.notes = trimmedNote;
+		else delete membership.notes;
+		if (existingIdx >= 0) memberships[existingIdx] = membership;
+		else memberships.push(membership);
+		const nextMemberships = memberships.filter(membershipHasMetadata);
+		if (nextMemberships.length > 0) fm.list_memberships = nextMemberships;
+		else delete fm.list_memberships;
+	} else if (alreadyListed) {
+		return;
+	}
+
 	fm.last_synced = new Date().toISOString();
 	await saveRestaurant(indexed.file_path, fm, rf.body, {
 		affectedLists: [listName]

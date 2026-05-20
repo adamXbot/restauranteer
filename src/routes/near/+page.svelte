@@ -8,6 +8,7 @@
 	import BackLink from '$lib/components/BackLink.svelte';
 	import { loadMapKit } from '$lib/appleMapKit';
 	import { loadGoogleMaps, GOOGLE_DARK_STYLES } from '$lib/googleMaps';
+	import { navigationUrl, labelForApp } from '$lib/navigation';
 
 	let { data }: { data: PageData } = $props();
 
@@ -45,9 +46,12 @@
 		lat: number;
 		lng: number;
 		suburb: string | null;
+		address: string | null;
 		rating: number | null;
+		cuisine: string[];
 	};
 	type Result = VaultResult | GoogleResult;
+	type SelectedPin = (VaultPin & { source: 'vault'; distance_m?: number }) | GoogleResult;
 	type MapTheme = {
 		brightness: 'light' | 'dark';
 		accent: string;
@@ -101,19 +105,49 @@
 	let geoErr = $state<string | null>(null);
 
 	let vaultPins = $state<VaultPin[]>([]);
-	const sortedVaultPins = $derived(
-		[...vaultPins].sort((a, b) =>
-			a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-		)
-	);
 	let vaultPinsLoading = $state(false);
 	let vaultPinsErr = $state<string | null>(null);
 	let results = $state<Result[]>([]);
+	let selectedPin = $state<SelectedPin | null>(null);
 	let loading = $state(false);
 	let queryErr = $state<string | null>(null);
 
 	const radius = $derived(RADII[radiusIdx]);
 	const minRating = $derived(RATINGS[ratingIdx]);
+
+	// Apply cuisine + min-rating filters to the no-center vault list. The
+	// `/api/near` results path already filters by all three (including radius)
+	// once a center pin is dropped.
+	const filteredVaultPins = $derived.by(() => {
+		const cuisinesLc = cuisines.map((c) => c.toLowerCase());
+		return [...vaultPins]
+			.filter((p) => {
+				if (minRating > 0 && (p.rating ?? 0) < minRating) return false;
+				if (cuisinesLc.length > 0) {
+					const have = p.cuisine.map((c) => c.toLowerCase());
+					if (!have.some((c) => cuisinesLc.includes(c))) return false;
+				}
+				return true;
+			})
+			.sort((a, b) =>
+				a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+			);
+	});
+	const filtersActive = $derived(minRating > 0 || cuisines.length > 0);
+	const selectedNavHref = $derived(
+		selectedPin
+			? navigationUrl(
+					{
+						name: selectedPin.name,
+						address: selectedPin.source === 'google' ? selectedPin.address : selectedPin.address,
+						lat: selectedPin.lat,
+						lng: selectedPin.lng
+					},
+					data.preferences.default_navigation_app
+				)
+			: null
+	);
+	const navLabel = $derived(labelForApp(data.preferences.default_navigation_app));
 
 	function cycleRadius() {
 		radiusIdx = (radiusIdx + 1) % RADII.length;
@@ -330,7 +364,7 @@
 			for (const m of googleMarkers) mapRef.removeAnnotation(m);
 			vaultMarkers = [];
 			googleMarkers = [];
-			for (const pin of vaultPins) {
+			for (const pin of filteredVaultPins) {
 				const ann = new window.mapkit.MarkerAnnotation(
 					new window.mapkit.Coordinate(pin.lat, pin.lng),
 					{
@@ -340,7 +374,7 @@
 						selected: false
 					}
 				);
-				ann.addEventListener('select', () => openVaultPin(pin));
+				ann.addEventListener('select', () => selectVaultPin(pin));
 				mapRef.addAnnotation(ann);
 				vaultMarkers.push(ann);
 			}
@@ -355,7 +389,7 @@
 						selected: false
 					}
 				);
-				ann.addEventListener('select', () => openResult(r));
+				ann.addEventListener('select', () => selectResult(r));
 				mapRef.addAnnotation(ann);
 				googleMarkers.push(ann);
 			}
@@ -366,7 +400,7 @@
 			for (const m of googleMarkers) m.setMap(null);
 			vaultMarkers = [];
 			googleMarkers = [];
-			for (const pin of vaultPins) {
+			for (const pin of filteredVaultPins) {
 				const marker = new window.google.maps.Marker({
 					position: { lat: pin.lat, lng: pin.lng },
 					map: mapRef,
@@ -386,7 +420,7 @@
 						strokeWeight: 2
 					}
 				});
-				marker.addListener('click', () => openVaultPin(pin));
+				marker.addListener('click', () => selectVaultPin(pin));
 				vaultMarkers.push(marker);
 			}
 			for (const r of results) {
@@ -410,7 +444,7 @@
 						strokeWeight: 1
 					}
 				});
-				marker.addListener('click', () => openResult(r));
+				marker.addListener('click', () => selectResult(r));
 				googleMarkers.push(marker);
 			}
 			return;
@@ -420,7 +454,7 @@
 			for (const m of googleMarkers) m.remove();
 			vaultMarkers = [];
 			googleMarkers = [];
-			for (const pin of vaultPins) {
+			for (const pin of filteredVaultPins) {
 				const el = document.createElement('button');
 				el.type = 'button';
 				el.className =
@@ -430,7 +464,7 @@
 				el.setAttribute('aria-label', `Open ${pin.name}`);
 				el.addEventListener('click', (event) => {
 					event.stopPropagation();
-					openVaultPin(pin);
+					selectVaultPin(pin);
 				});
 				const marker = new mapboxgl.Marker({ element: el })
 					.setLngLat([pin.lng, pin.lat])
@@ -448,7 +482,7 @@
 				el.setAttribute('aria-label', `Open ${r.name}`);
 				el.addEventListener('click', (event) => {
 					event.stopPropagation();
-					openResult(r);
+					selectResult(r);
 				});
 				const marker = new mapboxgl.Marker({ element: el })
 					.setLngLat([r.lng, r.lat])
@@ -465,6 +499,20 @@
 
 	function openVaultPin(pin: VaultPin) {
 		void goto(`/restaurant/${pin.uuid}`);
+	}
+
+	function selectVaultPin(pin: VaultPin) {
+		selectedPin = { ...pin, source: 'vault' };
+	}
+
+	function selectResult(r: Result) {
+		selectedPin = r;
+	}
+
+	function openSelected() {
+		if (!selectedPin) return;
+		if (selectedPin.source === 'vault') void goto(`/restaurant/${selectedPin.uuid}`);
+		else void goto(`/place/${selectedPin.place_id}`);
 	}
 
 	async function runQuery() {
@@ -562,6 +610,7 @@
 	});
 	$effect(() => {
 		void vaultPins;
+		void filteredVaultPins;
 		void results;
 		drawResultMarkers();
 		fitVaultPins();
@@ -647,33 +696,58 @@
 			</p>
 		{:else}
 			<p class="mb-2 text-[10px] tracking-widest text-tertiary uppercase">
-				{vaultPins.length} saved {vaultPins.length === 1 ? 'place' : 'places'} · tap a spot above
-				to search nearby
+				{#if filtersActive}
+					{filteredVaultPins.length} / {vaultPins.length} saved {vaultPins.length === 1
+						? 'place'
+						: 'places'} match · drop a pin to also filter by distance
+				{:else}
+					{vaultPins.length} saved {vaultPins.length === 1 ? 'place' : 'places'} · tap a spot above
+					to filter by distance
+				{/if}
 			</p>
-			<ul class="space-y-2">
-				{#each sortedVaultPins as p (p.uuid)}
-					<li>
-						<button
-							type="button"
-							onclick={() => openVaultPin(p)}
-							class="block w-full min-w-0 rounded-2xl border border-line bg-panel/50 p-3 text-left"
-						>
-							<div class="flex items-start justify-between gap-3">
-								<div class="min-w-0 flex-1">
-									<span class="text-[10px] tracking-widest text-accent uppercase">★ Vault</span>
-									<h3 class="mt-0.5 truncate text-sm font-medium text-primary">{p.name}</h3>
-									{#if p.suburb}
-										<p class="truncate text-xs text-secondary">{p.suburb}</p>
+			{#if filteredVaultPins.length === 0}
+				<p class="text-sm text-tertiary">
+					No vault places match these filters.
+					{#if minRating > 0}Try lowering the rating threshold.{/if}
+					{#if cuisines.length > 0}Try clearing cuisine filters.{/if}
+				</p>
+			{:else}
+				<ul class="space-y-2">
+					{#each filteredVaultPins as p (p.uuid)}
+						<li>
+							<button
+								type="button"
+								onclick={() => openVaultPin(p)}
+								class="block w-full min-w-0 rounded-2xl border border-line bg-panel/50 p-3 text-left"
+							>
+								<div class="flex items-start justify-between gap-3">
+									<div class="min-w-0 flex-1">
+										<span class="text-[10px] tracking-widest text-accent uppercase">★ Vault</span>
+										<h3 class="mt-0.5 truncate text-sm font-medium text-primary">{p.name}</h3>
+										{#if p.suburb}
+											<p class="truncate text-xs text-secondary">{p.suburb}</p>
+										{/if}
+										{#if p.cuisine.length > 0}
+											<div class="mt-1.5 flex flex-wrap gap-1">
+												{#each p.cuisine.slice(0, 4) as c (c)}
+													<span
+														class="rounded-full bg-panel-2 px-2 py-0.5 text-[10px] text-secondary"
+													>
+														{c}
+													</span>
+												{/each}
+											</div>
+										{/if}
+									</div>
+									{#if p.rating != null}
+										<span class="shrink-0 text-xs text-rating">★ {p.rating}</span>
 									{/if}
 								</div>
-								{#if p.rating != null}
-									<span class="shrink-0 text-xs text-rating">★ {p.rating}</span>
-								{/if}
-							</div>
-						</button>
-					</li>
-				{/each}
-			</ul>
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{/if}
 		{/if}
 	{:else if loading && results.length === 0}
 		<p class="text-sm text-tertiary">Searching…</p>
@@ -732,6 +806,78 @@
 		</ul>
 	{/if}
 </section>
+
+{#if selectedPin}
+	<button
+		type="button"
+		class="fixed inset-0 z-40 bg-transparent"
+		aria-label="Dismiss pin preview"
+		onclick={() => (selectedPin = null)}
+	></button>
+	<section
+		class="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t border-line bg-panel p-5 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-xl"
+	>
+		<div class="flex items-start justify-between gap-3">
+			<div class="min-w-0 flex-1">
+				<div class="flex items-center gap-2">
+					<span
+						class="text-[10px] tracking-widest uppercase"
+						class:text-accent={selectedPin.source === 'vault'}
+						class:text-tertiary={selectedPin.source === 'google'}
+					>
+						{selectedPin.source === 'vault' ? '★ Vault' : 'Google'}
+					</span>
+					{#if 'distance_m' in selectedPin && selectedPin.distance_m != null}
+						<span class="text-[10px] text-tertiary">{formatDistance(selectedPin.distance_m)}</span>
+					{/if}
+				</div>
+				<h2 class="mt-0.5 truncate text-base font-medium text-primary">{selectedPin.name}</h2>
+				{#if selectedPin.source === 'vault' && (selectedPin.suburb || selectedPin.address)}
+					<p class="truncate text-xs text-secondary">{selectedPin.suburb ?? selectedPin.address}</p>
+				{:else if selectedPin.source === 'google' && selectedPin.address}
+					<p class="truncate text-xs text-secondary">{selectedPin.address}</p>
+				{/if}
+			</div>
+			{#if selectedPin.rating != null}
+				<span class="shrink-0 text-sm text-rating">★ {selectedPin.rating}</span>
+			{/if}
+		</div>
+		{#if selectedPin.cuisine.length > 0}
+			<div class="mt-3 flex flex-wrap gap-1">
+				{#each selectedPin.cuisine.slice(0, 4) as c (c)}
+					<span class="rounded-full bg-panel-2 px-2 py-0.5 text-[10px] text-secondary">{c}</span>
+				{/each}
+			</div>
+		{/if}
+		<div class="mt-4 grid grid-cols-2 gap-2">
+			<button
+				type="button"
+				onclick={openSelected}
+				class="rounded-2xl bg-accent px-5 py-3 text-sm font-medium text-on-accent"
+			>
+				{selectedPin.source === 'vault' ? 'Open' : 'View'}
+			</button>
+			{#if selectedNavHref}
+				<a
+					href={selectedNavHref}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="rounded-2xl border border-line bg-panel/70 px-5 py-3 text-center text-sm font-medium text-secondary"
+				>
+					{navLabel}
+				</a>
+			{:else}
+				<button
+					type="button"
+					disabled
+					class="rounded-2xl border border-line bg-panel/40 px-5 py-3 text-sm font-medium text-tertiary opacity-60"
+				>
+					No route
+				</button>
+			{/if}
+		</div>
+	</section>
+{/if}
 
 {#if pickingCuisine}
 	<CuisinePicker
