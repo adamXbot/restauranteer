@@ -80,28 +80,28 @@
 
 <header class="px-5 pt-6 pb-2">
 	<BackLink href={`/restaurant/${data.uuid}`} />
-	<h1 class="mt-2 text-2xl font-semibold text-slate-50">Compare info</h1>
-	<p class="mt-1 text-sm text-slate-400">{data.name}</p>
-	<p class="mt-2 text-[11px] text-slate-500">
+	<h1 class="mt-2 text-2xl font-semibold text-primary">Compare info</h1>
+	<p class="mt-1 text-sm text-secondary">{data.name}</p>
+	<p class="mt-2 text-[11px] text-tertiary">
 		Pick the canonical value for each field where sources disagree. The vault file is updated only
 		when you tap Save.
 	</p>
 </header>
 
 {#if data.sources.length < 2}
-	<section class="mx-5 mt-4 rounded-xl border border-slate-800 bg-slate-900/50 p-4 text-sm text-slate-400">
+	<section class="mx-5 mt-4 rounded-xl border border-line bg-panel/50 p-4 text-sm text-secondary">
 		Nothing to compare against yet — link a Google Maps or article URL to this restaurant from the
 		detail page, then come back.
 	</section>
 {:else if fieldsWithDiffs.length === 0}
-	<section class="mx-5 mt-4 rounded-xl border border-emerald-900 bg-emerald-950/30 p-4 text-sm text-emerald-200">
+	<section class="mx-5 mt-4 rounded-xl border border-success/50 bg-success/10 p-4 text-sm text-success">
 		All sources agree on every field. Nothing to choose between.
 	</section>
 {:else}
 	<section class="px-5 pt-4 pb-2 space-y-4">
 		{#each fieldsWithDiffs as field (field)}
-			<div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-3">
-				<p class="text-xs tracking-widest text-slate-500 uppercase">{FIELD_LABELS[field]}</p>
+			<div class="rounded-2xl border border-line bg-panel/40 p-3">
+				<p class="text-xs tracking-widest text-tertiary uppercase">{FIELD_LABELS[field]}</p>
 				<ul class="mt-2 space-y-1.5">
 					{#each data.sources as source (source.id)}
 						{@const value = source.values[field]}
@@ -110,13 +110,13 @@
 							<button
 								type="button"
 								onclick={() => pick(field, source.id)}
-								class={`flex w-full items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${isSelected ? 'border-orange-500 bg-orange-950/40' : 'border-slate-800 bg-slate-900'}`}
+								class={`flex w-full items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${isSelected ? 'border-accent bg-accent-soft/40' : 'border-line bg-panel'}`}
 							>
 								<span
 									class="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2"
-									class:border-orange-400={isSelected}
-									class:bg-orange-500={isSelected}
-									class:border-slate-600={!isSelected}
+									class:border-accent={isSelected}
+									class:bg-accent={isSelected}
+									class:border-line-strong={!isSelected}
 								>
 									{#if isSelected}
 										<span class="block h-1.5 w-1.5 rounded-full bg-white"></span>
@@ -124,16 +124,16 @@
 								</span>
 								<div class="min-w-0 flex-1">
 									<div class="flex items-baseline gap-2">
-										<span class="text-[11px] tracking-widest text-slate-400 uppercase"
+										<span class="text-[11px] tracking-widest text-secondary uppercase"
 											>{source.label}</span
 										>
 										{#if source.id === 'current'}
-											<span class="text-[10px] text-slate-500">(in vault)</span>
+											<span class="text-[10px] text-tertiary">(in vault)</span>
 										{/if}
 									</div>
 									<p
-										class="mt-0.5 text-sm break-words text-slate-100"
-										class:text-slate-500={value === null || value === undefined}
+										class="mt-0.5 text-sm break-words text-primary"
+										class:text-tertiary={value === null || value === undefined}
 									>
 										{formatValue(value)}
 									</p>
@@ -147,21 +147,21 @@
 	</section>
 
 	{#if fieldsInAgreement.length > 0}
-		<section class="mx-5 mt-4 rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-xs text-slate-500">
-			<p class="text-[10px] tracking-widest text-slate-500 uppercase">All sources agree</p>
-			<p class="mt-1 text-slate-400">
+		<section class="mx-5 mt-4 rounded-xl border border-line bg-panel/40 p-3 text-xs text-tertiary">
+			<p class="text-[10px] tracking-widest text-tertiary uppercase">All sources agree</p>
+			<p class="mt-1 text-secondary">
 				{fieldsInAgreement.map((f) => FIELD_LABELS[f]).join(' · ')}
 			</p>
 		</section>
 	{/if}
 
 	{#if saveMsg}
-		<p class="mx-5 mt-3 rounded-xl border border-emerald-900 bg-emerald-950/30 px-3 py-2 text-xs text-emerald-200">
+		<p class="mx-5 mt-3 rounded-xl border border-success/50 bg-success/10 px-3 py-2 text-xs text-success">
 			{saveMsg}
 		</p>
 	{/if}
 	{#if saveError}
-		<p class="mx-5 mt-3 rounded-xl border border-red-900 bg-red-950/30 px-3 py-2 text-xs text-red-300">
+		<p class="mx-5 mt-3 rounded-xl border border-danger/50 bg-danger/10 px-3 py-2 text-xs text-danger">
 			{saveError}
 		</p>
 	{/if}
@@ -171,7 +171,7 @@
 			type="button"
 			onclick={save}
 			disabled={saving || changedFields.length === 0}
-			class="w-full rounded-2xl bg-orange-600 px-5 py-3 text-center text-sm font-medium text-white disabled:opacity-50"
+			class="w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent disabled:opacity-50"
 		>
 			{#if saving}
 				Saving…

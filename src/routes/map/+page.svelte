@@ -17,6 +17,12 @@
 		suburb: string | null;
 		rating: number | null;
 	};
+	type MapTheme = {
+		brightness: 'light' | 'dark';
+		accent: string;
+		onAccent: string;
+		text: string;
+	};
 
 	const effectiveProvider = $derived.by<'mapbox' | 'apple' | 'google'>(() => {
 		const want = data.preferences.default_map_provider;
@@ -37,18 +43,43 @@
 		return data.pins;
 	}
 
+	function readMapTheme(): MapTheme {
+		const root = document.documentElement;
+		const styles = getComputedStyle(root);
+		const css = (name: string, fallback: string) =>
+			styles.getPropertyValue(name).trim() || fallback;
+		return {
+			brightness: root.dataset.brightness === 'light' ? 'light' : 'dark',
+			accent: css('--theme-accent', '#e6794a'),
+			onAccent: css('--theme-on-accent', '#000000'),
+			text: css('--theme-text', '#f8fafc')
+		};
+	}
+
+	function mapboxStyle(theme: MapTheme): string {
+		return `mapbox://styles/mapbox/${theme.brightness === 'dark' ? 'dark' : 'light'}-v11`;
+	}
+
 	onMount(() => {
 		let cleanup: () => void = () => {};
 		let cancelled = false;
+		let renderId = 0;
 
-		(async () => {
+		async function renderMap() {
+			const id = ++renderId;
+			cleanup();
+			cleanup = () => {};
+			loading = true;
+			mapError = null;
 			try {
 				const pins = await fetchPins();
-				if (cancelled || !mapEl) return;
+				if (cancelled || !mapEl || id !== renderId) return;
+				const theme = readMapTheme();
+				mapEl.replaceChildren();
 
 				if (effectiveProvider === 'apple') {
 					const mapkit = await loadMapKit();
-					if (cancelled || !mapEl) return;
+					if (cancelled || !mapEl || id !== renderId) return;
 					const center =
 						pins.length > 0
 							? new mapkit.Coordinate(pins[0].lat, pins[0].lng)
@@ -58,13 +89,16 @@
 						cameraDistance: 8000,
 						showsCompass: mapkit.FeatureVisibility.Hidden,
 						showsScale: mapkit.FeatureVisibility.Hidden,
-						colorScheme: mapkit.Map.ColorSchemes.Dark
+						colorScheme:
+							theme.brightness === 'dark'
+								? mapkit.Map.ColorSchemes.Dark
+								: mapkit.Map.ColorSchemes.Light
 					});
 					for (const pin of pins) {
 						const annotation = new mapkit.MarkerAnnotation(
 							new mapkit.Coordinate(pin.lat, pin.lng),
 							{
-								color: '#e6794a',
+								color: theme.accent,
 								glyphText: pin.rating != null ? String(pin.rating) : '★',
 								title: pin.name,
 								selected: false
@@ -90,7 +124,7 @@
 						return;
 					}
 					const google = await loadGoogleMaps(data.googleMapsKey);
-					if (cancelled || !mapEl) return;
+					if (cancelled || !mapEl || id !== renderId) return;
 					const center =
 						pins.length > 0
 							? { lat: pins[0].lat, lng: pins[0].lng }
@@ -102,7 +136,7 @@
 						mapTypeControl: false,
 						streetViewControl: false,
 						fullscreenControl: false,
-						styles: GOOGLE_DARK_STYLES
+						styles: theme.brightness === 'dark' ? GOOGLE_DARK_STYLES : []
 					});
 					const markers: google.maps.Marker[] = [];
 					for (const pin of pins) {
@@ -112,16 +146,16 @@
 							title: pin.name,
 							label: {
 								text: pin.rating != null ? String(pin.rating) : '★',
-								color: '#ffffff',
+								color: theme.onAccent,
 								fontSize: '12px',
 								fontWeight: '600'
 							},
 							icon: {
 								path: google.maps.SymbolPath.CIRCLE,
 								scale: 14,
-								fillColor: '#e6794a',
+								fillColor: theme.accent,
 								fillOpacity: 1,
-								strokeColor: '#f1f5f9',
+								strokeColor: theme.text,
 								strokeWeight: 2
 							}
 						});
@@ -147,14 +181,14 @@
 					}
 					const mapboxgl = (await import('mapbox-gl')).default;
 					await import('mapbox-gl/dist/mapbox-gl.css');
-					if (cancelled || !mapEl) return;
+					if (cancelled || !mapEl || id !== renderId) return;
 					mapboxgl.accessToken = data.mapboxToken;
 
 					const center: [number, number] =
 						pins.length > 0 ? [pins[0].lng, pins[0].lat] : [144.9631, -37.8136];
 					const map = new mapboxgl.Map({
 						container: mapEl,
-						style: 'mapbox://styles/mapbox/dark-v11',
+						style: mapboxStyle(theme),
 						center,
 						zoom: pins.length > 0 ? 12 : 10
 					});
@@ -164,7 +198,7 @@
 							const el = document.createElement('button');
 							el.type = 'button';
 							el.className =
-								'flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-slate-100 bg-orange-600 text-xs text-white shadow';
+								'flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-primary bg-accent text-xs text-on-accent shadow';
 							el.textContent = pin.rating != null ? String(pin.rating) : '★';
 							el.setAttribute('aria-label', pin.name);
 							el.addEventListener('click', () => {
@@ -190,10 +224,17 @@
 				mapError = String(e);
 				loading = false;
 			}
-		})();
+		}
+
+		const handleThemeChange = () => {
+			void renderMap();
+		};
+		document.addEventListener('restauranteer-themechange', handleThemeChange);
+		void renderMap();
 
 		return () => {
 			cancelled = true;
+			document.removeEventListener('restauranteer-themechange', handleThemeChange);
 			cleanup();
 		};
 	});
@@ -205,19 +246,19 @@
 
 <header class="px-5 pt-6 pb-2">
 	<BackLink href="/" />
-	<h1 class="mt-2 text-2xl font-semibold text-slate-50">Map</h1>
+	<h1 class="mt-2 text-2xl font-semibold text-primary">Map</h1>
 </header>
 
 {#if mapError}
-	<div class="mx-5 mt-3 rounded-2xl border border-amber-900 bg-amber-950/40 p-4 text-sm text-amber-200">
+	<div class="mx-5 mt-3 rounded-2xl border border-warning/50 bg-warning/15 p-4 text-sm text-warning">
 		{mapError}
 	</div>
 {/if}
 
-<div class="relative mt-3 h-[calc(100dvh-12rem)] w-full bg-slate-900">
+<div class="relative mt-3 h-[calc(100dvh-12rem)] w-full bg-panel">
 	<div bind:this={mapEl} class="absolute inset-0"></div>
 	{#if loading}
-		<div class="absolute inset-0 flex items-center justify-center text-sm text-slate-400">
+		<div class="absolute inset-0 flex items-center justify-center text-sm text-secondary">
 			Loading map…
 		</div>
 	{/if}
@@ -231,19 +272,19 @@
 		onclick={() => (selected = null)}
 	></button>
 	<div
-		class="fixed inset-x-0 bottom-0 z-20 rounded-t-3xl border-t border-slate-800 bg-slate-900 p-5 pb-8 shadow-xl"
+		class="fixed inset-x-0 bottom-0 z-20 rounded-t-3xl border-t border-line bg-panel p-5 pb-8 shadow-xl"
 	>
-		<h2 class="text-base font-medium text-slate-100">{selected.name}</h2>
+		<h2 class="text-base font-medium text-primary">{selected.name}</h2>
 		{#if selected.suburb}
-			<p class="text-xs text-slate-400">{selected.suburb}</p>
+			<p class="text-xs text-secondary">{selected.suburb}</p>
 		{/if}
 		{#if selected.rating != null}
-			<p class="mt-1 text-sm text-amber-300">★ {selected.rating}</p>
+			<p class="mt-1 text-sm text-rating">★ {selected.rating}</p>
 		{/if}
 		<button
 			type="button"
 			onclick={() => open(selected!)}
-			class="mt-3 w-full rounded-2xl bg-orange-600 px-5 py-3 text-sm font-medium text-white"
+			class="mt-3 w-full rounded-2xl bg-accent px-5 py-3 text-sm font-medium text-on-accent"
 		>
 			Open
 		</button>

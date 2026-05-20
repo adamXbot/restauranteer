@@ -75,7 +75,7 @@
 </script>
 
 <div
-	class="fixed inset-0 z-40 flex flex-col justify-end bg-slate-950/70"
+	class="fixed inset-0 z-40 flex flex-col justify-end bg-overlay"
 	role="dialog"
 	aria-modal="true"
 >
@@ -85,10 +85,10 @@
 		aria-label="Close"
 		onclick={cancel}
 	></button>
-	<section class="rounded-t-3xl border-t border-slate-800 bg-slate-900 p-5 pb-8">
+	<section class="rounded-t-3xl border-t border-line bg-panel p-5 pb-8">
 		<header class="mb-3 flex items-center justify-between">
-			<h2 class="text-base font-medium text-slate-100">Lists</h2>
-			<button type="button" onclick={cancel} class="text-xs text-slate-400">Cancel</button>
+			<h2 class="text-base font-medium text-primary">Lists</h2>
+			<button type="button" onclick={cancel} class="text-xs text-secondary">Cancel</button>
 		</header>
 
 		<ul class="max-h-72 space-y-1 overflow-y-auto">
@@ -97,15 +97,15 @@
 					<button
 						type="button"
 						onclick={() => toggle(name)}
-						class="flex w-full items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2.5 text-left"
+						class="flex w-full items-center justify-between rounded-xl border border-line bg-panel/40 px-3 py-2.5 text-left"
 					>
-						<span class="text-sm text-slate-100">{name}</span>
+						<span class="text-sm text-primary">{name}</span>
 						<span
 							class="rounded-full px-2 py-0.5 text-xs"
-							class:bg-orange-600={selected.has(name)}
-							class:text-white={selected.has(name)}
-							class:bg-slate-800={!selected.has(name)}
-							class:text-slate-400={!selected.has(name)}
+							class:bg-accent={selected.has(name)}
+							class:text-on-accent={selected.has(name)}
+							class:bg-panel-2={!selected.has(name)}
+							class:text-secondary={!selected.has(name)}
 						>
 							{selected.has(name) ? 'in' : 'out'}
 						</span>
@@ -113,7 +113,7 @@
 				</li>
 			{/each}
 			{#if merged.length === 0}
-				<li class="rounded-xl border border-dashed border-slate-800 px-3 py-3 text-xs text-slate-500">
+				<li class="rounded-xl border border-dashed border-line px-3 py-3 text-xs text-tertiary">
 					No lists yet — add your first one below.
 				</li>
 			{/if}
@@ -125,7 +125,7 @@
 				bind:value={newName}
 				placeholder="New list — typing then Save is enough"
 				maxlength="60"
-				class="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-orange-600/60 focus:ring-2 focus:ring-orange-600/30 focus:outline-none"
+				class="flex-1 rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
 				onkeydown={(e) => {
 					if (e.key === 'Enter') {
 						e.preventDefault();
@@ -137,21 +137,21 @@
 				type="button"
 				onclick={flushInput}
 				disabled={newName.trim().length === 0}
-				class="rounded-xl border border-slate-800 bg-slate-800 px-3 text-sm text-slate-100 disabled:opacity-50"
+				class="rounded-xl border border-line bg-panel-2 px-3 text-sm text-primary disabled:opacity-50"
 			>
 				+ Add
 			</button>
 		</div>
 
 		{#if err}
-			<p class="mt-2 text-xs text-red-400">{err}</p>
+			<p class="mt-2 text-xs text-danger">{err}</p>
 		{/if}
 
 		<button
 			type="button"
 			onclick={save}
 			disabled={saving}
-			class="mt-4 w-full rounded-2xl bg-orange-600 px-5 py-3 text-center text-sm font-medium text-white disabled:opacity-50"
+			class="mt-4 w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent disabled:opacity-50"
 		>
 			{saving ? 'Saving…' : 'Save'}
 		</button>

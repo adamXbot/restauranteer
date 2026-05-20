@@ -104,7 +104,7 @@
 </script>
 
 <div
-	class="fixed inset-0 z-40 flex flex-col justify-end bg-slate-950/70"
+	class="fixed inset-0 z-40 flex flex-col justify-end bg-overlay"
 	role="dialog"
 	aria-modal="true"
 >
@@ -114,16 +114,16 @@
 		aria-label="Close"
 		onclick={() => onClose?.()}
 	></button>
-	<section class="max-h-[88vh] overflow-y-auto rounded-t-3xl border-t border-slate-800 bg-slate-900 p-5 pb-8">
+	<section class="max-h-[88vh] overflow-y-auto rounded-t-3xl border-t border-line bg-panel p-5 pb-8">
 		<header class="mb-3 flex items-baseline justify-between gap-2">
 			<div>
-				<h2 class="text-base font-medium text-slate-100">Add {FIELD_LABEL[missingField]}</h2>
-				<p class="text-xs text-slate-500">{restaurantName}</p>
+				<h2 class="text-base font-medium text-primary">Add {FIELD_LABEL[missingField]}</h2>
+				<p class="text-xs text-tertiary">{restaurantName}</p>
 			</div>
-			<button type="button" onclick={() => onClose?.()} class="text-xs text-slate-400">Cancel</button>
+			<button type="button" onclick={() => onClose?.()} class="text-xs text-secondary">Cancel</button>
 		</header>
 
-		<p class="mb-2 text-xs text-slate-500">
+		<p class="mb-2 text-xs text-tertiary">
 			Pick a match from Google to fill in any missing details — your existing values won't be
 			overwritten.
 		</p>
@@ -133,7 +133,7 @@
 				type="text"
 				bind:value={query}
 				placeholder="Restaurant name + suburb"
-				class="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-orange-600/60 focus:ring-2 focus:ring-orange-600/30 focus:outline-none"
+				class="flex-1 rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
 				autocomplete="off"
 				autocorrect="off"
 				spellcheck="false"
@@ -148,21 +148,21 @@
 				type="button"
 				onclick={() => runSearch(query)}
 				disabled={searching}
-				class="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-200 disabled:opacity-50"
+				class="rounded-xl border border-line-strong bg-panel-2 px-3 py-2 text-xs text-secondary disabled:opacity-50"
 			>
 				{searching ? '…' : 'Search'}
 			</button>
 		</div>
 
 		{#if err}
-			<p class="mt-2 text-xs text-red-400">{err}</p>
+			<p class="mt-2 text-xs text-danger">{err}</p>
 		{/if}
 
 		<ul class="mt-3 space-y-2">
 			{#if searching && candidates.length === 0}
-				<li class="text-xs text-slate-500">Searching Google Places…</li>
+				<li class="text-xs text-tertiary">Searching Google Places…</li>
 			{:else if candidates.length === 0 && !err}
-				<li class="text-xs text-slate-500">
+				<li class="text-xs text-tertiary">
 					No matches yet. Try adjusting the query, or paste a URL below.
 				</li>
 			{/if}
@@ -172,13 +172,13 @@
 						type="button"
 						onclick={() => pickCandidate(c)}
 						disabled={saving !== null}
-						class="block w-full rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left hover:border-slate-700 disabled:opacity-50"
+						class="block w-full rounded-xl border border-line bg-panel/40 p-3 text-left hover:border-line-strong disabled:opacity-50"
 					>
-						<p class="text-sm font-medium text-slate-100">{c.name}</p>
+						<p class="text-sm font-medium text-primary">{c.name}</p>
 						{#if c.address}
-							<p class="mt-0.5 text-xs text-slate-400">{c.address}</p>
+							<p class="mt-0.5 text-xs text-secondary">{c.address}</p>
 						{/if}
-						<p class="mt-1 text-[11px] text-orange-400/80">
+						<p class="mt-1 text-[11px] text-accent/80">
 							{saving === c.place_id ? 'Saving…' : 'Use this match'}
 						</p>
 					</button>
@@ -186,11 +186,11 @@
 			{/each}
 		</ul>
 
-		<div class="mt-5 border-t border-slate-800 pt-4">
-			<p class="mb-2 text-[11px] tracking-widest text-slate-500 uppercase">
+		<div class="mt-5 border-t border-line pt-4">
+			<p class="mb-2 text-[11px] tracking-widest text-tertiary uppercase">
 				Or paste a maps URL
 			</p>
-			<p class="mb-2 text-xs text-slate-500">
+			<p class="mb-2 text-xs text-tertiary">
 				Paste a Google Maps or Apple Maps share URL if you can't find a match above.
 			</p>
 			<div class="flex gap-2">
@@ -198,7 +198,7 @@
 					type="url"
 					bind:value={pasteUrl}
 					placeholder="https://maps.app.goo.gl/… or https://maps.apple.com/…"
-					class="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-orange-600/60 focus:ring-2 focus:ring-orange-600/30 focus:outline-none"
+					class="flex-1 rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
 					autocomplete="off"
 					autocorrect="off"
 					autocapitalize="off"
@@ -208,7 +208,7 @@
 					type="button"
 					onclick={importUrl}
 					disabled={pasting || pasteUrl.trim().length === 0}
-					class="rounded-xl bg-orange-600 px-3 py-2 text-xs font-medium text-white disabled:opacity-50"
+					class="rounded-xl bg-accent px-3 py-2 text-xs font-medium text-on-accent disabled:opacity-50"
 				>
 					{pasting ? '…' : 'Import'}
 				</button>

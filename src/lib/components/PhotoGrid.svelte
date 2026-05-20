@@ -38,7 +38,7 @@
 				src={thumbUrl(p)}
 				alt=""
 				loading="lazy"
-				class="aspect-square w-full rounded-lg bg-slate-800 object-cover"
+				class="aspect-square w-full rounded-lg bg-panel-2 object-cover"
 				onload={(e) => {
 					const t = e.currentTarget as HTMLImageElement;
 					recordDims(p, t.naturalWidth, t.naturalHeight);

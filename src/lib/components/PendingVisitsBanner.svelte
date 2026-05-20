@@ -50,18 +50,18 @@
 
 {#if count > 0}
 	<div
-		class="mx-5 mt-3 flex items-center justify-between gap-2 rounded-xl border border-amber-900/60 bg-amber-950/30 px-3 py-2 text-xs text-amber-200"
+		class="mx-5 mt-3 flex items-center justify-between gap-2 rounded-xl border border-warning/50 bg-warning/10 px-3 py-2 text-xs text-warning"
 	>
 		<span>
 			{count}
 			{count === 1 ? 'visit' : 'visits'} queued offline
-			{#if lastMsg}<span class="ml-1 text-amber-300/80">· {lastMsg}</span>{/if}
+			{#if lastMsg}<span class="ml-1 text-rating/80">· {lastMsg}</span>{/if}
 		</span>
 		<button
 			type="button"
 			onclick={() => sync()}
 			disabled={busy}
-			class="rounded-lg border border-amber-700/60 px-2 py-1 text-amber-100 disabled:opacity-50"
+			class="rounded-lg border border-warning/50 px-2 py-1 text-warning disabled:opacity-50"
 		>
 			{busy ? 'Syncing…' : '↻ Sync now'}
 		</button>

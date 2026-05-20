@@ -395,8 +395,8 @@
 
 <header class="px-5 pt-6 pb-2">
 	<BackLink href="/" />
-	<h1 class="mt-2 text-2xl font-semibold text-slate-50">Inbox</h1>
-	<p class="mt-1 text-sm text-slate-400">
+	<h1 class="mt-2 text-2xl font-semibold text-primary">Inbox</h1>
+	<p class="mt-1 text-sm text-secondary">
 		Paste any link (Instagram reel, TikTok, article, Google Maps share, anything). Known
 		publications can be turned into a restaurant immediately; everything else queues here for
 		later.
@@ -409,7 +409,7 @@
 			type="url"
 			bind:value={urlInput}
 			placeholder="https://…"
-			class="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-orange-600/60 focus:ring-2 focus:ring-orange-600/30 focus:outline-none"
+			class="flex-1 rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
 			autocomplete="off"
 			autocorrect="off"
 			autocapitalize="off"
@@ -423,22 +423,22 @@
 			type="button"
 			onclick={() => saveUrl(urlInput)}
 			disabled={saving || urlInput.trim().length === 0}
-			class="rounded-xl bg-orange-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+			class="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-on-accent disabled:opacity-50"
 		>
 			{saving ? '…' : detectedSource && autoImport ? 'Import' : 'Save'}
 		</button>
 	</div>
 	{#if detectedSource}
-		<label class="mt-2 flex items-start gap-2 rounded-xl border border-orange-900/40 bg-orange-950/20 px-3 py-2 text-xs text-slate-200">
+		<label class="mt-2 flex items-start gap-2 rounded-xl border border-accent/40 bg-accent-soft/40 px-3 py-2 text-xs text-secondary">
 			<input
 				type="checkbox"
 				bind:checked={autoImport}
 				class="mt-0.5 h-3.5 w-3.5"
 			/>
 			<span class="flex-1">
-				<span class="font-medium text-orange-300">{detectedSource.label}</span>
+				<span class="font-medium text-accent">{detectedSource.label}</span>
 				detected — auto-import as a restaurant.
-				<span class="block text-[11px] text-slate-500">
+				<span class="block text-[11px] text-tertiary">
 					Untick to queue the link here for later instead.
 				</span>
 			</span>
@@ -447,15 +447,15 @@
 	<button
 		type="button"
 		onclick={tryPasteFromClipboard}
-		class="mt-2 text-[11px] text-slate-500 underline decoration-slate-700 underline-offset-2"
+		class="mt-2 text-[11px] text-tertiary underline decoration-line-strong underline-offset-2"
 	>
 		Paste from clipboard
 	</button>
 	{#if saveError}
-		<p class="mt-2 text-xs text-red-400">{saveError}</p>
+		<p class="mt-2 text-xs text-danger">{saveError}</p>
 	{/if}
 	{#if lastMsg}
-		<p class="mt-2 text-xs text-emerald-300">{lastMsg}</p>
+		<p class="mt-2 text-xs text-success">{lastMsg}</p>
 	{/if}
 </section>
 
@@ -472,8 +472,8 @@
 
 {#if data.items.length === 0}
 	<section class="px-5 pt-8 pb-10">
-		<div class="rounded-2xl border border-dashed border-slate-700 bg-slate-900/30 p-6">
-			<p class="text-sm text-slate-400">
+		<div class="rounded-2xl border border-dashed border-line-strong bg-panel/30 p-6">
+			<p class="text-sm text-secondary">
 				Nothing pending. Paste a URL above to save it. On Android, you can share a link straight from
 				Instagram / TikTok / a browser to Restauranteer.
 			</p>
@@ -483,7 +483,7 @@
 	<section class="grid gap-3 px-5 pt-5 pb-10">
 		{#each data.items as item (item.id)}
 			{@const primarySuggestion = item.suggestions[0]}
-			<article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50">
+			<article class="overflow-hidden rounded-2xl border border-line bg-panel/50">
 				{#if item.image_url}
 					<img
 						src={item.image_url}
@@ -495,20 +495,20 @@
 				{/if}
 				<div class="p-4">
 					<div class="flex items-baseline justify-between gap-2">
-						<span class="text-[10px] tracking-widest text-slate-500 uppercase"
+						<span class="text-[10px] tracking-widest text-tertiary uppercase"
 							>{sourceLabel(item.source)}</span
 						>
-						<span class="text-[10px] text-slate-500">{relativeTime(item.created_at)}</span>
+						<span class="text-[10px] text-tertiary">{relativeTime(item.created_at)}</span>
 					</div>
-					<h3 class="mt-1 text-sm font-medium text-slate-100">{item.title}</h3>
+					<h3 class="mt-1 text-sm font-medium text-primary">{item.title}</h3>
 					{#if item.excerpt}
-						<p class="mt-1 line-clamp-3 text-xs text-slate-400">{item.excerpt}</p>
+						<p class="mt-1 line-clamp-3 text-xs text-secondary">{item.excerpt}</p>
 					{/if}
 					<a
 						href={item.url}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="mt-2 inline-block text-[11px] text-slate-500 underline decoration-slate-700 underline-offset-2"
+						class="mt-2 inline-block text-[11px] text-tertiary underline decoration-line-strong underline-offset-2"
 					>
 						Open ↗
 					</a>
@@ -518,14 +518,14 @@
 							type="button"
 							onclick={() => attachToUuid(item.id, primarySuggestion.uuid)}
 							disabled={attachingId === item.id}
-							class="mt-3 w-full rounded-xl bg-orange-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+							class="mt-3 w-full rounded-xl bg-accent px-4 py-2 text-sm font-medium text-on-accent disabled:opacity-50"
 						>
 							{attachingId === item.id
 								? 'Attaching…'
 								: `Attach to ${primarySuggestion.name}${primarySuggestion.suburb ? ` · ${primarySuggestion.suburb}` : ''}`}
 						</button>
 						{#if item.suggestions.length > 1}
-							<p class="mt-1 text-[11px] text-slate-500">
+							<p class="mt-1 text-[11px] text-tertiary">
 								Other matches:
 								{#each item.suggestions.slice(1, 4) as s, i (s.uuid)}
 									{#if i > 0},{' '}{/if}
@@ -533,7 +533,7 @@
 										type="button"
 										onclick={() => attachToUuid(item.id, s.uuid)}
 										disabled={attachingId === item.id}
-										class="text-orange-400 underline decoration-slate-700 underline-offset-2 disabled:opacity-50"
+										class="text-accent underline decoration-line-strong underline-offset-2 disabled:opacity-50"
 									>
 										{s.name}{s.suburb ? ` (${s.suburb})` : ''}
 									</button>
@@ -541,7 +541,7 @@
 							</p>
 						{/if}
 					{:else}
-						<p class="mt-3 text-xs text-slate-500">
+						<p class="mt-3 text-xs text-tertiary">
 							No vault match. Pick one or create a new restaurant.
 						</p>
 					{/if}
@@ -550,14 +550,14 @@
 						<button
 							type="button"
 							onclick={() => openPicker(item.id, item.title)}
-							class="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-200"
+							class="flex-1 rounded-lg border border-line-strong bg-panel px-3 py-1.5 text-xs text-secondary"
 						>
 							Pick from vault
 						</button>
 						<button
 							type="button"
 							onclick={() => openCreate(item.id, item)}
-							class="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-200"
+							class="flex-1 rounded-lg border border-line-strong bg-panel px-3 py-1.5 text-xs text-secondary"
 						>
 							Create new
 						</button>
@@ -565,7 +565,7 @@
 							type="button"
 							onclick={() => dismiss(item.id)}
 							disabled={dismissingId === item.id}
-							class="rounded-lg border border-slate-800 px-3 py-1.5 text-xs text-slate-500 hover:text-red-400 disabled:opacity-50"
+							class="rounded-lg border border-line px-3 py-1.5 text-xs text-tertiary hover:text-danger disabled:opacity-50"
 							aria-label="Discard"
 						>
 							✕
@@ -573,45 +573,45 @@
 					</div>
 
 					{#if creatingFor === item.id}
-						<div class="mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3">
-							<p class="mb-2 text-[11px] tracking-widest text-slate-500 uppercase">New restaurant</p>
+						<div class="mt-3 rounded-xl border border-line bg-canvas p-3">
+							<p class="mb-2 text-[11px] tracking-widest text-tertiary uppercase">New restaurant</p>
 							<input
 								type="text"
 								bind:value={createForm.name}
 								placeholder="Name"
-								class="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+								class="w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 							/>
 							<input
 								type="text"
 								bind:value={createForm.suburb}
 								placeholder="Suburb (optional)"
-								class="mt-2 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+								class="mt-2 w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 							/>
 							<input
 								type="text"
 								bind:value={createForm.address}
 								placeholder="Address (optional)"
-								class="mt-2 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+								class="mt-2 w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 							/>
 							<input
 								type="text"
 								bind:value={createForm.cuisine}
 								placeholder="Cuisine (comma-separated, optional)"
-								class="mt-2 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+								class="mt-2 w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 							/>
 							<div class="mt-3 flex gap-2">
 								<button
 									type="button"
 									onclick={() => submitCreate(item.id)}
 									disabled={attachingId === item.id || !createForm.name.trim()}
-									class="flex-1 rounded-lg bg-orange-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+									class="flex-1 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-on-accent disabled:opacity-50"
 								>
 									{attachingId === item.id ? 'Creating…' : 'Create & attach'}
 								</button>
 								<button
 									type="button"
 									onclick={() => (creatingFor = null)}
-									class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300"
+									class="rounded-lg border border-line-strong px-3 py-1.5 text-xs text-secondary"
 								>
 									Cancel
 								</button>
@@ -620,20 +620,20 @@
 					{/if}
 
 					{#if pickingFor === item.id}
-						<div class="mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3">
+						<div class="mt-3 rounded-xl border border-line bg-canvas p-3">
 							<input
 								type="search"
 								bind:value={pickerQuery}
 								oninput={onPickerInput}
 								placeholder="Search vault…"
-								class="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+								class="w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 								autocomplete="off"
 								autocorrect="off"
 							/>
 							{#if pickerLoading}
-								<p class="mt-2 text-[11px] text-slate-500">Searching…</p>
+								<p class="mt-2 text-[11px] text-tertiary">Searching…</p>
 							{:else if pickerResults.length === 0 && pickerQuery.trim().length >= 2}
-								<p class="mt-2 text-[11px] text-slate-500">No match.</p>
+								<p class="mt-2 text-[11px] text-tertiary">No match.</p>
 							{/if}
 							<ul class="mt-2 space-y-1">
 								{#each pickerResults as r (r.uuid)}
@@ -642,10 +642,10 @@
 											type="button"
 											onclick={() => attachToUuid(item.id, r.uuid)}
 											disabled={attachingId === item.id}
-											class="block w-full rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-left text-xs text-slate-100 disabled:opacity-50"
+											class="block w-full rounded-lg border border-line bg-panel/60 px-3 py-2 text-left text-xs text-primary disabled:opacity-50"
 										>
 											<span class="font-medium">{r.name}</span>
-											{#if r.suburb}<span class="text-slate-500"> · {r.suburb}</span>{/if}
+											{#if r.suburb}<span class="text-tertiary"> · {r.suburb}</span>{/if}
 										</button>
 									</li>
 								{/each}
@@ -653,7 +653,7 @@
 							<button
 								type="button"
 								onclick={() => (pickingFor = null)}
-								class="mt-2 text-[11px] text-slate-500"
+								class="mt-2 text-[11px] text-tertiary"
 							>
 								Cancel
 							</button>

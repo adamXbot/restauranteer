@@ -40,6 +40,13 @@
 		photo_name: string | null;
 	};
 	type Result = VaultResult | GoogleResult;
+	type MapTheme = {
+		brightness: 'light' | 'dark';
+		accent: string;
+		onAccent: string;
+		text: string;
+		mapSecondary: string;
+	};
 
 	const RADII = [500, 1000, 2000, 5000, 10000];
 	const RATINGS = [0, 3, 4, 4.5];
@@ -59,6 +66,24 @@
 		if (want === 'google' && data.googleMapsKey) return 'google';
 		return 'mapbox';
 	});
+
+	function readMapTheme(): MapTheme {
+		const root = document.documentElement;
+		const styles = getComputedStyle(root);
+		const css = (name: string, fallback: string) =>
+			styles.getPropertyValue(name).trim() || fallback;
+		return {
+			brightness: root.dataset.brightness === 'light' ? 'light' : 'dark',
+			accent: css('--theme-accent', '#e6794a'),
+			onAccent: css('--theme-on-accent', '#000000'),
+			text: css('--theme-text', '#f8fafc'),
+			mapSecondary: css('--theme-map-secondary', '#64748b')
+		};
+	}
+
+	function mapboxStyle(theme: MapTheme): string {
+		return `mapbox://styles/mapbox/${theme.brightness === 'dark' ? 'dark' : 'light'}-v11`;
+	}
 
 	let mapEl = $state<HTMLDivElement | null>(null);
 	// Provider-agnostic refs (any-typed because the two SDKs have very different APIs)
@@ -107,6 +132,7 @@
 
 	async function loadMap() {
 		if (!mapEl) return;
+		const theme = readMapTheme();
 		if (effectiveProvider === 'apple') {
 			const mapkit = await loadMapKit();
 			if (!mapEl) return;
@@ -118,7 +144,10 @@
 				cameraDistance: 4000,
 				showsCompass: mapkit.FeatureVisibility.Hidden,
 				showsScale: mapkit.FeatureVisibility.Hidden,
-				colorScheme: mapkit.Map.ColorSchemes.Dark
+				colorScheme:
+					theme.brightness === 'dark'
+						? mapkit.Map.ColorSchemes.Dark
+						: mapkit.Map.ColorSchemes.Light
 			});
 			// Note: Apple MapKit JS doesn't surface a clean "tap empty map" lat/lng.
 			// On Apple mode, dropping a pin via tap is unavailable — use the
@@ -136,7 +165,7 @@
 				mapTypeControl: false,
 				streetViewControl: false,
 				fullscreenControl: false,
-				styles: GOOGLE_DARK_STYLES
+				styles: theme.brightness === 'dark' ? GOOGLE_DARK_STYLES : []
 			});
 			mapRef.addListener('click', (e: google.maps.MapMouseEvent) => {
 				if (e.latLng) center = { lat: e.latLng.lat(), lng: e.latLng.lng() };
@@ -149,7 +178,7 @@
 		mapboxgl.accessToken = data.mapboxToken;
 		mapRef = new mapboxgl.Map({
 			container: mapEl,
-			style: 'mapbox://styles/mapbox/dark-v11',
+			style: mapboxStyle(theme),
 			center: center ? [center.lng, center.lat] : DEFAULT_CENTER,
 			zoom: 13
 		});
@@ -177,11 +206,12 @@
 
 	function drawCenter() {
 		if (!mapRef || !center) return;
+		const theme = readMapTheme();
 		if (effectiveProvider === 'apple') {
 			if (centerMarker) mapRef.removeAnnotation(centerMarker);
 			const ann = new window.mapkit.MarkerAnnotation(
 				new window.mapkit.Coordinate(center.lat, center.lng),
-				{ color: '#e6794a', glyphText: '●', title: 'Here', selected: false }
+				{ color: theme.accent, glyphText: '●', title: 'Here', selected: false }
 			);
 			mapRef.addAnnotation(ann);
 			centerMarker = ann;
@@ -195,9 +225,9 @@
 				icon: {
 					path: window.google.maps.SymbolPath.CIRCLE,
 					scale: 8,
-					fillColor: '#f97316',
+					fillColor: theme.accent,
 					fillOpacity: 1,
-					strokeColor: '#ffffff',
+					strokeColor: theme.text,
 					strokeWeight: 2
 				},
 				title: 'Here'
@@ -208,7 +238,7 @@
 			if (centerMarker) centerMarker.remove();
 			const el = document.createElement('div');
 			el.className =
-				'h-4 w-4 rounded-full border-2 border-white bg-orange-500 shadow ring-4 ring-orange-500/30';
+				'h-4 w-4 rounded-full border-2 border-white bg-accent shadow ring-4 ring-accent-ring/30';
 			centerMarker = new mapboxgl.Marker({ element: el })
 				.setLngLat([center!.lng, center!.lat])
 				.addTo(mapRef!);
@@ -217,6 +247,7 @@
 
 	function drawResultMarkers() {
 		if (!mapRef) return;
+		const theme = readMapTheme();
 		if (effectiveProvider === 'apple') {
 			for (const m of resultMarkers) mapRef.removeAnnotation(m);
 			resultMarkers = [];
@@ -224,7 +255,7 @@
 				const ann = new window.mapkit.MarkerAnnotation(
 					new window.mapkit.Coordinate(r.lat, r.lng),
 					{
-						color: r.source === 'vault' ? '#e6794a' : '#475569',
+						color: r.source === 'vault' ? theme.accent : theme.mapSecondary,
 						glyphText: r.source === 'vault' ? '★' : '•',
 						title: r.name,
 						selected: false
@@ -246,16 +277,16 @@
 					title: r.name,
 					label: {
 						text: r.source === 'vault' ? '★' : '•',
-						color: '#ffffff',
+						color: r.source === 'vault' ? theme.onAccent : theme.text,
 						fontSize: '10px',
 						fontWeight: '700'
 					},
 					icon: {
 						path: window.google.maps.SymbolPath.CIRCLE,
 						scale: r.source === 'vault' ? 12 : 9,
-						fillColor: r.source === 'vault' ? '#e6794a' : '#475569',
+						fillColor: r.source === 'vault' ? theme.accent : theme.mapSecondary,
 						fillOpacity: 1,
-						strokeColor: r.source === 'vault' ? '#f1f5f9' : '#cbd5e1',
+						strokeColor: theme.text,
 						strokeWeight: r.source === 'vault' ? 2 : 1
 					}
 				});
@@ -272,8 +303,8 @@
 				el.type = 'button';
 				el.className =
 					r.source === 'vault'
-						? 'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 border-slate-100 bg-orange-600 text-[10px] text-white shadow'
-						: 'flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-slate-300 bg-slate-700 text-[9px] text-slate-100';
+						? 'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 border-primary bg-accent text-[10px] text-on-accent shadow'
+						: 'flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-secondary bg-map-secondary text-[9px] text-primary';
 				el.textContent = r.source === 'vault' ? '★' : '•';
 				el.title = r.name;
 				el.addEventListener('click', () => openResult(r));
@@ -321,25 +352,46 @@
 		}
 	}
 
+	function destroyMap() {
+		try {
+			if (effectiveProvider === 'apple') {
+				for (const m of resultMarkers) mapRef?.removeAnnotation?.(m);
+				if (centerMarker) mapRef?.removeAnnotation?.(centerMarker);
+				mapRef?.destroy?.();
+			} else if (effectiveProvider === 'google') {
+				for (const m of resultMarkers) m.setMap?.(null);
+				centerMarker?.setMap?.(null);
+			} else {
+				for (const m of resultMarkers) m.remove?.();
+				centerMarker?.remove?.();
+				mapRef?.remove?.();
+			}
+		} catch {
+			/* ignore */
+		}
+		mapRef = null;
+		centerMarker = null;
+		resultMarkers = [];
+	}
+
+	async function reloadMapForTheme() {
+		destroyMap();
+		mapEl?.replaceChildren();
+		await loadMap();
+		panMap();
+		drawCenter();
+		drawResultMarkers();
+	}
+
 	onMount(() => {
 		void loadMap();
+		const handleThemeChange = () => {
+			void reloadMapForTheme();
+		};
+		document.addEventListener('restauranteer-themechange', handleThemeChange);
 		return () => {
-			try {
-				if (effectiveProvider === 'apple') {
-					for (const m of resultMarkers) mapRef?.removeAnnotation?.(m);
-					if (centerMarker) mapRef?.removeAnnotation?.(centerMarker);
-					mapRef?.destroy?.();
-				} else if (effectiveProvider === 'google') {
-					for (const m of resultMarkers) m.setMap?.(null);
-					centerMarker?.setMap?.(null);
-				} else {
-					for (const m of resultMarkers) m.remove?.();
-					centerMarker?.remove?.();
-					mapRef?.remove?.();
-				}
-			} catch {
-				/* ignore */
-			}
+			document.removeEventListener('restauranteer-themechange', handleThemeChange);
+			destroyMap();
 		};
 	});
 
@@ -364,24 +416,24 @@
 
 <header class="px-5 pt-6 pb-2">
 	<BackLink href="/" />
-	<h1 class="mt-2 text-2xl font-semibold text-slate-50">Near me</h1>
-	<p class="mt-1 text-sm text-slate-400">
+	<h1 class="mt-2 text-2xl font-semibold text-primary">Near me</h1>
+	<p class="mt-1 text-sm text-secondary">
 		Pinpoint a spot and find a place worth trying.
 	</p>
 </header>
 
-<div class="relative mt-3 h-[40vh] w-full bg-slate-900">
+<div class="relative mt-3 h-[40vh] w-full bg-panel">
 	<div bind:this={mapEl} class="absolute inset-0"></div>
 	{#if effectiveProvider === 'mapbox' && !data.mapboxToken}
-		<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-slate-400">
+		<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-secondary">
 			Set MAPBOX_PUBLIC_TOKEN in .env to enable the map. You can still filter results below.
 		</div>
 	{:else if effectiveProvider === 'google' && !data.googleMapsKey}
-		<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-slate-400">
+		<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-secondary">
 			Set GOOGLE_MAPS_PUBLIC_KEY in .env to enable the map. You can still filter results below.
 		</div>
 	{:else if !center}
-		<div class="absolute inset-x-0 bottom-2 text-center text-[11px] text-slate-300">
+		<div class="absolute inset-x-0 bottom-2 text-center text-[11px] text-secondary">
 			{#if effectiveProvider === 'apple'}
 				Use the "Use my location" button below to pin a search point.
 			{:else}
@@ -395,28 +447,28 @@
 	<button
 		type="button"
 		onclick={useMyLocation}
-		class="rounded-full bg-orange-600 px-3 py-1.5 text-xs font-medium text-white"
+		class="rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-on-accent"
 	>
 		📍 Use my location
 	</button>
 	<button
 		type="button"
 		onclick={cycleRadius}
-		class="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs text-slate-200"
+		class="rounded-full border border-line bg-panel px-3 py-1.5 text-xs text-secondary"
 	>
 		{radius >= 1000 ? `${radius / 1000}km` : `${radius}m`}
 	</button>
 	<button
 		type="button"
 		onclick={cycleRating}
-		class="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs text-slate-200"
+		class="rounded-full border border-line bg-panel px-3 py-1.5 text-xs text-secondary"
 	>
 		{minRating > 0 ? `★ ${minRating}+` : 'Any ★'}
 	</button>
 	<button
 		type="button"
 		onclick={() => (pickingCuisine = true)}
-		class="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs text-slate-200"
+		class="rounded-full border border-line bg-panel px-3 py-1.5 text-xs text-secondary"
 	>
 		{cuisines.length === 0 ? 'Cuisine: any' : `Cuisine: ${cuisines.length}`}
 	</button>
@@ -424,28 +476,28 @@
 		<button
 			type="button"
 			onclick={toggleSource}
-			class="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs"
-			class:text-emerald-300={source === 'all'}
-			class:text-slate-400={source === 'vault'}
+			class="rounded-full border border-line bg-panel px-3 py-1.5 text-xs"
+			class:text-success={source === 'all'}
+			class:text-secondary={source === 'vault'}
 		>
 			{source === 'all' ? 'Vault + Google' : 'Vault only'}
 		</button>
 	{/if}
 </div>
 {#if geoErr}
-	<p class="px-5 pt-1 text-[11px] text-amber-400">{geoErr}</p>
+	<p class="px-5 pt-1 text-[11px] text-warning">{geoErr}</p>
 {/if}
 {#if queryErr}
-	<p class="px-5 pt-1 text-[11px] text-red-400">{queryErr}</p>
+	<p class="px-5 pt-1 text-[11px] text-danger">{queryErr}</p>
 {/if}
 
 <section class="px-5 pt-4 pb-6">
 	{#if !center}
-		<p class="text-sm text-slate-500">Pinpoint a spot to see what's nearby.</p>
+		<p class="text-sm text-tertiary">Pinpoint a spot to see what's nearby.</p>
 	{:else if loading && results.length === 0}
-		<p class="text-sm text-slate-500">Searching…</p>
+		<p class="text-sm text-tertiary">Searching…</p>
 	{:else if results.length === 0}
-		<p class="text-sm text-slate-500">
+		<p class="text-sm text-tertiary">
 			Nothing within {radius >= 1000 ? `${radius / 1000}km` : `${radius}m`} matches.
 			{#if minRating > 0}Try lowering the rating threshold.{/if}
 			{#if cuisines.length > 0}Try clearing cuisine filters.{/if}
@@ -457,32 +509,32 @@
 					<button
 						type="button"
 						onclick={() => openResult(r)}
-						class="block w-full min-w-0 rounded-2xl border border-slate-800 bg-slate-900/50 p-3 text-left"
+						class="block w-full min-w-0 rounded-2xl border border-line bg-panel/50 p-3 text-left"
 					>
 						<div class="flex items-start justify-between gap-3">
 							<div class="min-w-0 flex-1">
 								<div class="flex items-center gap-2">
 									{#if r.source === 'vault'}
-										<span class="text-[10px] tracking-widest text-orange-400 uppercase"
+										<span class="text-[10px] tracking-widest text-accent uppercase"
 											>★ Vault</span
 										>
 									{:else}
-										<span class="text-[10px] tracking-widest text-slate-500 uppercase"
+										<span class="text-[10px] tracking-widest text-tertiary uppercase"
 											>Google</span
 										>
 									{/if}
-									<span class="text-[10px] text-slate-500">{formatDistance(r.distance_m)}</span>
+									<span class="text-[10px] text-tertiary">{formatDistance(r.distance_m)}</span>
 								</div>
-								<h3 class="mt-0.5 truncate text-sm font-medium text-slate-100">{r.name}</h3>
+								<h3 class="mt-0.5 truncate text-sm font-medium text-primary">{r.name}</h3>
 								{#if r.source === 'vault' && (r.suburb || r.address)}
-									<p class="truncate text-xs text-slate-400">{r.suburb ?? r.address}</p>
+									<p class="truncate text-xs text-secondary">{r.suburb ?? r.address}</p>
 								{:else if r.source === 'google' && r.address}
-									<p class="truncate text-xs text-slate-400">{r.address}</p>
+									<p class="truncate text-xs text-secondary">{r.address}</p>
 								{/if}
 								{#if r.cuisine.length > 0}
 									<div class="mt-1.5 flex flex-wrap gap-1">
 										{#each r.cuisine.slice(0, 4) as c (c)}
-											<span class="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300"
+											<span class="rounded-full bg-panel-2 px-2 py-0.5 text-[10px] text-secondary"
 												>{c}</span
 											>
 										{/each}
@@ -490,7 +542,7 @@
 								{/if}
 							</div>
 							{#if r.rating != null}
-								<span class="shrink-0 text-xs text-amber-300">★ {r.rating}</span>
+								<span class="shrink-0 text-xs text-rating">★ {r.rating}</span>
 							{/if}
 						</div>
 					</button>

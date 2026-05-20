@@ -9,9 +9,9 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
+			'$lib': path.resolve('./src/lib'),
 			'$env/dynamic/private': path.resolve('./tests/stubs/env.ts'),
 			'$env/static/private': path.resolve('./tests/stubs/env.ts')
 		}
 	}
 });
-

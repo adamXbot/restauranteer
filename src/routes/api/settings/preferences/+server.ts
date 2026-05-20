@@ -16,6 +16,9 @@ export const POST: RequestHandler = async ({ request }) => {
 	if ('share_format' in body) updates.share_format = body.share_format;
 	if ('australian_centric' in body) updates.australian_centric = body.australian_centric === true;
 	if ('show_review_summary' in body) updates.show_review_summary = body.show_review_summary === true;
+	if ('theme_mode' in body) updates.theme_mode = body.theme_mode;
+	if ('theme_preset' in body) updates.theme_preset = body.theme_preset;
+	if ('theme_accent' in body) updates.theme_accent = body.theme_accent;
 	const next = setPreferences(updates);
 	return json(next);
 };

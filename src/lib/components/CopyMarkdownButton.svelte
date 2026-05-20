@@ -62,9 +62,9 @@
 	onclick={onClick}
 	disabled={(!text && !fetchFn) || outcome === 'loading'}
 	aria-label={label}
-	class="rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300 transition-colors hover:border-slate-700 hover:text-slate-100 disabled:opacity-50 {className}"
-	class:!text-emerald-400={outcome === 'copied' || outcome === 'shared'}
-	class:!text-red-400={outcome === 'failed'}
+	class="rounded-xl border border-line bg-panel/60 px-3 py-1.5 text-xs text-secondary transition-colors hover:border-line-strong hover:text-primary disabled:opacity-50 {className}"
+	class:!text-success={outcome === 'copied' || outcome === 'shared'}
+	class:!text-danger={outcome === 'failed'}
 >
 	{display}
 </button>

@@ -1,4 +1,12 @@
 import { getMeta, setMeta } from './db/schema';
+import {
+	DEFAULT_THEME_PREFERENCES,
+	coerceThemeMode,
+	coerceThemePreset,
+	normalizeHexAccent,
+	type ThemeMode,
+	type ThemePresetId
+} from '$lib/theme';
 
 export type NavigationApp = 'apple' | 'google';
 export type MapProvider = 'mapbox' | 'apple' | 'google';
@@ -20,6 +28,9 @@ export type Preferences = {
 	 */
 	australian_centric: boolean;
 	show_review_summary: boolean;
+	theme_mode: ThemeMode;
+	theme_preset: ThemePresetId;
+	theme_accent: string | null;
 };
 
 const DEFAULTS: Preferences = {
@@ -28,7 +39,8 @@ const DEFAULTS: Preferences = {
 	default_map_provider: 'mapbox',
 	share_format: 'full',
 	australian_centric: true,
-	show_review_summary: true
+	show_review_summary: true,
+	...DEFAULT_THEME_PREFERENCES
 };
 
 const KEY = 'preferences';
@@ -45,8 +57,7 @@ function coerceShareFormat(v: unknown): ShareFormat {
 	return SHARE_FORMATS.includes(v as ShareFormat) ? (v as ShareFormat) : 'full';
 }
 
-export function getPreferences(): Preferences {
-	const raw = getMeta(KEY);
+export function parsePreferences(raw: string | null): Preferences {
 	if (!raw) return { ...DEFAULTS };
 	try {
 		const parsed = JSON.parse(raw) as Partial<Preferences>;
@@ -62,11 +73,18 @@ export function getPreferences(): Preferences {
 			show_review_summary:
 				parsed.show_review_summary === undefined
 					? DEFAULTS.show_review_summary
-					: parsed.show_review_summary === true
+					: parsed.show_review_summary === true,
+			theme_mode: coerceThemeMode(parsed.theme_mode),
+			theme_preset: coerceThemePreset(parsed.theme_preset),
+			theme_accent: normalizeHexAccent(parsed.theme_accent)
 		};
 	} catch {
 		return { ...DEFAULTS };
 	}
+}
+
+export function getPreferences(): Preferences {
+	return parsePreferences(getMeta(KEY));
 }
 
 export function setPreferences(updates: Partial<Preferences>): Preferences {
@@ -95,7 +113,17 @@ export function setPreferences(updates: Partial<Preferences>): Preferences {
 		show_review_summary:
 			updates.show_review_summary !== undefined
 				? updates.show_review_summary === true
-				: current.show_review_summary
+				: current.show_review_summary,
+		theme_mode:
+			updates.theme_mode !== undefined ? coerceThemeMode(updates.theme_mode) : current.theme_mode,
+		theme_preset:
+			updates.theme_preset !== undefined
+				? coerceThemePreset(updates.theme_preset)
+				: current.theme_preset,
+		theme_accent:
+			updates.theme_accent !== undefined
+				? normalizeHexAccent(updates.theme_accent)
+				: current.theme_accent
 	};
 	setMeta(KEY, JSON.stringify(merged));
 	return merged;

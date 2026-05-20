@@ -446,8 +446,8 @@
 
 <header class="px-5 pt-6 pb-2">
 	<BackLink href="/" />
-	<h1 class="mt-2 text-2xl font-semibold text-slate-50">Discover</h1>
-	<p class="mt-1 text-sm text-slate-400">
+	<h1 class="mt-2 text-2xl font-semibold text-primary">Discover</h1>
+	<p class="mt-1 text-sm text-secondary">
 		Search nearby, paste a URL, or browse a publication's directory by suburb.
 	</p>
 </header>
@@ -455,7 +455,7 @@
 <section class="px-5 pt-3">
 	<a
 		href="/near"
-		class="flex items-center justify-between gap-3 rounded-2xl bg-orange-600 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-orange-600/20"
+		class="flex items-center justify-between gap-3 rounded-2xl bg-accent px-4 py-3 text-sm font-medium text-on-accent shadow-lg shadow-accent/20"
 	>
 		<span class="flex items-center gap-2">
 			<svg
@@ -473,14 +473,14 @@
 			</svg>
 			Near me
 		</span>
-		<span class="text-xs text-white/80">Vault + Google nearby →</span>
+		<span class="text-xs text-on-accent/80">Vault + Google nearby →</span>
 	</a>
 </section>
 
 <section class="px-5 pt-4 pb-2">
 	<a
 		href="/inbox"
-		class="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-200 transition-colors hover:border-slate-700 hover:bg-slate-900"
+		class="flex items-center justify-between gap-3 rounded-2xl border border-line bg-panel/60 px-4 py-3 text-sm text-secondary transition-colors hover:border-line-strong hover:bg-panel"
 	>
 		<span class="flex items-center gap-2">
 			<svg
@@ -490,38 +490,38 @@
 				stroke-width="1.8"
 				stroke-linecap="round"
 				stroke-linejoin="round"
-				class="h-5 w-5 text-orange-400"
+				class="h-5 w-5 text-accent"
 				aria-hidden="true"
 			>
 				<path d="M3 7h18M3 12h18M3 17h18" />
 			</svg>
 			<span>
 				<span class="block">Paste a URL</span>
-				<span class="block text-[11px] text-slate-500">
+				<span class="block text-[11px] text-tertiary">
 					{data.australianCentric
 						? 'Broadsheet / Good Food / Time Out / AGFG / Google or Apple Maps — auto-imports'
 						: 'Google or Apple Maps share URL — auto-imports'}
 				</span>
 			</span>
 		</span>
-		<span class="text-xs text-slate-500">Inbox →</span>
+		<span class="text-xs text-tertiary">Inbox →</span>
 	</a>
 </section>
 
 {#if data.australianCentric}
 <section class="px-5 pt-5 pb-2">
-	<h2 class="text-xs tracking-widest text-slate-500 uppercase">Browse a publication</h2>
+	<h2 class="text-xs tracking-widest text-tertiary uppercase">Browse a publication</h2>
 	{#if browsableSources.length === 0}
-		<p class="mt-2 text-xs text-slate-500">
+		<p class="mt-2 text-xs text-tertiary">
 			No source supports browsing right now. Use the URL paste above.
 		</p>
 	{:else}
 		<div class="mt-2 grid grid-cols-2 gap-2">
 			<label class="flex flex-col gap-1">
-				<span class="text-xs text-slate-400">Source</span>
+				<span class="text-xs text-secondary">Source</span>
 				<select
 					bind:value={source}
-					class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+					class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary"
 				>
 					{#each browsableSources as s (s.id)}
 						<option value={s.id}>{s.label}</option>
@@ -529,10 +529,10 @@
 				</select>
 			</label>
 			<label class="flex flex-col gap-1">
-				<span class="text-xs text-slate-400">City</span>
+				<span class="text-xs text-secondary">City</span>
 				<select
 					bind:value={city}
-					class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+					class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary"
 				>
 					{#each cities as c (c.id)}
 						<option value={c.id}>{c.label}</option>
@@ -542,13 +542,13 @@
 		</div>
 		{#if sourceUsesSuburb}
 			<label class="mt-2 flex flex-col gap-1">
-				<span class="flex items-center justify-between text-xs text-slate-400">
+				<span class="flex items-center justify-between text-xs text-secondary">
 					<span>
 						Suburb
 						{#if suburbsLoading}
-							<span class="ml-1 text-slate-500">· loading…</span>
+							<span class="ml-1 text-tertiary">· loading…</span>
 						{:else if suburbOptions.length > 0}
-							<span class="ml-1 text-slate-500">· {suburbOptions.length} known</span>
+							<span class="ml-1 text-tertiary">· {suburbOptions.length} known</span>
 						{/if}
 					</span>
 					<button
@@ -556,7 +556,7 @@
 						onclick={() => loadSuburbOptions(true)}
 						disabled={suburbsLoading}
 						title="Refresh the suburb list"
-						class="text-[11px] text-slate-500 hover:text-slate-300 disabled:opacity-50"
+						class="text-[11px] text-tertiary hover:text-secondary disabled:opacity-50"
 					>
 						↻
 					</button>
@@ -571,7 +571,7 @@
 					onkeydown={(e) => {
 						if (e.key === 'Enter') loadSuburb(false);
 					}}
-					class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-orange-600/60 focus:ring-2 focus:ring-orange-600/30 focus:outline-none"
+					class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
 					autocomplete="off"
 					autocorrect="off"
 					autocapitalize="words"
@@ -583,11 +583,11 @@
 					{/each}
 				</datalist>
 				{#if suburbsError}
-					<span class="text-[11px] text-amber-400">{suburbsError}</span>
+					<span class="text-[11px] text-warning">{suburbsError}</span>
 				{/if}
 			</label>
 		{:else}
-			<p class="mt-2 text-[11px] text-slate-500">
+			<p class="mt-2 text-[11px] text-tertiary">
 				{currentSource?.label ?? 'This source'} doesn't filter by suburb — we'll show the city's
 				latest reviews. Suburb is filled in when you import an individual entry.
 			</p>
@@ -597,7 +597,7 @@
 				type="button"
 				onclick={() => loadSuburb(false)}
 				disabled={loading || !city || (sourceUsesSuburb && suburb.trim().length === 0)}
-				class="flex-1 rounded-xl bg-slate-800 px-4 py-2.5 text-sm text-slate-100 disabled:opacity-50"
+				class="flex-1 rounded-xl bg-panel-2 px-4 py-2.5 text-sm text-primary disabled:opacity-50"
 			>
 				{loading
 					? 'Loading…'
@@ -610,25 +610,25 @@
 				onclick={() => loadSuburb(true)}
 				disabled={loading || !city || (sourceUsesSuburb && suburb.trim().length === 0)}
 				title="Force re-fetch (bypass cache)"
-				class="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-300 disabled:opacity-50"
+				class="rounded-xl border border-line-strong bg-panel px-3 py-2.5 text-sm text-secondary disabled:opacity-50"
 			>
 				↻
 			</button>
 		</div>
 		{#if listError}
-			<p class="mt-2 text-xs text-red-400">{listError}</p>
+			<p class="mt-2 text-xs text-danger">{listError}</p>
 		{/if}
 		{#if !loading && lastSearchedSuburb && listings.length === 0 && !listError}
-			<p class="mt-2 text-xs text-slate-500">
+			<p class="mt-2 text-xs text-tertiary">
 				No entries in {lastSearchedSuburb} on {currentSource?.label}. Try a different spelling or suburb.
 			</p>
 		{/if}
-		<p class="mt-3 text-[11px] text-slate-500">
+		<p class="mt-3 text-[11px] text-tertiary">
 			Cached forever per request. <button
 				type="button"
 				onclick={clearAllCache}
 				disabled={clearing}
-				class="underline decoration-slate-700 underline-offset-2 disabled:opacity-50"
+				class="underline decoration-line-strong underline-offset-2 disabled:opacity-50"
 			>
 				{clearing ? 'Clearing…' : 'Clear all cached pages'}
 			</button>
@@ -638,15 +638,15 @@
 </section>
 {/if}
 
-<details class="group mx-5 mt-5 rounded-2xl border border-slate-800 bg-slate-900/40">
+<details class="group mx-5 mt-5 rounded-2xl border border-line bg-panel/40">
 	<summary
-		class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-2xl px-4 py-3 text-xs tracking-widest text-slate-400 uppercase hover:text-slate-200"
+		class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-2xl px-4 py-3 text-xs tracking-widest text-secondary uppercase hover:text-secondary"
 	>
 		<span>Advanced · Paste markdown</span>
-		<span class="text-slate-500 transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+		<span class="text-tertiary transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
 	</summary>
-	<div class="border-t border-slate-800 px-4 pt-3 pb-4">
-		<p class="text-[11px] text-slate-500">
+	<div class="border-t border-line px-4 pt-3 pb-4">
+		<p class="text-[11px] text-tertiary">
 			Paste a restaurant <span class="font-mono">.md</span> file shared by another restauranteer —
 			or a multi-file bundle (sections separated by
 			<span class="font-mono">&lt;!-- restauranteer:file … --&gt;</span>).
@@ -655,7 +655,7 @@
 			bind:value={mdText}
 			placeholder="Paste markdown here…"
 			rows="4"
-			class="mt-2 w-full resize-y rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 font-mono text-xs text-slate-100 placeholder:text-slate-500 focus:border-orange-600/60 focus:ring-2 focus:ring-orange-600/30 focus:outline-none"
+			class="mt-2 w-full resize-y rounded-xl border border-line bg-panel px-3 py-2 font-mono text-xs text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
 			spellcheck="false"
 			autocomplete="off"
 		></textarea>
@@ -664,26 +664,26 @@
 				type="button"
 				onclick={runMarkdownImport}
 				disabled={mdBusy || mdText.trim().length === 0}
-				class="rounded-xl bg-orange-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+				class="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-on-accent disabled:opacity-50"
 			>
 				{mdBusy ? '…' : 'Import markdown'}
 			</button>
 		</div>
 		{#if mdError}
-			<p class="mt-2 text-xs text-red-400">{mdError}</p>
+			<p class="mt-2 text-xs text-danger">{mdError}</p>
 		{/if}
 	</div>
 </details>
 
-<details class="group mx-5 mt-3 mb-5 rounded-2xl border border-slate-800 bg-slate-900/40">
+<details class="group mx-5 mt-3 mb-5 rounded-2xl border border-line bg-panel/40">
 	<summary
-		class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-2xl px-4 py-3 text-xs tracking-widest text-slate-400 uppercase hover:text-slate-200"
+		class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-2xl px-4 py-3 text-xs tracking-widest text-secondary uppercase hover:text-secondary"
 	>
 		<span>Advanced · Sync from a git repo</span>
-		<span class="text-slate-500 transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+		<span class="text-tertiary transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
 	</summary>
-	<div class="border-t border-slate-800 px-4 pt-3 pb-4">
-		<p class="text-[11px] text-slate-500">
+	<div class="border-t border-line px-4 pt-3 pb-4">
+		<p class="text-[11px] text-tertiary">
 			Point at a public GitHub repo that stores restaurants the same way (e.g.
 			<span class="font-mono">Restaurants/*.md</span> with restauranteer frontmatter). Add an
 			<span class="font-mono">info.md</span> to your repo to advertise the schema version.
@@ -693,7 +693,7 @@
 				type="text"
 				bind:value={ghRepo}
 				placeholder="owner/repo or https://github.com/owner/repo"
-				class="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-orange-600/60 focus:ring-2 focus:ring-orange-600/30 focus:outline-none"
+				class="flex-1 rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
 				autocomplete="off"
 				autocorrect="off"
 				autocapitalize="off"
@@ -703,18 +703,18 @@
 				type="button"
 				onclick={loadGhRepo}
 				disabled={ghLoading || ghRepo.trim().length === 0}
-				class="rounded-xl bg-slate-800 px-4 py-2 text-sm text-slate-100 disabled:opacity-50"
+				class="rounded-xl bg-panel-2 px-4 py-2 text-sm text-primary disabled:opacity-50"
 			>
 				{ghLoading ? '…' : 'Load'}
 			</button>
 		</div>
 		{#if ghError}
-			<p class="mt-2 text-xs text-red-400">{ghError}</p>
+			<p class="mt-2 text-xs text-danger">{ghError}</p>
 		{/if}
 		{#if ghDiscovery}
-			<div class="mt-3 rounded-xl border border-slate-800 bg-slate-900/40 p-3">
-				<p class="text-xs text-slate-400">
-					<span class="font-medium text-slate-200">
+			<div class="mt-3 rounded-xl border border-line bg-panel/40 p-3">
+				<p class="text-xs text-secondary">
+					<span class="font-medium text-secondary">
 						{ghDiscovery.repo.owner}/{ghDiscovery.repo.repo}
 					</span>
 					@ {ghDiscovery.ref}
@@ -724,28 +724,28 @@
 					· {ghDiscovery.files.length} file{ghDiscovery.files.length === 1 ? '' : 's'}
 				</p>
 				{#if ghDiscovery.info}
-					<p class="mt-1 text-[11px] text-slate-500">
+					<p class="mt-1 text-[11px] text-tertiary">
 						Bundle reports
 						app v{(ghDiscovery.info as { app_version?: string }).app_version ?? '?'}
 						· schema v{(ghDiscovery.info as { schema_version?: number }).schema_version ?? '?'}
 						{#if !ghDiscovery.compatible}
-							<span class="text-amber-400">— ahead of this app (v{ghDiscovery.ourSchemaVersion})</span>
+							<span class="text-warning">— ahead of this app (v{ghDiscovery.ourSchemaVersion})</span>
 						{/if}
 					</p>
 				{:else}
-					<p class="mt-1 text-[11px] text-amber-400">
+					<p class="mt-1 text-[11px] text-warning">
 						No <span class="font-mono">info.md</span> found — schema compatibility unknown.
 					</p>
 				{/if}
 				{#if !ghDiscovery.hasAttachmentsDir}
-					<p class="mt-1 text-[11px] text-slate-500">
+					<p class="mt-1 text-[11px] text-tertiary">
 						Photos in <span class="font-mono">_attachments/</span> are not synced — text only.
 					</p>
 				{/if}
 				<ul class="mt-3 max-h-64 space-y-1 overflow-y-auto pr-1">
 					{#each ghDiscovery.files as f (f.path)}
 						<li>
-							<label class="flex items-start gap-2 rounded-lg border border-slate-800 bg-slate-900/40 p-2">
+							<label class="flex items-start gap-2 rounded-lg border border-line bg-panel/40 p-2">
 								<input
 									type="checkbox"
 									checked={ghSelected.has(f.path)}
@@ -753,12 +753,12 @@
 									class="mt-0.5"
 								/>
 								<div class="min-w-0 flex-1">
-									<p class="truncate text-sm text-slate-100">{f.name}</p>
-									<p class="truncate text-[11px] text-slate-500">
+									<p class="truncate text-sm text-primary">{f.name}</p>
+									<p class="truncate text-[11px] text-tertiary">
 										{#if f.matchUuid}
 											<a
 												href={`/restaurant/${f.matchUuid}`}
-												class="text-sky-400 underline decoration-slate-700 underline-offset-2"
+												class="text-accent underline decoration-line-strong underline-offset-2"
 											>
 												already in vault
 											</a>
@@ -779,7 +779,7 @@
 						type="button"
 						onclick={() => importFromGh(undefined)}
 						disabled={ghImporting || ghSelected.size === 0 || !ghDiscovery.compatible}
-						class="rounded-xl bg-orange-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+						class="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-on-accent disabled:opacity-50"
 					>
 						{ghImporting ? '…' : `Import ${ghSelected.size} file${ghSelected.size === 1 ? '' : 's'}`}
 					</button>
@@ -789,12 +789,12 @@
 							onclick={() => {
 								ghSelected = new Set(ghDiscovery!.files.map((f) => f.path));
 							}}
-							class="text-xs text-slate-400 underline decoration-slate-700 underline-offset-2"
+							class="text-xs text-secondary underline decoration-line-strong underline-offset-2"
 						>
 							select all
 						</button>
 					{:else}
-						<p class="text-[11px] text-amber-400">
+						<p class="text-[11px] text-warning">
 							Schema mismatch — upgrade restauranteer or use the paste box at your own risk.
 						</p>
 					{/if}
@@ -833,10 +833,10 @@
 
 {#if listImportMsg}
 	<div
-		class="fixed bottom-20 left-1/2 z-30 -translate-x-1/2 rounded-2xl border border-emerald-900/60 bg-emerald-950/70 px-4 py-2 text-xs text-emerald-200 shadow-lg"
+		class="fixed bottom-20 left-1/2 z-30 -translate-x-1/2 rounded-2xl border border-success/50 bg-success/15 px-4 py-2 text-xs text-success shadow-lg"
 	>
 		{listImportMsg}
-		<button type="button" onclick={() => (listImportMsg = null)} class="ml-2 text-emerald-300/80">
+		<button type="button" onclick={() => (listImportMsg = null)} class="ml-2 text-success/80">
 			✕
 		</button>
 	</div>
@@ -874,7 +874,7 @@
 {#if listings.length > 0}
 	<section class="grid gap-3 px-5 pt-3 pb-10">
 		{#each listings as l (l.url)}
-			<article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50">
+			<article class="overflow-hidden rounded-2xl border border-line bg-panel/50">
 				{#if l.image_url}
 					<img
 						src={l.image_url}
@@ -885,26 +885,26 @@
 					/>
 				{/if}
 				<div class="p-4">
-					<h3 class="text-base font-medium text-slate-100">{l.title}</h3>
+					<h3 class="text-base font-medium text-primary">{l.title}</h3>
 					{#if l.suburb}
-						<p class="mt-0.5 text-xs text-slate-500">{l.suburb}</p>
+						<p class="mt-0.5 text-xs text-tertiary">{l.suburb}</p>
 					{/if}
 					{#if l.excerpt}
-						<p class="mt-2 line-clamp-3 text-sm text-slate-400">{l.excerpt}</p>
+						<p class="mt-2 line-clamp-3 text-sm text-secondary">{l.excerpt}</p>
 					{/if}
 					<div class="mt-3 flex items-center justify-between gap-2">
 						<a
 							href={l.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="text-xs text-slate-500 underline decoration-slate-700 underline-offset-2"
+							class="text-xs text-tertiary underline decoration-line-strong underline-offset-2"
 						>
 							Read on {l.source === 'broadsheet' ? 'Broadsheet' : 'Good Food'} ↗
 						</a>
 						{#if l.vault_uuid}
 							<a
 								href={`/restaurant/${l.vault_uuid}`}
-								class="rounded-lg bg-slate-700 px-3 py-1.5 text-xs text-slate-100"
+								class="rounded-lg bg-panel-3 px-3 py-1.5 text-xs text-primary"
 							>
 								★ In vault
 							</a>
@@ -913,7 +913,7 @@
 								type="button"
 								onclick={() => importListing(l)}
 								disabled={importingUrl === l.url}
-								class="rounded-lg bg-orange-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+								class="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-on-accent disabled:opacity-50"
 							>
 								{importingUrl === l.url ? '…' : '+ Add'}
 							</button>

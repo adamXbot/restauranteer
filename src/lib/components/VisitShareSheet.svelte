@@ -159,7 +159,7 @@
 </script>
 
 <div
-	class="fixed inset-0 z-40 flex flex-col justify-end bg-slate-950/70"
+	class="fixed inset-0 z-40 flex flex-col justify-end bg-overlay"
 	role="dialog"
 	aria-modal="true"
 >
@@ -169,45 +169,45 @@
 		aria-label="Close"
 		onclick={onClose}
 	></button>
-	<section class="rounded-t-3xl border-t border-slate-800 bg-slate-900 p-5 pb-8">
+	<section class="rounded-t-3xl border-t border-line bg-panel p-5 pb-8">
 		<header class="mb-3 flex items-baseline justify-between gap-2">
 			<div>
-				<h2 class="text-base font-medium text-slate-100">Share visit</h2>
-				<p class="text-xs text-slate-500">{restaurantName} · {visit.headline}</p>
+				<h2 class="text-base font-medium text-primary">Share visit</h2>
+				<p class="text-xs text-tertiary">{restaurantName} · {visit.headline}</p>
 			</div>
-			<button type="button" onclick={onClose} class="text-xs text-slate-400">Cancel</button>
+			<button type="button" onclick={onClose} class="text-xs text-secondary">Cancel</button>
 		</header>
 
-		<p class="mb-1 text-[10px] tracking-widest text-slate-500 uppercase">
+		<p class="mb-1 text-[10px] tracking-widest text-tertiary uppercase">
 			Preview ({shareFormat === 'full' ? 'full' : 'notes only'})
 		</p>
 		<pre
-			class="max-h-40 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-xs whitespace-pre-wrap text-slate-300">{text}</pre>
-		<p class="mt-1 text-[11px] text-slate-500">
+			class="max-h-40 overflow-y-auto rounded-xl border border-line bg-canvas/50 p-3 text-xs whitespace-pre-wrap text-secondary">{text}</pre>
+		<p class="mt-1 text-[11px] text-tertiary">
 			Change "full / notes only" in <a
 				href="/settings"
-				class="underline decoration-slate-700 underline-offset-2">Settings</a
+				class="underline decoration-line-strong underline-offset-2">Settings</a
 			>.
 		</p>
 
 		{#if photoCount > 0}
-			<label class="mt-4 flex items-center gap-2 text-sm text-slate-200">
+			<label class="mt-4 flex items-center gap-2 text-sm text-secondary">
 				<input
 					type="checkbox"
 					bind:checked={attachPhotos}
-					class="h-4 w-4 rounded border-slate-700 bg-slate-900"
+					class="h-4 w-4 rounded border-line-strong bg-panel"
 				/>
 				Attach photos ({photoCount})
 			</label>
 			{#if !canShareFiles}
-				<p class="mt-1 text-[11px] text-amber-400/80">
+				<p class="mt-1 text-[11px] text-warning/80">
 					This browser can't attach files to the share sheet — photos can still be saved manually.
 				</p>
 			{/if}
 		{/if}
 
 		{#if toast}
-			<p class="mt-3 rounded-lg border border-emerald-900/60 bg-emerald-950/30 px-3 py-1.5 text-xs text-emerald-200">
+			<p class="mt-3 rounded-lg border border-success/50 bg-success/10 px-3 py-1.5 text-xs text-success">
 				{toast}
 			</p>
 		{/if}
@@ -218,7 +218,7 @@
 					type="button"
 					onclick={openGoogleMaps}
 					disabled={busy !== null}
-					class="rounded-2xl bg-orange-600 px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
+					class="rounded-2xl bg-accent px-4 py-3 text-sm font-medium text-on-accent disabled:opacity-50"
 				>
 					{busy === 'google' ? 'Opening…' : 'Open in Google Maps'}
 				</button>
@@ -227,7 +227,7 @@
 				type="button"
 				onclick={shareViaApps}
 				disabled={busy !== null}
-				class="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm text-slate-100 disabled:opacity-50"
+				class="rounded-2xl border border-line-strong bg-panel-2 px-4 py-3 text-sm text-primary disabled:opacity-50"
 			>
 				{busy === 'os' ? 'Sharing…' : 'Share via Apps'}
 			</button>
@@ -236,14 +236,14 @@
 					type="button"
 					onclick={savePhotos}
 					disabled={busy !== null}
-					class="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-200 disabled:opacity-50"
+					class="rounded-2xl border border-line bg-panel px-4 py-3 text-sm text-secondary disabled:opacity-50"
 				>
 					{busy === 'photos' ? 'Opening…' : 'Save photos to library'}
 				</button>
 			{/if}
 		</div>
 		{#if !writeReviewUrl}
-			<p class="mt-3 text-[11px] text-slate-500">
+			<p class="mt-3 text-[11px] text-tertiary">
 				Link a Google Maps URL to this restaurant to enable "Open in Google Maps".
 			</p>
 		{/if}

@@ -154,47 +154,47 @@
 
 <header class="px-5 pt-6 pb-2">
 	<BackLink href={`/restaurant/${data.uuid}`} label="Cancel" />
-	<h1 class="mt-2 text-2xl font-semibold text-slate-50">Edit visit</h1>
-	<p class="mt-0.5 text-sm text-slate-400">{data.name} · {data.headline}</p>
+	<h1 class="mt-2 text-2xl font-semibold text-primary">Edit visit</h1>
+	<p class="mt-0.5 text-sm text-secondary">{data.name} · {data.headline}</p>
 </header>
 
 <form onsubmit={submit} class="space-y-3 px-5 pb-10">
 	<div class="grid grid-cols-2 gap-3">
 		<label class="flex flex-col gap-1">
-			<span class="text-xs text-slate-400">Date</span>
+			<span class="text-xs text-secondary">Date</span>
 			<input
 				type="date"
 				bind:value={date}
-				class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+				class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary"
 			/>
 		</label>
 		<label class="flex flex-col gap-1">
-			<span class="text-xs text-slate-400">Meal</span>
+			<span class="text-xs text-secondary">Meal</span>
 			<input
 				type="text"
 				bind:value={meal}
 				placeholder="Lunch / Dinner / Drinks"
 				maxlength="40"
-				class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+				class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 			/>
 		</label>
 	</div>
 
 	<label class="flex flex-col gap-1">
-		<span class="text-xs text-slate-400">With (companions)</span>
+		<span class="text-xs text-secondary">With (companions)</span>
 		<input
 			type="text"
 			bind:value={companions}
 			placeholder="Names — Obsidian [[wikilinks]] are fine"
 			maxlength="200"
-			class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+			class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 		/>
 	</label>
 
 	{#snippet areaField(label: string, value: string, setValue: (v: string) => void, placeholder: string, rate: number, setRate: (n: number) => void)}
 		<div class="flex flex-col gap-1">
 			<div class="flex items-center justify-between">
-				<span class="text-xs text-slate-400">{label}</span>
+				<span class="text-xs text-secondary">{label}</span>
 				{#if usePerArea}
 					<StarPicker value={rate} label={label} onchange={setRate} />
 				{/if}
@@ -204,7 +204,7 @@
 				oninput={(e) => setValue((e.currentTarget as HTMLTextAreaElement).value)}
 				rows="2"
 				placeholder={placeholder}
-				class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+				class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 			></textarea>
 		</div>
 	{/snippet}
@@ -215,42 +215,42 @@
 	{@render areaField('Service', service, (v) => (service = v), 'Friendly, attentive, slow…', serviceRating, (n) => (serviceRating = n))}
 
 	{#if usePerArea}
-		<div class="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2 text-sm">
-			<span class="text-xs text-slate-400">Average</span>
-			<span class="ml-2 text-slate-100">
+		<div class="rounded-xl border border-line bg-panel/40 px-3 py-2 text-sm">
+			<span class="text-xs text-secondary">Average</span>
+			<span class="ml-2 text-primary">
 				{areaAverage != null ? `${areaAverage}/5` : '—'}
 			</span>
-			<span class="ml-2 text-[11px] text-slate-500">
+			<span class="ml-2 text-[11px] text-tertiary">
 				(from {areaRatings.length} of 4 rated)
 			</span>
 		</div>
 	{:else}
 		<label class="flex flex-col gap-1">
-			<span class="text-xs text-slate-400">Rating (0–5)</span>
+			<span class="text-xs text-secondary">Rating (0–5)</span>
 			<input
 				type="number"
 				bind:value={rating}
 				min="0"
 				max="5"
 				step="0.5"
-				class="w-24 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+				class="w-24 rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary"
 			/>
 		</label>
 	{/if}
 
 	<label class="flex flex-col gap-1">
-		<span class="text-xs text-slate-400">Free-form notes</span>
+		<span class="text-xs text-secondary">Free-form notes</span>
 		<textarea
 			bind:value={notes}
 			rows="3"
 			placeholder="Anything else"
-			class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+			class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 		></textarea>
 	</label>
 
 	<div>
 		<div class="mb-2 flex items-center justify-between">
-			<span class="text-xs text-slate-400">Photos ({totalPhotos}/8)</span>
+			<span class="text-xs text-secondary">Photos ({totalPhotos}/8)</span>
 		</div>
 		{#if keptPhotos.length + pickedFiles.length > 0}
 			<div class="mb-3 grid grid-cols-3 gap-2">
@@ -266,7 +266,7 @@
 							onclick={() => confirmRemoveExisting(p)}
 							title="Remove photo (deletes the file from your vault)"
 							aria-label="Remove photo"
-							class="absolute top-1 right-1 rounded-full bg-slate-900/80 px-1.5 py-0.5 text-[10px] text-white"
+							class="absolute top-1 right-1 rounded-full bg-panel/80 px-1.5 py-0.5 text-[10px] text-primary"
 						>
 							×
 						</button>
@@ -277,13 +277,13 @@
 						<img
 							src={previewUrl(f)}
 							alt={`new photo ${i + 1}`}
-							class="aspect-square w-full rounded-lg object-cover ring-2 ring-orange-500/60"
+							class="aspect-square w-full rounded-lg object-cover ring-2 ring-accent-ring/60"
 						/>
 						<button
 							type="button"
 							onclick={() => removePickedPhoto(i)}
 							aria-label="Discard new photo"
-							class="absolute top-1 right-1 rounded-full bg-slate-900/80 px-1.5 py-0.5 text-[10px] text-white"
+							class="absolute top-1 right-1 rounded-full bg-panel/80 px-1.5 py-0.5 text-[10px] text-primary"
 						>
 							×
 						</button>
@@ -293,7 +293,7 @@
 		{/if}
 		{#if totalPhotos < 8}
 			<label
-				class="block rounded-xl border border-dashed border-slate-700 bg-slate-900/40 py-4 text-center text-sm text-slate-400"
+				class="block rounded-xl border border-dashed border-line-strong bg-panel/40 py-4 text-center text-sm text-secondary"
 			>
 				<input
 					type="file"
@@ -309,16 +309,16 @@
 	</div>
 
 	{#if progress}
-		<p class="text-xs text-slate-400">{progress}</p>
+		<p class="text-xs text-secondary">{progress}</p>
 	{/if}
 	{#if err}
-		<p class="text-xs text-red-400">{err}</p>
+		<p class="text-xs text-danger">{err}</p>
 	{/if}
 
 	<button
 		type="submit"
 		disabled={saving || deleting}
-		class="mt-2 w-full rounded-2xl bg-orange-600 px-5 py-3 text-center text-sm font-medium text-white disabled:opacity-50"
+		class="mt-2 w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent disabled:opacity-50"
 	>
 		{saving ? 'Saving…' : 'Save changes'}
 	</button>
@@ -327,7 +327,7 @@
 		type="button"
 		onclick={() => (confirmDelete = true)}
 		disabled={saving || deleting}
-		class="mt-1 w-full rounded-2xl border border-red-900/60 bg-red-950/30 px-5 py-3 text-center text-sm font-medium text-red-300 hover:bg-red-950/50 disabled:opacity-50"
+		class="mt-1 w-full rounded-2xl border border-danger/50 bg-danger/10 px-5 py-3 text-center text-sm font-medium text-danger hover:bg-danger/15 disabled:opacity-50"
 	>
 		Delete visit
 	</button>
@@ -335,7 +335,7 @@
 
 {#if photoToRemove}
 	<div
-		class="fixed inset-0 z-40 flex items-end justify-center bg-slate-950/70 sm:items-center"
+		class="fixed inset-0 z-40 flex items-end justify-center bg-overlay sm:items-center"
 		role="dialog"
 		aria-modal="true"
 	>
@@ -345,30 +345,30 @@
 			aria-label="Close"
 			onclick={() => (photoToRemove = null)}
 		></button>
-		<section class="w-full max-w-md rounded-t-3xl border-t border-slate-800 bg-slate-900 p-5 pb-8 sm:rounded-3xl sm:border">
-			<h2 class="text-base font-medium text-slate-100">Remove this photo?</h2>
-			<p class="mt-2 text-sm text-slate-400">
-				The image will be removed from the visit and <span class="text-amber-300">deleted from your
+		<section class="w-full max-w-md rounded-t-3xl border-t border-line bg-panel p-5 pb-8 sm:rounded-3xl sm:border">
+			<h2 class="text-base font-medium text-primary">Remove this photo?</h2>
+			<p class="mt-2 text-sm text-secondary">
+				The image will be removed from the visit and <span class="text-rating">deleted from your
 				vault on disk</span>. This can't be undone (unless your vault is backed up by Obsidian Sync or iCloud).
 			</p>
 			<div class="mt-4 grid grid-cols-2 gap-2">
 				<button
 					type="button"
 					onclick={() => (photoToRemove = null)}
-					class="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm text-slate-200"
+					class="rounded-2xl border border-line-strong bg-panel-2 px-4 py-3 text-sm text-secondary"
 				>
 					Keep
 				</button>
 				<button
 					type="button"
 					onclick={doRemoveExisting}
-					class="rounded-2xl bg-red-600 px-4 py-3 text-sm font-medium text-white"
+					class="rounded-2xl bg-danger px-4 py-3 text-sm font-medium text-white"
 				>
 					Remove
 				</button>
 			</div>
-			<p class="mt-2 text-[11px] text-slate-500">
-				The file is only deleted when you click <span class="text-slate-300">Save changes</span> above —
+			<p class="mt-2 text-[11px] text-tertiary">
+				The file is only deleted when you click <span class="text-secondary">Save changes</span> above —
 				cancel out of the form and nothing will be touched.
 			</p>
 		</section>
@@ -377,7 +377,7 @@
 
 {#if confirmDelete}
 	<div
-		class="fixed inset-0 z-40 flex items-end justify-center bg-slate-950/70 sm:items-center"
+		class="fixed inset-0 z-40 flex items-end justify-center bg-overlay sm:items-center"
 		role="dialog"
 		aria-modal="true"
 	>
@@ -387,11 +387,11 @@
 			aria-label="Close"
 			onclick={() => (confirmDelete = false)}
 		></button>
-		<section class="w-full max-w-md rounded-t-3xl border-t border-slate-800 bg-slate-900 p-5 pb-8 sm:rounded-3xl sm:border">
-			<h2 class="text-base font-medium text-slate-100">Delete this visit?</h2>
-			<p class="mt-2 text-sm text-slate-400">
-				This removes the <span class="text-slate-200">{data.headline}</span> block from the note and
-				<span class="text-amber-300">deletes its {data.fields.photoPaths.length} photo{data.fields.photoPaths.length === 1 ? '' : 's'}</span>
+		<section class="w-full max-w-md rounded-t-3xl border-t border-line bg-panel p-5 pb-8 sm:rounded-3xl sm:border">
+			<h2 class="text-base font-medium text-primary">Delete this visit?</h2>
+			<p class="mt-2 text-sm text-secondary">
+				This removes the <span class="text-secondary">{data.headline}</span> block from the note and
+				<span class="text-rating">deletes its {data.fields.photoPaths.length} photo{data.fields.photoPaths.length === 1 ? '' : 's'}</span>
 				from your vault. Other visits stay intact.
 			</p>
 			<div class="mt-4 grid grid-cols-2 gap-2">
@@ -399,7 +399,7 @@
 					type="button"
 					onclick={() => (confirmDelete = false)}
 					disabled={deleting}
-					class="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm text-slate-200 disabled:opacity-50"
+					class="rounded-2xl border border-line-strong bg-panel-2 px-4 py-3 text-sm text-secondary disabled:opacity-50"
 				>
 					Cancel
 				</button>
@@ -407,7 +407,7 @@
 					type="button"
 					onclick={deleteVisit}
 					disabled={deleting}
-					class="rounded-2xl bg-red-600 px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
+					class="rounded-2xl bg-danger px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
 				>
 					{deleting ? 'Deleting…' : 'Delete'}
 				</button>

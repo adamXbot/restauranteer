@@ -24,14 +24,14 @@
 				aria-checked={value === n}
 				role="radio"
 				class="text-xl leading-none"
-				class:text-amber-300={n <= value}
-				class:text-slate-700={n > value}
+				class:text-rating={n <= value}
+				class:text-tertiary={n > value}
 			>
 				{n <= value ? '★' : '☆'}
 			</button>
 		{/each}
 	</div>
-	<span class="text-xs text-slate-500 w-8">
+	<span class="text-xs text-tertiary w-8">
 		{value > 0 ? `${value}/${max}` : ''}
 	</span>
 </div>

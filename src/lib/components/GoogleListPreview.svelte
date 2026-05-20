@@ -151,7 +151,7 @@
 </script>
 
 <div
-	class="fixed inset-0 z-40 flex flex-col justify-end bg-slate-950/70"
+	class="fixed inset-0 z-40 flex flex-col justify-end bg-overlay"
 	role="dialog"
 	aria-modal="true"
 >
@@ -162,68 +162,68 @@
 		onclick={onClose}
 	></button>
 	<section
-		class="max-h-[90dvh] overflow-y-auto rounded-t-3xl border-t border-slate-800 bg-slate-900 p-5 pb-8"
+		class="max-h-[90dvh] overflow-y-auto rounded-t-3xl border-t border-line bg-panel p-5 pb-8"
 	>
 		<header class="mb-3 flex items-center justify-between">
-			<h2 class="text-base font-medium text-slate-100">Import Google Maps list</h2>
-			<button type="button" onclick={onClose} class="text-xs text-slate-400">Cancel</button>
+			<h2 class="text-base font-medium text-primary">Import Google Maps list</h2>
+			<button type="button" onclick={onClose} class="text-xs text-secondary">Cancel</button>
 		</header>
 
 		<label class="block">
-			<span class="text-[10px] tracking-widest text-slate-500 uppercase">List name</span>
+			<span class="text-[10px] tracking-widest text-tertiary uppercase">List name</span>
 			<input
 				type="text"
 				bind:value={listName}
-				class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+				class="mt-1 w-full rounded-xl border border-line bg-canvas px-3 py-2 text-sm text-primary"
 			/>
 		</label>
 
 		<label class="mt-3 block">
-			<span class="text-[10px] tracking-widest text-slate-500 uppercase">Notes</span>
+			<span class="text-[10px] tracking-widest text-tertiary uppercase">Notes</span>
 			<textarea
 				bind:value={notes}
 				rows="2"
 				placeholder="Optional"
-				class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+				class="mt-1 w-full rounded-xl border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 			></textarea>
 		</label>
 
 		<label class="mt-3 block">
-			<span class="text-[10px] tracking-widest text-slate-500 uppercase">Icon</span>
+			<span class="text-[10px] tracking-widest text-tertiary uppercase">Icon</span>
 			<input
 				type="text"
 				bind:value={icon}
 				placeholder="🌮"
 				maxlength="4"
-				class="mt-1 w-16 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-center text-xl text-slate-100 placeholder:text-slate-500"
+				class="mt-1 w-16 rounded-xl border border-line bg-canvas px-3 py-2 text-center text-xl text-primary placeholder:text-tertiary"
 			/>
-			<span class="ml-2 text-[11px] text-slate-500">Emoji or short text — shown on the list page.</span>
+			<span class="ml-2 text-[11px] text-tertiary">Emoji or short text — shown on the list page.</span>
 		</label>
 
 		<div class="mt-4">
 			<div class="flex items-center justify-between gap-2">
-				<span class="text-[10px] tracking-widest text-slate-500 uppercase">
+				<span class="text-[10px] tracking-widest text-tertiary uppercase">
 					Places ({selectedCount} / {placeIds.length} selected)
 				</span>
-				<div class="flex gap-2 text-[11px] text-slate-400">
+				<div class="flex gap-2 text-[11px] text-secondary">
 					<button
 						type="button"
 						onclick={selectAll}
-						class="underline decoration-slate-700 underline-offset-2"
+						class="underline decoration-line-strong underline-offset-2"
 					>
 						All
 					</button>
 					<button
 						type="button"
 						onclick={selectNone}
-						class="underline decoration-slate-700 underline-offset-2"
+						class="underline decoration-line-strong underline-offset-2"
 					>
 						None
 					</button>
 				</div>
 			</div>
 			{#if placeIds.length === 0}
-				<p class="mt-2 rounded-xl border border-amber-900/60 bg-amber-950/30 p-3 text-xs text-amber-200">
+				<p class="mt-2 rounded-xl border border-warning/50 bg-warning/10 p-3 text-xs text-warning">
 					No places auto-detected. Google's list pages load place data client-side, so the static
 					page often doesn't expose them. The list will be created with just the metadata — add
 					places later by pasting their individual Maps URLs.
@@ -235,8 +235,8 @@
 						<li>
 							<label
 								class="flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2 {isSelected
-									? 'border-orange-700/40 bg-orange-950/20'
-									: 'border-slate-800 bg-slate-950/40'}"
+									? 'border-accent/40 bg-accent-soft/40'
+									: 'border-line bg-canvas/40'}"
 							>
 								<input
 									type="checkbox"
@@ -246,16 +246,16 @@
 								/>
 								<div class="min-w-0 flex-1">
 									{#if p.loading}
-										<p class="text-xs text-slate-500">Loading…</p>
+										<p class="text-xs text-tertiary">Loading…</p>
 									{:else if p.error}
-										<p class="text-xs text-amber-400/80">{p.place_id} ({p.error})</p>
+										<p class="text-xs text-warning/80">{p.place_id} ({p.error})</p>
 									{:else}
-										<p class="truncate text-sm text-slate-100">{p.name ?? p.place_id}</p>
+										<p class="truncate text-sm text-primary">{p.name ?? p.place_id}</p>
 										{#if p.address}
-											<p class="truncate text-[11px] text-slate-500">{p.address}</p>
+											<p class="truncate text-[11px] text-tertiary">{p.address}</p>
 										{/if}
 										{#if p.vault_uuid}
-											<p class="mt-0.5 text-[10px] text-emerald-300/80">★ Already in vault</p>
+											<p class="mt-0.5 text-[10px] text-success/80">★ Already in vault</p>
 										{/if}
 									{/if}
 								</div>
@@ -267,14 +267,14 @@
 		</div>
 
 		{#if importError}
-			<p class="mt-3 text-xs text-red-400">{importError}</p>
+			<p class="mt-3 text-xs text-danger">{importError}</p>
 		{/if}
 
 		<button
 			type="button"
 			onclick={doImport}
 			disabled={importing || !listName.trim()}
-			class="mt-4 w-full rounded-2xl bg-orange-600 px-5 py-3 text-center text-sm font-medium text-white disabled:opacity-50"
+			class="mt-4 w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent disabled:opacity-50"
 		>
 			{#if importing}
 				Importing…

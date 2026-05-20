@@ -39,9 +39,9 @@
 	type="button"
 	onclick={onClick}
 	aria-label="Share or copy URL"
-	class="text-xs text-slate-500 transition-colors hover:text-slate-300 {className}"
-	class:!text-emerald-400={outcome === 'copied' || outcome === 'shared'}
-	class:!text-red-400={outcome === 'failed'}
+	class="text-xs text-tertiary transition-colors hover:text-secondary {className}"
+	class:!text-success={outcome === 'copied' || outcome === 'shared'}
+	class:!text-danger={outcome === 'failed'}
 >
 	{label}
 </button>

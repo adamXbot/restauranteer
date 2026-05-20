@@ -1,13 +1,92 @@
 @import 'tailwindcss';
 
 @theme {
-	--color-brand-50: #f4f6fb;
-	--color-brand-500: #e6794a;
-	--color-brand-600: #cc5d2d;
+	--color-canvas: var(--theme-canvas);
+	--color-panel: var(--theme-panel);
+	--color-panel-2: var(--theme-panel-2);
+	--color-panel-3: var(--theme-panel-3);
+	--color-line: var(--theme-line);
+	--color-line-strong: var(--theme-line-strong);
+	--color-primary: var(--theme-text);
+	--color-secondary: var(--theme-text-soft);
+	--color-tertiary: var(--theme-text-muted);
+	--color-overlay: var(--theme-overlay);
+	--color-accent: var(--theme-accent);
+	--color-accent-soft: var(--theme-accent-soft);
+	--color-accent-strong: var(--theme-accent-strong);
+	--color-accent-ring: var(--theme-accent-ring);
+	--color-on-accent: var(--theme-on-accent);
+	--color-rating: var(--theme-rating);
+	--color-success: var(--theme-success);
+	--color-warning: var(--theme-warning);
+	--color-danger: var(--theme-danger);
+	--color-map-secondary: var(--theme-map-secondary);
+
+	/* Compatibility while older utility names are phased out. */
+	--color-slate-50: var(--theme-text);
+	--color-slate-100: var(--theme-text);
+	--color-slate-200: var(--theme-text-soft);
+	--color-slate-300: var(--theme-text-soft);
+	--color-slate-400: var(--theme-text-soft);
+	--color-slate-500: var(--theme-text-muted);
+	--color-slate-600: var(--theme-line-strong);
+	--color-slate-700: var(--theme-line-strong);
+	--color-slate-800: var(--theme-panel-2);
+	--color-slate-900: var(--theme-panel);
+	--color-slate-950: var(--theme-canvas);
+	--color-orange-300: var(--theme-accent);
+	--color-orange-400: var(--theme-accent);
+	--color-orange-500: var(--theme-accent);
+	--color-orange-600: var(--theme-accent);
+	--color-orange-900: var(--theme-accent-strong);
+	--color-orange-950: var(--theme-accent-soft);
+	--color-amber-300: var(--theme-rating);
+	--color-amber-400: var(--theme-warning);
+	--color-amber-700: var(--theme-warning);
+	--color-amber-900: var(--theme-warning);
+	--color-amber-950: var(--theme-warning);
+	--color-emerald-200: var(--theme-success);
+	--color-emerald-300: var(--theme-success);
+	--color-emerald-400: var(--theme-success);
+	--color-emerald-900: var(--theme-success);
+	--color-emerald-950: var(--theme-success);
+	--color-red-200: var(--theme-danger);
+	--color-red-300: var(--theme-danger);
+	--color-red-400: var(--theme-danger);
+	--color-red-600: var(--theme-danger);
+	--color-red-900: var(--theme-danger);
+	--color-red-950: var(--theme-danger);
+	--color-brand-50: var(--theme-panel-2);
+	--color-brand-500: var(--theme-accent);
+	--color-brand-600: var(--theme-accent-strong);
 }
 
 :root {
+	--theme-canvas: #020617;
+	--theme-panel: #0f172a;
+	--theme-panel-2: #1e293b;
+	--theme-panel-3: #334155;
+	--theme-line: #1e293b;
+	--theme-line-strong: #334155;
+	--theme-text: #f8fafc;
+	--theme-text-soft: #cbd5e1;
+	--theme-text-muted: #94a3b8;
+	--theme-overlay: rgb(2 6 23 / 0.72);
+	--theme-accent: #e6794a;
+	--theme-accent-soft: #3d2b25;
+	--theme-accent-strong: #e9875d;
+	--theme-accent-ring: #a55834;
+	--theme-on-accent: #000000;
+	--theme-rating: #fcd34d;
+	--theme-success: #34d399;
+	--theme-warning: #f59e0b;
+	--theme-danger: #f87171;
+	--theme-map-secondary: #64748b;
 	color-scheme: dark;
+}
+
+:root[data-brightness='light'] {
+	color-scheme: light;
 }
 
 html,
@@ -18,6 +97,8 @@ body {
 }
 
 body {
+	background: var(--theme-canvas);
+	color: var(--theme-text);
 	padding-top: env(safe-area-inset-top);
 	padding-bottom: env(safe-area-inset-bottom);
 	padding-left: env(safe-area-inset-left);
@@ -36,7 +117,7 @@ button {
 
 .md-body :is(h1, h2, h3, h4) {
 	font-weight: 500;
-	color: rgb(241 245 249);
+	color: var(--theme-text);
 	line-height: 1.3;
 }
 .md-body h2 {
@@ -45,7 +126,7 @@ button {
 	margin-bottom: 0.5rem;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
-	color: rgb(148 163 184);
+	color: var(--theme-text-muted);
 	font-size: 0.75rem;
 }
 .md-body h3 {
@@ -60,17 +141,17 @@ button {
 }
 .md-body p {
 	margin-bottom: 0.5rem;
-	color: rgb(203 213 225);
+	color: var(--theme-text-soft);
 	font-size: 0.875rem;
 	line-height: 1.55;
 }
 .md-body strong {
-	color: rgb(241 245 249);
+	color: var(--theme-text);
 }
 .md-body a {
-	color: rgb(251 146 60);
+	color: var(--theme-accent);
 	text-decoration: underline;
-	text-decoration-color: rgb(51 65 85);
+	text-decoration-color: var(--theme-line-strong);
 	text-underline-offset: 2px;
 }
 .md-body img {
@@ -83,24 +164,24 @@ button {
 	padding-left: 1.25rem;
 	margin-bottom: 0.5rem;
 	font-size: 0.875rem;
-	color: rgb(203 213 225);
+	color: var(--theme-text-soft);
 }
 .md-body li {
 	margin-bottom: 0.25rem;
 }
 .md-body code {
-	background: rgb(15 23 42);
+	background: var(--theme-panel);
 	padding: 0.125rem 0.375rem;
 	border-radius: 0.25rem;
 	font-size: 0.8125rem;
 }
 .md-body blockquote {
-	border-left: 2px solid rgb(51 65 85);
+	border-left: 2px solid var(--theme-line-strong);
 	padding-left: 0.75rem;
-	color: rgb(148 163 184);
+	color: var(--theme-text-muted);
 	margin: 0.5rem 0;
 }
 .md-body em {
-	color: rgb(226 232 240);
+	color: var(--theme-text-soft);
 	font-style: italic;
 }

@@ -4,12 +4,30 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<script>
+			try {
+				const raw = localStorage.getItem('restauranteer.theme');
+				if (raw) {
+					const theme = JSON.parse(raw);
+					const root = document.documentElement;
+					if (theme.theme) root.dataset.theme = theme.theme;
+					if (theme.mode) root.dataset.themeMode = theme.mode;
+					if (theme.brightness) {
+						root.dataset.brightness = theme.brightness;
+						root.style.colorScheme = theme.brightness;
+					}
+					if (theme.variables) {
+						for (const key of Object.keys(theme.variables)) {
+							root.style.setProperty(key, theme.variables[key]);
+						}
+					}
+				}
+			} catch {}
+		</script>
 
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<meta name="apple-mobile-web-app-title" content="Restauranteer" />
-		<meta name="theme-color" content="#0f172a" />
 
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/icons/apple-touch-icon.png" />
 
@@ -31,7 +49,7 @@
 
 		%sveltekit.head%
 	</head>
-	<body data-sveltekit-preload-data="hover" class="bg-slate-950 text-slate-100">
+	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

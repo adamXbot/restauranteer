@@ -75,11 +75,11 @@
 		onclick={cycle}
 		disabled={!canCycle}
 		aria-label="Review summary{canCycle ? ' — tap to cycle' : ''}"
-		class="shrink-0 rounded-xl border border-slate-800 bg-slate-900/60 px-2.5 py-1 text-right leading-tight disabled:cursor-default"
+		class="shrink-0 rounded-xl border border-line bg-panel/60 px-2.5 py-1 text-right leading-tight disabled:cursor-default"
 	>
-		<span class="block text-sm font-medium text-amber-300">
+		<span class="block text-sm font-medium text-rating">
 			{#if rating != null}★ {rating}{:else}★{/if}
 		</span>
-		<span class="block text-[10px] tracking-wide text-slate-500 lowercase">{label}</span>
+		<span class="block text-[10px] tracking-wide text-tertiary lowercase">{label}</span>
 	</button>
 {/if}

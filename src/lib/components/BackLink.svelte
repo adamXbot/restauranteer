@@ -8,7 +8,7 @@
 
 <a
 	{href}
-	class="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-sm text-slate-200 transition-colors hover:border-slate-600 hover:bg-slate-800 hover:text-white"
+	class="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-panel/70 px-3 py-1.5 text-sm text-secondary transition-colors hover:border-line-strong hover:bg-panel-2 hover:text-primary"
 >
 	<svg
 		viewBox="0 0 24 24"

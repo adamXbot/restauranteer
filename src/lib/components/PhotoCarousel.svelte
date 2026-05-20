@@ -30,7 +30,7 @@
 				sizes="(max-width: 640px) 80vw, 480px"
 				alt={photo.attributions[0] ?? `Photo ${i + 1}`}
 				loading={i === 0 ? 'eager' : 'lazy'}
-				class="h-56 w-72 rounded-2xl bg-slate-800 object-cover"
+				class="h-56 w-72 rounded-2xl bg-panel-2 object-cover"
 			/>
 		</a>
 	{/each}

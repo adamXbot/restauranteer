@@ -11,40 +11,9 @@ export default defineConfig({
 			registerType: 'autoUpdate',
 			strategies: 'generateSW',
 			injectRegister: 'auto',
-			manifest: {
-				name: 'Restauranteer',
-				short_name: 'Restauranteer',
-				description: 'Your pocket restaurant companion',
-				theme_color: '#0f172a',
-				background_color: '#0f172a',
-				display: 'standalone',
-				orientation: 'portrait',
-				start_url: '/',
-				scope: '/',
-				share_target: {
-					action: '/inbox',
-					method: 'GET',
-					params: { url: 'url', title: 'title', text: 'text' }
-				},
-				icons: [
-					{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-					{ src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-					{
-						src: '/icons/icon-maskable-192.png',
-						sizes: '192x192',
-						type: 'image/png',
-						purpose: 'maskable'
-					},
-					{
-						src: '/icons/icon-maskable-512.png',
-						sizes: '512x512',
-						type: 'image/png',
-						purpose: 'maskable'
-					}
-				]
-			},
+			manifest: false,
 			workbox: {
-				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
+				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,webmanifest,woff,woff2}'],
 				navigateFallback: '/',
 				navigateFallbackDenylist: [/^\/api\//],
 				runtimeCaching: [

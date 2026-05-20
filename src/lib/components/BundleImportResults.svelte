@@ -93,7 +93,7 @@
 </script>
 
 <div
-	class="fixed inset-0 z-40 flex flex-col justify-end bg-slate-950/70"
+	class="fixed inset-0 z-40 flex flex-col justify-end bg-overlay"
 	role="dialog"
 	aria-modal="true"
 >
@@ -103,14 +103,14 @@
 		aria-label="Close"
 		onclick={onClose}
 	></button>
-	<section class="max-h-[85dvh] overflow-y-auto rounded-t-3xl border-t border-slate-800 bg-slate-900 p-5 pb-8">
+	<section class="max-h-[85dvh] overflow-y-auto rounded-t-3xl border-t border-line bg-panel p-5 pb-8">
 		<header class="mb-3 flex items-center justify-between">
-			<h2 class="text-base font-medium text-slate-100">{title}</h2>
-			<button type="button" onclick={onClose} class="text-xs text-slate-400">Close</button>
+			<h2 class="text-base font-medium text-primary">{title}</h2>
+			<button type="button" onclick={onClose} class="text-xs text-secondary">Close</button>
 		</header>
 
 		{#if info?.app_version}
-			<p class="mb-1 text-[11px] text-slate-500">
+			<p class="mb-1 text-[11px] text-tertiary">
 				Source bundle from restauranteer v{info.app_version}
 				{#if info.schema_version != null}
 					· schema v{info.schema_version}
@@ -118,28 +118,28 @@
 			</p>
 		{/if}
 		{#if schemaWarning}
-			<p class="mb-2 rounded-lg border border-amber-700/50 bg-amber-900/20 p-2 text-xs text-amber-300">
+			<p class="mb-2 rounded-lg border border-warning/50 bg-warning/10 p-2 text-xs text-rating">
 				⚠ {schemaWarning}
 			</p>
 		{/if}
 
 		<div class="mb-3 grid grid-cols-3 gap-1 text-center text-xs">
-			<div class="rounded-lg border border-slate-800 bg-slate-900/60 p-2">
-				<div class="text-base font-medium text-emerald-400">{createdCount}</div>
-				<div class="text-slate-500">created</div>
+			<div class="rounded-lg border border-line bg-panel/60 p-2">
+				<div class="text-base font-medium text-success">{createdCount}</div>
+				<div class="text-tertiary">created</div>
 			</div>
-			<div class="rounded-lg border border-slate-800 bg-slate-900/60 p-2">
-				<div class="text-base font-medium text-sky-400">{mergedCount}</div>
-				<div class="text-slate-500">merged</div>
+			<div class="rounded-lg border border-line bg-panel/60 p-2">
+				<div class="text-base font-medium text-accent">{mergedCount}</div>
+				<div class="text-tertiary">merged</div>
 			</div>
-			<div class="rounded-lg border border-slate-800 bg-slate-900/60 p-2">
-				<div class="text-base font-medium text-slate-300">{skippedCount}</div>
-				<div class="text-slate-500">skipped</div>
+			<div class="rounded-lg border border-line bg-panel/60 p-2">
+				<div class="text-base font-medium text-secondary">{skippedCount}</div>
+				<div class="text-tertiary">skipped</div>
 			</div>
 		</div>
 
 		{#if errorOutcomes.length > 0}
-			<details class="mb-3 rounded-lg border border-red-900/50 bg-red-950/30 p-2 text-xs text-red-300">
+			<details class="mb-3 rounded-lg border border-danger/50 bg-danger/10 p-2 text-xs text-danger">
 				<summary class="cursor-pointer">{errorOutcomes.length} file(s) failed</summary>
 				<ul class="mt-2 space-y-1 pl-3">
 					{#each errorOutcomes as e (e.filename ?? e.name)}
@@ -152,17 +152,17 @@
 		{/if}
 
 		{#if candidatesOutcomes.length > 0}
-			<p class="mb-2 text-xs tracking-widest text-slate-500 uppercase">
+			<p class="mb-2 text-xs tracking-widest text-tertiary uppercase">
 				Needs review ({candidatesOutcomes.length})
 			</p>
 			<ul class="space-y-3">
 				{#each candidatesOutcomes as o (o.filename ?? o.name)}
-					<li class="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
-						<p class="text-sm font-medium text-slate-100">{o.name}</p>
+					<li class="rounded-xl border border-line bg-panel/60 p-3">
+						<p class="text-sm font-medium text-primary">{o.name}</p>
 						{#if o.filename}
-							<p class="text-[10px] text-slate-500 font-mono">{o.filename}</p>
+							<p class="text-[10px] text-tertiary font-mono">{o.filename}</p>
 						{/if}
-						<p class="mt-2 text-[11px] tracking-widest text-slate-500 uppercase">
+						<p class="mt-2 text-[11px] tracking-widest text-tertiary uppercase">
 							Possible matches
 						</p>
 						<ul class="mt-1 space-y-1">
@@ -172,22 +172,22 @@
 										type="button"
 										onclick={() => setResolution(o.filename, c.uuid)}
 										class="flex w-full items-start justify-between gap-2 rounded-lg border px-3 py-2 text-left transition-colors"
-										class:border-orange-500={o.filename && resolutions[o.filename] === c.uuid}
-										class:border-slate-800={!(o.filename && resolutions[o.filename] === c.uuid)}
-										class:bg-orange-950={o.filename && resolutions[o.filename] === c.uuid}
+										class:border-accent={o.filename && resolutions[o.filename] === c.uuid}
+										class:border-line={!(o.filename && resolutions[o.filename] === c.uuid)}
+										class:bg-accent-soft={o.filename && resolutions[o.filename] === c.uuid}
 									>
 										<div class="min-w-0">
-											<p class="truncate text-sm text-slate-100">{c.name}</p>
+											<p class="truncate text-sm text-primary">{c.name}</p>
 											{#if c.suburb || c.address}
-												<p class="truncate text-[11px] text-slate-500">{c.suburb ?? c.address}</p>
+												<p class="truncate text-[11px] text-tertiary">{c.suburb ?? c.address}</p>
 											{/if}
-											<p class="mt-0.5 text-[10px] text-slate-500">
+											<p class="mt-0.5 text-[10px] text-tertiary">
 												{reasonLabel(c)}{#if c.distance_m != null}
 													· {formatDistance(c.distance_m)} away
 												{/if}
 											</p>
 										</div>
-										<span class="shrink-0 text-xs text-orange-400">
+										<span class="shrink-0 text-xs text-accent">
 											{o.filename && resolutions[o.filename] === c.uuid ? '✓' : 'Merge →'}
 										</span>
 									</button>
@@ -198,12 +198,10 @@
 							<button
 								type="button"
 								onclick={() => setResolution(o.filename, 'create')}
-								class="flex-1 rounded-lg border px-3 py-1.5 text-xs"
-								class:border-orange-500={o.filename && resolutions[o.filename] === 'create'}
-								class:bg-orange-950={o.filename && resolutions[o.filename] === 'create'}
-								class:border-slate-800={!(o.filename && resolutions[o.filename] === 'create')}
-								class:text-slate-200={o.filename && resolutions[o.filename] === 'create'}
-								class:text-slate-400={!(o.filename && resolutions[o.filename] === 'create')}
+								class="flex-1 rounded-lg border px-3 py-1.5 text-xs text-secondary"
+								class:border-accent={o.filename && resolutions[o.filename] === 'create'}
+								class:bg-accent-soft={o.filename && resolutions[o.filename] === 'create'}
+								class:border-line={!(o.filename && resolutions[o.filename] === 'create')}
 							>
 								+ Create new
 							</button>
@@ -211,11 +209,11 @@
 								type="button"
 								onclick={() => setResolution(o.filename, 'skip')}
 								class="flex-1 rounded-lg border px-3 py-1.5 text-xs"
-								class:border-slate-500={o.filename && resolutions[o.filename] === 'skip'}
-								class:bg-slate-800={o.filename && resolutions[o.filename] === 'skip'}
-								class:border-slate-800={!(o.filename && resolutions[o.filename] === 'skip')}
-								class:text-slate-300={o.filename && resolutions[o.filename] === 'skip'}
-								class:text-slate-500={!(o.filename && resolutions[o.filename] === 'skip')}
+								class:border-line-strong={o.filename && resolutions[o.filename] === 'skip'}
+								class:bg-panel-2={o.filename && resolutions[o.filename] === 'skip'}
+								class:border-line={!(o.filename && resolutions[o.filename] === 'skip')}
+								class:text-secondary={o.filename && resolutions[o.filename] === 'skip'}
+								class:text-tertiary={!(o.filename && resolutions[o.filename] === 'skip')}
 							>
 								Skip
 							</button>
@@ -228,7 +226,7 @@
 				type="button"
 				onclick={applyResolutions}
 				disabled={!allResolved || busy}
-				class="mt-4 w-full rounded-2xl bg-orange-600 px-5 py-3 text-sm font-medium text-white disabled:opacity-50"
+				class="mt-4 w-full rounded-2xl bg-accent px-5 py-3 text-sm font-medium text-on-accent disabled:opacity-50"
 			>
 				{busy ? 'Applying…' : 'Apply'}
 			</button>
@@ -236,7 +234,7 @@
 			<button
 				type="button"
 				onclick={onClose}
-				class="mt-2 w-full rounded-2xl bg-slate-800 px-5 py-3 text-sm font-medium text-slate-100"
+				class="mt-2 w-full rounded-2xl bg-panel-2 px-5 py-3 text-sm font-medium text-primary"
 			>
 				Done
 			</button>

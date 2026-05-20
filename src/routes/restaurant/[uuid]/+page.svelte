@@ -142,24 +142,24 @@
 			onclick={refreshAll}
 			disabled={refreshing}
 			title="Re-fetch cached external data for this restaurant"
-			class="rounded-lg border border-slate-800 bg-slate-900/60 px-2 py-1 text-xs text-slate-400 disabled:opacity-50"
+			class="rounded-lg border border-line bg-panel/60 px-2 py-1 text-xs text-secondary disabled:opacity-50"
 		>
 			{refreshing ? '↻ Refreshing…' : '↻ Refresh'}
 		</button>
 	</div>
 	<div class="mt-2 flex items-start justify-between gap-3">
-		<h1 class="min-w-0 flex-1 text-2xl font-semibold text-slate-50">{data.name}</h1>
+		<h1 class="min-w-0 flex-1 text-2xl font-semibold text-primary">{data.name}</h1>
 		{#if data.preferences.show_review_summary && data.visitSummary.count > 0}
 			<ReviewSummary summary={data.visitSummary} />
 		{/if}
 	</div>
 	{#if address}
-		<p class="mt-0.5 text-sm text-slate-400">{address}</p>
+		<p class="mt-0.5 text-sm text-secondary">{address}</p>
 	{/if}
 	{#if cuisine.length > 0}
 		<div class="mt-2 flex flex-wrap gap-1">
 			{#each cuisine as c (c)}
-				<span class="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{c}</span>
+				<span class="rounded-full bg-panel-2 px-2 py-0.5 text-xs text-secondary">{c}</span>
 			{/each}
 		</div>
 	{/if}
@@ -185,7 +185,7 @@
 <div class="px-5 pt-4">
 	<a
 		href={`/restaurant/${data.uuid}/visit`}
-		class="block w-full rounded-2xl bg-orange-600 px-5 py-3 text-center text-sm font-medium text-white"
+		class="block w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent"
 	>
 		📝 Start visit
 	</a>
@@ -193,48 +193,48 @@
 
 <section class="px-5 pt-4 pb-2">
 	<div class="flex items-center justify-between">
-		<h2 class="text-sm font-medium tracking-wide text-slate-400 uppercase">Lists</h2>
+		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Lists</h2>
 		<button
 			type="button"
 			onclick={() => (editingLists = true)}
-			class="text-xs text-orange-400">Edit</button
+			class="text-xs text-accent">Edit</button
 		>
 	</div>
 	{#if data.lists.length > 0}
-		<p class="mt-1 text-sm text-slate-300">{data.lists.join(' · ')}</p>
+		<p class="mt-1 text-sm text-secondary">{data.lists.join(' · ')}</p>
 	{:else}
-		<p class="mt-1 text-xs text-slate-500">Not in any list yet.</p>
+		<p class="mt-1 text-xs text-tertiary">Not in any list yet.</p>
 	{/if}
 </section>
 
 <section class="px-5 pt-4 pb-2">
 	<div class="flex items-center justify-between">
-		<h2 class="text-sm font-medium tracking-wide text-slate-400 uppercase">Tags</h2>
+		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Tags</h2>
 		<button
 			type="button"
 			onclick={() => (editingTags = true)}
-			class="text-xs text-orange-400">Edit</button
+			class="text-xs text-accent">Edit</button
 		>
 	</div>
 	{#if data.tags.length > 0}
 		<div class="mt-1 flex flex-wrap gap-1">
 			{#each data.tags as t (t)}
-				<span class="rounded-full bg-slate-800/60 px-2 py-0.5 text-xs text-slate-300">#{t}</span>
+				<span class="rounded-full bg-panel-2/60 px-2 py-0.5 text-xs text-secondary">#{t}</span>
 			{/each}
 		</div>
 	{:else}
-		<p class="mt-1 text-xs text-slate-500">No tags yet.</p>
+		<p class="mt-1 text-xs text-tertiary">No tags yet.</p>
 	{/if}
 </section>
 
 <section class="px-5 pt-4 pb-2">
 	<div class="flex items-center justify-between gap-2">
-		<h2 class="text-sm font-medium tracking-wide text-slate-400 uppercase">Articles & sources</h2>
+		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Articles & sources</h2>
 		<div class="flex items-center gap-3">
 			{#if hasExternalSources}
 				<a
 					href={`/restaurant/${data.uuid}/compare`}
-					class="text-xs text-slate-400 hover:text-slate-200"
+					class="text-xs text-secondary hover:text-secondary"
 					title="Compare info across linked sources"
 				>
 					Compare info
@@ -243,12 +243,12 @@
 			<button
 				type="button"
 				onclick={() => (linkingArticle = true)}
-				class="text-xs text-orange-400">+ Link URL</button
+				class="text-xs text-accent">+ Link URL</button
 			>
 		</div>
 	</div>
 	{#if articles.length === 0}
-		<p class="mt-1 text-xs text-slate-500">
+		<p class="mt-1 text-xs text-tertiary">
 			No external sources linked yet. Paste any URL — Broadsheet, Good Food, TimeOut, an Instagram
 			or TikTok reel, a Reddit thread, TripAdvisor, or a Google / Apple Maps link.
 		</p>
@@ -256,9 +256,9 @@
 	{#if articles.length > 0}
 		<ul class="mt-2 space-y-2">
 			{#each articles as a (a.url)}
-				<li class="rounded-xl border border-slate-800 bg-slate-900/40 p-3">
+				<li class="rounded-xl border border-line bg-panel/40 p-3">
 					<div class="flex items-baseline justify-between gap-2">
-						<span class="text-xs text-slate-500">{sourceLabel(a.source)}</span>
+						<span class="text-xs text-tertiary">{sourceLabel(a.source)}</span>
 						<div class="flex items-center gap-3">
 							{#if REFRESHABLE_SOURCES.has(a.source)}
 								<button
@@ -266,7 +266,7 @@
 									onclick={() => refreshArticle(a.url, a.source)}
 									disabled={refreshingArticle === a.url}
 									title="Re-fetch article from the source"
-									class="text-xs text-slate-500 hover:text-slate-300 disabled:opacity-50"
+									class="text-xs text-tertiary hover:text-secondary disabled:opacity-50"
 								>
 									{refreshingArticle === a.url ? '↻…' : '↻'}
 								</button>
@@ -276,7 +276,7 @@
 								href={a.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="text-xs text-orange-400 underline decoration-slate-700 underline-offset-2"
+								class="text-xs text-accent underline decoration-line-strong underline-offset-2"
 							>
 								Read ↗
 							</a>
@@ -286,15 +286,15 @@
 								disabled={deletingArticle === a.url}
 								title="Remove this source from the restaurant"
 								aria-label="Remove source"
-								class="text-xs text-slate-500 hover:text-red-400 disabled:opacity-50"
+								class="text-xs text-tertiary hover:text-danger disabled:opacity-50"
 							>
 								{deletingArticle === a.url ? '…' : '✕'}
 							</button>
 						</div>
 					</div>
-					<p class="mt-1 text-sm font-medium text-slate-100">{a.title}</p>
+					<p class="mt-1 text-sm font-medium text-primary">{a.title}</p>
 					{#if a.excerpt}
-						<p class="mt-1 line-clamp-4 text-sm text-slate-400">{a.excerpt}</p>
+						<p class="mt-1 line-clamp-4 text-sm text-secondary">{a.excerpt}</p>
 					{/if}
 				</li>
 			{/each}
@@ -304,21 +304,21 @@
 
 {#if hours.length > 0}
 	<section class="px-5 pt-4 pb-2">
-		<h2 class="text-sm font-medium tracking-wide text-slate-400 uppercase">Hours</h2>
+		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Hours</h2>
 		<HoursList lines={hours} />
 	</section>
 {/if}
 
 {#if reviews.length > 0}
 	<section class="px-5 pt-4 pb-2">
-		<h2 class="text-sm font-medium tracking-wide text-slate-400 uppercase">Google reviews</h2>
+		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Google reviews</h2>
 		<ReviewList {reviews} />
 	</section>
 {/if}
 
 {#if data.userPhotos.length > 0}
 	<section class="px-5 pt-4 pb-2">
-		<h2 class="text-sm font-medium tracking-wide text-slate-400 uppercase">Your photos</h2>
+		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Your photos</h2>
 		<PhotoGrid paths={data.userPhotos} />
 	</section>
 {/if}
@@ -337,7 +337,7 @@
 						<button
 							type="button"
 							onclick={() => (sharingVisit = v)}
-							class="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800 hover:text-white"
+							class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
 						>
 							<svg
 								viewBox="0 0 24 24"
@@ -357,7 +357,7 @@
 						</button>
 						<a
 							href={`/restaurant/${data.uuid}/visit/${v.index}/edit`}
-							class="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800 hover:text-white"
+							class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
 						>
 							<svg
 								viewBox="0 0 24 24"
@@ -388,18 +388,18 @@
 	<button
 		type="button"
 		onclick={() => (editingName = true)}
-		class="block w-full rounded-2xl border border-slate-800 bg-slate-900/60 px-5 py-3 text-center text-sm font-medium text-slate-200 hover:border-slate-700"
+		class="block w-full rounded-2xl border border-line bg-panel/60 px-5 py-3 text-center text-sm font-medium text-secondary hover:border-line-strong"
 	>
 		Edit name
 	</button>
 </div>
 
-<footer class="mt-auto px-5 pt-4 pb-6 text-xs text-slate-500">
+<footer class="mt-auto px-5 pt-4 pb-6 text-xs text-tertiary">
 	<div class="mb-2 flex flex-wrap items-center gap-2">
 		{#if data.obsidianUri}
 			<a
 				href={data.obsidianUri}
-				class="inline-block rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300"
+				class="inline-block rounded-xl border border-line bg-panel/60 px-3 py-1.5 text-xs text-secondary"
 			>
 				Open in Obsidian
 			</a>
@@ -410,7 +410,7 @@
 			label="Copy markdown"
 		/>
 	</div>
-	<p class="mt-1 text-[11px] text-slate-500">
+	<p class="mt-1 text-[11px] text-tertiary">
 		Copies the full <span class="font-mono">{data.filename}</span> — paste it into another restauranteer's Discover to share.
 	</p>
 	<span class="mt-2 block font-mono break-all">{data.filePath}</span>

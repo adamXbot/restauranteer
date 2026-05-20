@@ -136,47 +136,47 @@
 
 <header class="px-5 pt-6 pb-2">
 	<BackLink href={`/restaurant/${data.uuid}`} label="Cancel" />
-	<h1 class="mt-2 text-2xl font-semibold text-slate-50">New visit</h1>
-	<p class="mt-0.5 text-sm text-slate-400">{data.name}</p>
+	<h1 class="mt-2 text-2xl font-semibold text-primary">New visit</h1>
+	<p class="mt-0.5 text-sm text-secondary">{data.name}</p>
 </header>
 
 <form onsubmit={submit} class="space-y-3 px-5 pb-10">
 	<div class="grid grid-cols-2 gap-3">
 		<label class="flex flex-col gap-1">
-			<span class="text-xs text-slate-400">Date</span>
+			<span class="text-xs text-secondary">Date</span>
 			<input
 				type="date"
 				bind:value={date}
-				class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+				class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary"
 			/>
 		</label>
 		<label class="flex flex-col gap-1">
-			<span class="text-xs text-slate-400">Meal</span>
+			<span class="text-xs text-secondary">Meal</span>
 			<input
 				type="text"
 				bind:value={meal}
 				placeholder="Lunch / Dinner / Drinks"
 				maxlength="40"
-				class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+				class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 			/>
 		</label>
 	</div>
 
 	<label class="flex flex-col gap-1">
-		<span class="text-xs text-slate-400">With (companions)</span>
+		<span class="text-xs text-secondary">With (companions)</span>
 		<input
 			type="text"
 			bind:value={companions}
 			placeholder="Names — Obsidian [[wikilinks]] are fine"
 			maxlength="200"
-			class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+			class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 		/>
 	</label>
 
 	{#snippet areaField(label: string, value: string, setValue: (v: string) => void, placeholder: string, rate: number, setRate: (n: number) => void)}
 		<div class="flex flex-col gap-1">
 			<div class="flex items-center justify-between">
-				<span class="text-xs text-slate-400">{label}</span>
+				<span class="text-xs text-secondary">{label}</span>
 				{#if usePerArea}
 					<StarPicker value={rate} label={label} onchange={setRate} />
 				{/if}
@@ -186,7 +186,7 @@
 				oninput={(e) => setValue((e.currentTarget as HTMLTextAreaElement).value)}
 				rows="2"
 				placeholder={placeholder}
-				class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+				class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 			></textarea>
 		</div>
 	{/snippet}
@@ -197,42 +197,42 @@
 	{@render areaField('Service', service, (v) => (service = v), 'Friendly, attentive, slow…', serviceRating, (n) => (serviceRating = n))}
 
 	{#if usePerArea}
-		<div class="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2 text-sm">
-			<span class="text-xs text-slate-400">Average</span>
-			<span class="ml-2 text-slate-100">
+		<div class="rounded-xl border border-line bg-panel/40 px-3 py-2 text-sm">
+			<span class="text-xs text-secondary">Average</span>
+			<span class="ml-2 text-primary">
 				{areaAverage != null ? `${areaAverage}/5` : '—'}
 			</span>
-			<span class="ml-2 text-[11px] text-slate-500">
+			<span class="ml-2 text-[11px] text-tertiary">
 				(from {areaRatings.length} of 4 rated)
 			</span>
 		</div>
 	{:else}
 		<label class="flex flex-col gap-1">
-			<span class="text-xs text-slate-400">Rating (0–5)</span>
+			<span class="text-xs text-secondary">Rating (0–5)</span>
 			<input
 				type="number"
 				bind:value={rating}
 				min="0"
 				max="5"
 				step="0.5"
-				class="w-24 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+				class="w-24 rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary"
 			/>
 		</label>
 	{/if}
 
 	<label class="flex flex-col gap-1">
-		<span class="text-xs text-slate-400">Free-form notes</span>
+		<span class="text-xs text-secondary">Free-form notes</span>
 		<textarea
 			bind:value={notes}
 			rows="3"
 			placeholder="Anything else"
-			class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+			class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 		></textarea>
 	</label>
 
 	<div>
 		<div class="mb-2 flex items-center justify-between">
-			<span class="text-xs text-slate-400">Photos ({pickedFiles.length}/8)</span>
+			<span class="text-xs text-secondary">Photos ({pickedFiles.length}/8)</span>
 		</div>
 		{#if pickedFiles.length > 0}
 			<div class="mb-3 grid grid-cols-3 gap-2">
@@ -246,7 +246,7 @@
 						<button
 							type="button"
 							onclick={() => removePhoto(i)}
-							class="absolute top-1 right-1 rounded-full bg-slate-900/80 px-1.5 py-0.5 text-[10px] text-white"
+							class="absolute top-1 right-1 rounded-full bg-panel/80 px-1.5 py-0.5 text-[10px] text-primary"
 						>
 							×
 						</button>
@@ -255,7 +255,7 @@
 			</div>
 		{/if}
 		<label
-			class="block rounded-xl border border-dashed border-slate-700 bg-slate-900/40 py-4 text-center text-sm text-slate-400"
+			class="block rounded-xl border border-dashed border-line-strong bg-panel/40 py-4 text-center text-sm text-secondary"
 		>
 			<input
 				type="file"
@@ -270,16 +270,16 @@
 	</div>
 
 	{#if progress}
-		<p class="text-xs text-slate-400">{progress}</p>
+		<p class="text-xs text-secondary">{progress}</p>
 	{/if}
 	{#if err}
-		<p class="text-xs text-red-400">{err}</p>
+		<p class="text-xs text-danger">{err}</p>
 	{/if}
 
 	<button
 		type="submit"
 		disabled={saving}
-		class="mt-2 w-full rounded-2xl bg-orange-600 px-5 py-3 text-center text-sm font-medium text-white disabled:opacity-50"
+		class="mt-2 w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent disabled:opacity-50"
 	>
 		{saving ? 'Saving…' : 'Save visit'}
 	</button>

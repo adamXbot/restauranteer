@@ -38,7 +38,7 @@
 </script>
 
 <div
-	class="fixed inset-0 z-40 flex flex-col justify-end bg-slate-950/70"
+	class="fixed inset-0 z-40 flex flex-col justify-end bg-overlay"
 	role="dialog"
 	aria-modal="true"
 >
@@ -48,19 +48,19 @@
 		aria-label="Close"
 		onclick={onClose}
 	></button>
-	<section class="rounded-t-3xl border-t border-slate-800 bg-slate-900 p-5 pb-8">
+	<section class="rounded-t-3xl border-t border-line bg-panel p-5 pb-8">
 		<header class="mb-3 flex items-center justify-between">
-			<h2 class="text-base font-medium text-slate-100">Possible match</h2>
-			<button type="button" onclick={onClose} class="text-xs text-slate-400">Cancel</button>
+			<h2 class="text-base font-medium text-primary">Possible match</h2>
+			<button type="button" onclick={onClose} class="text-xs text-secondary">Cancel</button>
 		</header>
 
-		<p class="mb-3 text-sm text-slate-400">
-			You're importing <span class="font-medium text-slate-100">{preview.name}</span> from
+		<p class="mb-3 text-sm text-secondary">
+			You're importing <span class="font-medium text-primary">{preview.name}</span> from
 			{sourceLabel}.
-			{#if preview.address}<span class="text-slate-500"> — {preview.address}</span>{/if}
+			{#if preview.address}<span class="text-tertiary"> — {preview.address}</span>{/if}
 		</p>
 
-		<p class="mb-2 text-xs tracking-widest text-slate-500 uppercase">Already in your vault?</p>
+		<p class="mb-2 text-xs tracking-widest text-tertiary uppercase">Already in your vault?</p>
 
 		<ul class="space-y-1.5">
 			{#each candidates as c (c.uuid)}
@@ -69,20 +69,20 @@
 						type="button"
 						onclick={() => onPick(c.uuid)}
 						disabled={busy}
-						class="flex w-full items-start justify-between gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2.5 text-left disabled:opacity-50"
+						class="flex w-full items-start justify-between gap-2 rounded-xl border border-line bg-panel/60 px-3 py-2.5 text-left disabled:opacity-50"
 					>
 						<div class="min-w-0">
-							<p class="truncate text-sm font-medium text-slate-100">{c.name}</p>
+							<p class="truncate text-sm font-medium text-primary">{c.name}</p>
 							{#if c.suburb || c.address}
-								<p class="truncate text-xs text-slate-500">{c.suburb ?? c.address}</p>
+								<p class="truncate text-xs text-tertiary">{c.suburb ?? c.address}</p>
 							{/if}
-							<p class="mt-0.5 text-[10px] text-slate-500">
+							<p class="mt-0.5 text-[10px] text-tertiary">
 								{reasonLabel(c)}{#if c.distance_m != null}
 									· {formatDistance(c.distance_m)} away
 								{/if}
 							</p>
 						</div>
-						<span class="shrink-0 text-xs text-orange-400">Merge →</span>
+						<span class="shrink-0 text-xs text-accent">Merge →</span>
 					</button>
 				</li>
 			{/each}
@@ -92,7 +92,7 @@
 			type="button"
 			onclick={onCreate}
 			disabled={busy}
-			class="mt-4 w-full rounded-2xl bg-orange-600 px-5 py-3 text-sm font-medium text-white disabled:opacity-50"
+			class="mt-4 w-full rounded-2xl bg-accent px-5 py-3 text-sm font-medium text-on-accent disabled:opacity-50"
 		>
 			Create a new entry instead
 		</button>

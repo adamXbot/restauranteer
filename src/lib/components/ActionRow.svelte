@@ -28,11 +28,11 @@
 	const canEnrich = $derived(inVault && !!onEnrich);
 </script>
 
-<nav class="grid grid-cols-3 gap-2 px-5 pt-4 text-xs text-slate-300">
+<nav class="grid grid-cols-3 gap-2 px-5 pt-4 text-xs text-secondary">
 	{#if telHref}
 		<a
 			href={telHref}
-			class="flex flex-col items-center gap-1 rounded-xl border border-slate-800 bg-slate-900/50 py-3"
+			class="flex flex-col items-center gap-1 rounded-xl border border-line bg-panel/50 py-3"
 		>
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.37 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
 			<span>Call</span>
@@ -41,14 +41,14 @@
 		<button
 			type="button"
 			onclick={() => onEnrich?.('phone')}
-			class="flex flex-col items-center gap-1 rounded-xl border border-dashed border-slate-700 bg-slate-900/30 py-3 text-slate-400 hover:border-orange-600/60 hover:text-orange-300"
+			class="flex flex-col items-center gap-1 rounded-xl border border-dashed border-line-strong bg-panel/30 py-3 text-secondary hover:border-accent/60 hover:text-accent"
 		>
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.37 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
 			<span>+ Add phone</span>
 		</button>
 	{:else}
 		<span
-			class="flex flex-col items-center gap-1 rounded-xl border border-slate-900 bg-slate-900/30 py-3 text-slate-600"
+			class="flex flex-col items-center gap-1 rounded-xl border border-line bg-panel/30 py-3 text-tertiary/60"
 		>
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.37 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
 			<span>No phone</span>
@@ -59,7 +59,7 @@
 			href={website}
 			target="_blank"
 			rel="noopener noreferrer"
-			class="flex flex-col items-center gap-1 rounded-xl border border-slate-800 bg-slate-900/50 py-3"
+			class="flex flex-col items-center gap-1 rounded-xl border border-line bg-panel/50 py-3"
 		>
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
 			<span>Website</span>
@@ -68,14 +68,14 @@
 		<button
 			type="button"
 			onclick={() => onEnrich?.('website')}
-			class="flex flex-col items-center gap-1 rounded-xl border border-dashed border-slate-700 bg-slate-900/30 py-3 text-slate-400 hover:border-orange-600/60 hover:text-orange-300"
+			class="flex flex-col items-center gap-1 rounded-xl border border-dashed border-line-strong bg-panel/30 py-3 text-secondary hover:border-accent/60 hover:text-accent"
 		>
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
 			<span>+ Add site</span>
 		</button>
 	{:else}
 		<span
-			class="flex flex-col items-center gap-1 rounded-xl border border-slate-900 bg-slate-900/30 py-3 text-slate-600"
+			class="flex flex-col items-center gap-1 rounded-xl border border-line bg-panel/30 py-3 text-tertiary/60"
 		>
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
 			<span>No site</span>
@@ -86,7 +86,7 @@
 			href={navHref}
 			target="_blank"
 			rel="noopener noreferrer"
-			class="flex flex-col items-center gap-1 rounded-xl border border-slate-800 bg-slate-900/50 py-3"
+			class="flex flex-col items-center gap-1 rounded-xl border border-line bg-panel/50 py-3"
 		>
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
 			<span>{navLabel}</span>
@@ -95,14 +95,14 @@
 		<button
 			type="button"
 			onclick={() => onEnrich?.('location')}
-			class="flex flex-col items-center gap-1 rounded-xl border border-dashed border-slate-700 bg-slate-900/30 py-3 text-slate-400 hover:border-orange-600/60 hover:text-orange-300"
+			class="flex flex-col items-center gap-1 rounded-xl border border-dashed border-line-strong bg-panel/30 py-3 text-secondary hover:border-accent/60 hover:text-accent"
 		>
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
 			<span>+ Add location</span>
 		</button>
 	{:else}
 		<span
-			class="flex flex-col items-center gap-1 rounded-xl border border-slate-900 bg-slate-900/30 py-3 text-slate-600"
+			class="flex flex-col items-center gap-1 rounded-xl border border-line bg-panel/30 py-3 text-tertiary/60"
 		>
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
 			<span>No address</span>
