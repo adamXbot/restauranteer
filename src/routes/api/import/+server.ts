@@ -7,7 +7,19 @@ import {
 	linkArticleToRestaurant,
 	linkRefToRestaurant
 } from '$lib/server/vault/createFromArticle';
+import { addRestaurantToList } from '$lib/server/vault/importGoogleList';
 import { extractGenericLink } from '$lib/server/providers/scraper/genericLink';
+
+async function maybeAddToList(uuid: string | undefined, listName: string | undefined): Promise<void> {
+	if (!uuid || !listName) return;
+	const trimmed = listName.trim();
+	if (!trimmed) return;
+	try {
+		await addRestaurantToList(uuid, trimmed);
+	} catch (e) {
+		log.error('add_to_list failed', { uuid, listName: trimmed, error: String(e) });
+	}
+}
 import {
 	isGoogleMapsUrl,
 	resolveMapsList,
@@ -30,6 +42,10 @@ type ImportRequest = {
 	refresh?: boolean;
 	link_to_uuid?: string;
 	force_new?: boolean;
+	/** If set, after a successful create/link the resulting restaurant is
+	 * appended to this list (by name). Ignored when the import returns
+	 * 'candidates' or 'list_preview'. */
+	add_to_list?: string;
 };
 
 async function resolveMapsToPlaceId(url: string): Promise<string> {
@@ -56,6 +72,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const forceRefresh = body.refresh === true;
 	const forceNew = body.force_new === true;
 	const linkTo = body.link_to_uuid;
+	const addToList = body.add_to_list;
 
 	// --- Google Maps URLs ---------------------------------------------------
 	if (isGoogleMapsUrl(body.url)) {
@@ -92,6 +109,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (linkTo) {
 			try {
 				const result = await mergeGooglePlaceIntoRestaurant(linkTo, placeId);
+				await maybeAddToList(result.uuid, addToList);
 				return json({ type: 'linked', source: 'google', ...result });
 			} catch (e) {
 				log.error('Google merge failed', { url: body.url, error: String(e) });
@@ -102,6 +120,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		// Already in vault by Google place_id — silent dedup
 		const byPlaceId = findByGooglePlaceId(placeId);
 		if (byPlaceId) {
+			await maybeAddToList(byPlaceId.uuid, addToList);
 			return json({
 				type: 'linked',
 				source: 'google',
@@ -150,6 +169,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		try {
 			const result = await createRestaurantFromGooglePlace(placeId);
+			await maybeAddToList(result.uuid, addToList);
 			return json({ type: result.alreadyExisted ? 'linked' : 'created', source: 'google', ...result }, {
 				status: result.alreadyExisted ? 200 : 201
 			});
@@ -174,6 +194,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					{ forceRefresh }
 				);
 				const result = await linkRefToRestaurant(linkTo, ref);
+				await maybeAddToList(result.uuid, addToList);
 				return json({ type: 'linked', source: ref.source, ...result });
 			} catch (e) {
 				log.error('Generic link failed', { url: body.url, error: String(e) });
@@ -192,6 +213,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (!linkTo) {
 		const existing = findByArticleUrl(body.url);
 		if (existing) {
+			await maybeAddToList(existing.uuid, addToList);
 			return json({
 				type: 'linked',
 				source: adapter.id,
@@ -221,6 +243,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (linkTo) {
 		try {
 			const result = await linkArticleToRestaurant(linkTo, extracted);
+			await maybeAddToList(result.uuid, addToList);
 			return json({ type: 'linked', source: adapter.id, ...result });
 		} catch (e) {
 			log.error('Article link failed', { url: body.url, error: String(e) });
@@ -258,6 +281,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	try {
 		const result = await createOrLinkFromArticle(extracted);
+		await maybeAddToList(result.uuid, addToList);
 		return json(
 			{ type: result.alreadyExisted ? 'linked' : 'created', source: adapter.id, ...result },
 			{ status: result.alreadyExisted ? 200 : 201 }

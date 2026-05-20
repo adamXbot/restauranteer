@@ -2,7 +2,8 @@ import { getRestaurantByUuid, findByGooglePlaceId } from '../db/queries';
 import { readRestaurant } from './reader';
 import { saveRestaurant } from './save';
 import { createRestaurantFromGooglePlace } from './create';
-import type { Frontmatter, ListMembership } from './types';
+import { setListMetadata } from './moc';
+import type { Frontmatter } from './types';
 import { log } from '../log';
 
 export type ImportListInput = {
@@ -30,9 +31,10 @@ export type ImportListResult = {
 };
 
 /**
- * Import a list of Google place IDs into a single vault list, attaching the
- * imported metadata (notes/icon/source) to each restaurant's
- * `list_memberships`. Restaurants already in the vault are linked rather than
+ * Import a list of Google place IDs into a single vault list. List-level
+ * metadata (notes, icon, source URL, imported_at) is written once to the MOC
+ * file at `_Lists/{name}.md`; restaurants only get `list_name` appended to
+ * their `lists[]`. Restaurants already in the vault are linked rather than
  * duplicated.
  */
 export async function importGoogleList(input: ImportListInput): Promise<ImportListResult> {
@@ -60,12 +62,7 @@ export async function importGoogleList(input: ImportListInput): Promise<ImportLi
 				wasCreated = !r.alreadyExisted;
 			}
 
-			await attachListMembership(uuid, {
-				list_name: listName,
-				notes: input.notes,
-				icon: input.icon,
-				source_url: input.source_url
-			});
+			await addRestaurantToList(uuid, listName);
 
 			if (wasCreated) created++;
 			else linked++;
@@ -83,50 +80,32 @@ export async function importGoogleList(input: ImportListInput): Promise<ImportLi
 		}
 	}
 
+	// Write list-level metadata to the MOC once, regardless of how many places
+	// imported successfully. Even a metadata-only list (no places yet) gets the
+	// MOC file as a shell so the user can still see the notes/icon.
+	await setListMetadata(listName, {
+		notes: input.notes,
+		icon: input.icon,
+		source_url: input.source_url,
+		imported_at: new Date().toISOString()
+	});
+
 	return { list_name: listName, places: results, created, linked, errors };
 }
 
-/**
- * Add this restaurant to `list_name` (if not already in it) and stamp the
- * list_memberships entry with imported metadata.
- */
-async function attachListMembership(
-	uuid: string,
-	input: {
-		list_name: string;
-		notes: string | null;
-		icon: string | null;
-		source_url: string | null;
-	}
-): Promise<void> {
+/** Append a list_name to a restaurant's `lists[]` if not already present. */
+export async function addRestaurantToList(uuid: string, listName: string): Promise<void> {
 	const indexed = getRestaurantByUuid(uuid);
 	if (!indexed) throw new Error(`Restaurant ${uuid} not found`);
 	const rf = await readRestaurant(indexed.file_path);
 	const fm: Frontmatter = { ...rf.frontmatter };
 
 	const lists = Array.isArray(fm.lists) ? [...fm.lists] : [];
-	if (!lists.includes(input.list_name)) lists.push(input.list_name);
+	if (lists.includes(listName)) return;
+	lists.push(listName);
 	fm.lists = lists;
-
-	const memberships = Array.isArray(fm.list_memberships)
-		? [...(fm.list_memberships as ListMembership[])]
-		: [];
-	const existingIdx = memberships.findIndex(
-		(m) => m && typeof m === 'object' && m.list === input.list_name
-	);
-	const next: ListMembership = {
-		list: input.list_name,
-		...(input.notes ? { notes: input.notes } : {}),
-		...(input.icon ? { icon: input.icon } : {}),
-		...(input.source_url ? { source_url: input.source_url } : {}),
-		imported_at: new Date().toISOString()
-	};
-	if (existingIdx >= 0) memberships[existingIdx] = next;
-	else memberships.push(next);
-	fm.list_memberships = memberships;
-
 	fm.last_synced = new Date().toISOString();
 	await saveRestaurant(indexed.file_path, fm, rf.body, {
-		affectedLists: [input.list_name]
+		affectedLists: [listName]
 	});
 }

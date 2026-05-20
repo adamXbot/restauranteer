@@ -4,7 +4,10 @@ const USER_AGENT =
 	'Restauranteer/0.1 (+https://github.com/) personal-vault-tool fetches review pages for its sole operator';
 
 const MIN_INTERVAL_MS = 1500;
-const FETCH_TIMEOUT_MS = 15_000;
+// Some review sites (AGFG, certain SMH/Age pages) sit behind anti-bot edges
+// that delay first-byte by 10-20s. 30s gives them headroom without leaving
+// genuinely-dead requests hanging too long.
+const FETCH_TIMEOUT_MS = 30_000;
 
 type HostState = { lastRequest: number; pending: Promise<void> };
 const hostState = new Map<string, HostState>();
@@ -44,7 +47,11 @@ export async function politeFetchWithMeta(
 
 		log.debug('Scraper fetch', { url });
 		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+		let timedOut = false;
+		const timeout = setTimeout(() => {
+			timedOut = true;
+			controller.abort();
+		}, FETCH_TIMEOUT_MS);
 		let text: string;
 		let finalUrl: string;
 		try {
@@ -62,6 +69,13 @@ export async function politeFetchWithMeta(
 			}
 			text = await res.text();
 			finalUrl = res.url || url;
+		} catch (e) {
+			if (timedOut) {
+				throw new Error(
+					`Timed out after ${FETCH_TIMEOUT_MS / 1000}s waiting for ${u.host} (${url})`
+				);
+			}
+			throw e;
 		} finally {
 			clearTimeout(timeout);
 		}

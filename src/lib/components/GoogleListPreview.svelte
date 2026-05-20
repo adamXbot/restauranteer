@@ -188,17 +188,34 @@
 			></textarea>
 		</label>
 
-		<label class="mt-3 block">
+		<div class="mt-3 block">
 			<span class="text-[10px] tracking-widest text-tertiary uppercase">Icon</span>
-			<input
-				type="text"
-				bind:value={icon}
-				placeholder="🌮"
-				maxlength="4"
-				class="mt-1 w-16 rounded-xl border border-line bg-canvas px-3 py-2 text-center text-xl text-primary placeholder:text-tertiary"
-			/>
-			<span class="ml-2 text-[11px] text-tertiary">Shown on the list.</span>
-		</label>
+			<div class="mt-1 flex items-center gap-2">
+				<input
+					type="text"
+					bind:value={icon}
+					placeholder="🌮"
+					maxlength="4"
+					class="w-16 rounded-xl border border-line bg-canvas px-3 py-2 text-center text-xl text-primary placeholder:text-tertiary"
+				/>
+				<div class="flex flex-wrap gap-1">
+					{#each ['🍕', '🍔', '🍣', '🍜', '🌮', '🍷', '☕', '🍰', '🥐', '🍻', '🥗', '🍱'] as e (e)}
+						<button
+							type="button"
+							onclick={() => (icon = e)}
+							class="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-canvas text-lg hover:border-accent/60 {icon ===
+							e
+								? 'border-accent ring-1 ring-accent/40'
+								: ''}"
+							aria-label={`Use ${e}`}
+						>
+							{e}
+						</button>
+					{/each}
+				</div>
+			</div>
+			<p class="mt-1 text-[11px] text-tertiary">Tap a suggestion or type any emoji.</p>
+		</div>
 
 		<div class="mt-4">
 			<div class="flex items-center justify-between gap-2">

@@ -32,7 +32,11 @@ export async function autocomplete(
 	const body: Record<string, unknown> = {
 		input,
 		regionCode: 'AU',
-		includedPrimaryTypes: ['restaurant', 'cafe', 'bakery', 'bar', 'meal_takeaway', 'food']
+		// Google's Autocomplete (New) API caps includedPrimaryTypes at 5. We drop
+		// 'food' because it's the broadest catch-all and primarily matches
+		// grocery / convenience stores — the four specific food-service types
+		// plus meal_takeaway cover everything we actually want to suggest.
+		includedPrimaryTypes: ['restaurant', 'cafe', 'bakery', 'bar', 'meal_takeaway']
 	};
 	if (options.lat != null && options.lng != null) {
 		body.locationBias = {

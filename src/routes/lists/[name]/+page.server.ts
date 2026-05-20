@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import { getDb } from '$lib/server/db/schema';
 import { error } from '@sveltejs/kit';
 import type { ListMembership } from '$lib/server/vault/types';
-import { hasListShell } from '$lib/server/vault/moc';
+import { getListMetadata, hasListShell } from '$lib/server/vault/moc';
 
 type Row = {
 	uuid: string;
@@ -12,6 +12,18 @@ type Row = {
 	rating: number | null;
 	memberships_json: string | null;
 };
+
+function membershipFor(row: Row, listName: string): ListMembership | null {
+	if (!row.memberships_json) return null;
+	try {
+		const memberships = JSON.parse(row.memberships_json) as ListMembership[];
+		return Array.isArray(memberships)
+			? (memberships.find((x) => x?.list === listName) ?? null)
+			: null;
+	} catch {
+		return null;
+	}
+}
 
 export const load: PageServerLoad = async ({ params }) => {
 	const name = params.name;
@@ -34,17 +46,22 @@ export const load: PageServerLoad = async ({ params }) => {
 		throw error(404, `List "${name}" does not exist`);
 	}
 
-	// Pick the first matching list_memberships entry we find — list-level
-	// metadata is stored redundantly across restaurants, so any one of them is
-	// authoritative for display.
+	// List-level metadata now lives on the MOC file. Read it first; fall back
+	// to the legacy per-restaurant list_memberships stamping for lists imported
+	// before the MOC-based store was added.
 	let listMeta: { notes: string | null; icon: string | null; source_url: string | null } | null =
 		null;
-	for (const r of rows) {
-		if (!r.memberships_json) continue;
-		try {
-			const memberships = JSON.parse(r.memberships_json) as ListMembership[];
-			const m = Array.isArray(memberships) ? memberships.find((x) => x?.list === name) : null;
-			if (m && (m.notes || m.icon || m.source_url)) {
+	const mocMeta = await getListMetadata(name);
+	if (mocMeta && (mocMeta.notes || mocMeta.icon || mocMeta.source_url)) {
+		listMeta = {
+			notes: mocMeta.notes,
+			icon: mocMeta.icon,
+			source_url: mocMeta.source_url
+		};
+	} else {
+		for (const r of rows) {
+			const m = membershipFor(r, name);
+			if (m && (m.icon || m.source_url)) {
 				listMeta = {
 					notes: m.notes ?? null,
 					icon: m.icon ?? null,
@@ -52,20 +69,24 @@ export const load: PageServerLoad = async ({ params }) => {
 				};
 				break;
 			}
-		} catch {
-			// malformed frontmatter — skip
 		}
 	}
 
 	return {
 		name,
 		meta: listMeta,
-		restaurants: rows.map((r) => ({
-			uuid: r.uuid,
-			name: r.name,
-			suburb: r.suburb,
-			address: r.address,
-			rating: typeof r.rating === 'number' ? r.rating : null
-		}))
+		restaurants: rows.map((r) => {
+			const membership = membershipFor(r, name);
+			const listNote =
+				membership?.notes && membership.notes !== listMeta?.notes ? membership.notes : null;
+			return {
+				uuid: r.uuid,
+				name: r.name,
+				suburb: r.suburb,
+				address: r.address,
+				rating: typeof r.rating === 'number' ? r.rating : null,
+				listNote
+			};
+		})
 	};
 };

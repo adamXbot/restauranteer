@@ -1,19 +1,40 @@
 <script lang="ts">
+	type ListMembership = {
+		list: string;
+		notes?: string | null;
+	};
+
 	type Props = {
 		restaurantUuid: string;
 		currentLists: string[];
 		availableLists: string[];
+		currentMemberships?: ListMembership[];
 		onSaved?: (lists: string[]) => void;
 		onClose?: () => void;
 	};
 
-	let { restaurantUuid, currentLists, availableLists, onSaved, onClose }: Props = $props();
+	let {
+		restaurantUuid,
+		currentLists,
+		availableLists,
+		currentMemberships = [],
+		onSaved,
+		onClose
+	}: Props = $props();
 
 	// Snapshot at mount time — modal opens with a frozen view the user can edit
 	// svelte-ignore state_referenced_locally
 	const initialSet = new Set<string>(currentLists);
 	// svelte-ignore state_referenced_locally
+	const initialNotes = Object.fromEntries(
+		currentMemberships
+			.filter((m) => currentLists.includes(m.list) && typeof m.notes === 'string')
+			.map((m) => [m.list, m.notes ?? ''])
+	);
+	// svelte-ignore state_referenced_locally
 	let selected = $state(new Set<string>(currentLists));
+	// svelte-ignore state_referenced_locally
+	let notesByList = $state<Record<string, string>>(initialNotes);
 	// Merged list shown in the UI: every existing list, every currently-selected
 	// list, AND anything the user has just added but not yet saved.
 	let merged = $derived.by(() => {
@@ -29,8 +50,15 @@
 	function toggle(name: string) {
 		const next = new Set(selected);
 		if (next.has(name)) next.delete(name);
-		else next.add(name);
+		else {
+			next.add(name);
+			if (notesByList[name] === undefined) notesByList = { ...notesByList, [name]: '' };
+		}
 		selected = next;
+	}
+
+	function setNote(name: string, value: string) {
+		notesByList = { ...notesByList, [name]: value };
 	}
 
 	function flushInput(): boolean {
@@ -39,6 +67,7 @@
 		const next = new Set(selected);
 		next.add(name);
 		selected = next;
+		if (notesByList[name] === undefined) notesByList = { ...notesByList, [name]: '' };
 		newName = '';
 		return true;
 	}
@@ -50,10 +79,14 @@
 		err = null;
 		try {
 			const lists = [...selected].sort((a, b) => a.localeCompare(b));
+			const list_memberships = lists.map((list) => ({
+				list,
+				notes: (notesByList[list] ?? '').trim()
+			}));
 			const res = await fetch(`/api/restaurants/${restaurantUuid}/lists`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ lists })
+				body: JSON.stringify({ lists, list_memberships })
 			});
 			if (!res.ok) {
 				err = `Failed: ${res.status}`;
@@ -70,6 +103,7 @@
 
 	function cancel() {
 		selected = new Set(initialSet);
+		notesByList = initialNotes;
 		onClose?.();
 	}
 </script>
@@ -91,25 +125,39 @@
 			<button type="button" onclick={cancel} class="text-xs text-secondary">Cancel</button>
 		</header>
 
-		<ul class="max-h-72 space-y-1 overflow-y-auto">
+		<ul class="max-h-[55vh] space-y-2 overflow-y-auto">
 			{#each merged as name (name)}
+				{@const noteId = `list-note-${encodeURIComponent(name)}`}
 				<li>
-					<button
-						type="button"
-						onclick={() => toggle(name)}
-						class="flex w-full items-center justify-between rounded-xl border border-line bg-panel/40 px-3 py-2.5 text-left"
-					>
-						<span class="text-sm text-primary">{name}</span>
-						<span
-							class="rounded-full px-2 py-0.5 text-xs"
-							class:bg-accent={selected.has(name)}
-							class:text-on-accent={selected.has(name)}
-							class:bg-panel-2={!selected.has(name)}
-							class:text-secondary={!selected.has(name)}
+					<div class="rounded-xl border border-line bg-panel/40 p-2.5">
+						<button
+							type="button"
+							onclick={() => toggle(name)}
+							class="flex w-full items-center justify-between gap-3 text-left"
 						>
-							{selected.has(name) ? 'in' : 'out'}
-						</span>
-					</button>
+							<span class="min-w-0 truncate text-sm text-primary">{name}</span>
+							<span
+								class="shrink-0 rounded-full px-2 py-0.5 text-xs"
+								class:bg-accent={selected.has(name)}
+								class:text-on-accent={selected.has(name)}
+								class:bg-panel-2={!selected.has(name)}
+								class:text-secondary={!selected.has(name)}
+							>
+								{selected.has(name) ? 'in' : 'out'}
+							</span>
+						</button>
+						{#if selected.has(name)}
+							<label for={noteId} class="sr-only">Why {name}</label>
+							<textarea
+								id={noteId}
+								value={notesByList[name] ?? ''}
+								rows="2"
+								placeholder="Why on this list?"
+								class="mt-2 w-full resize-none rounded-lg border border-line bg-panel px-2.5 py-2 text-xs text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
+								oninput={(e) => setNote(name, e.currentTarget.value)}
+							></textarea>
+						{/if}
+					</div>
 				</li>
 			{/each}
 			{#if merged.length === 0}

@@ -18,6 +18,7 @@
 	import CopyMarkdownButton from '$lib/components/CopyMarkdownButton.svelte';
 	import ReviewSummary from '$lib/components/ReviewSummary.svelte';
 	import DisclosureSection from '$lib/components/DisclosureSection.svelte';
+	import RestaurantNotesSheet from '$lib/components/RestaurantNotesSheet.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -72,6 +73,11 @@
 			: null
 	);
 	const olderVisits = $derived(data.bodySections.visits.slice(0, -1).reverse());
+	const listNotes = $derived(
+		data.listMemberships
+			.filter((m) => data.lists.includes(m.list) && typeof m.notes === 'string' && m.notes.trim())
+			.map((m) => ({ list: m.list, notes: m.notes as string }))
+	);
 
 	type SharedVisit = (typeof data.bodySections.visits)[number];
 	let sharingVisit = $state<SharedVisit | null>(null);
@@ -82,6 +88,7 @@
 	let editingLists = $state(false);
 	let editingTags = $state(false);
 	let editingName = $state(false);
+	let editingNotes = $state(false);
 	let linkingArticle = $state(false);
 	let enrichingField = $state<EnrichField | null>(null);
 	let refreshing = $state(false);
@@ -91,6 +98,7 @@
 	async function onSaved() {
 		editingLists = false;
 		editingTags = false;
+		editingNotes = false;
 		await invalidateAll();
 	}
 
@@ -236,6 +244,32 @@
 			<span class="text-xs text-tertiary">No lists or tags.</span>
 		{/if}
 	</div>
+	{#if listNotes.length > 0}
+		<ul class="mt-2 space-y-1">
+			{#each listNotes as note (note.list)}
+				<li class="text-xs text-secondary">
+					<span class="font-medium text-primary">{note.list}:</span>
+					<span>{note.notes}</span>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+</section>
+
+<section class="px-5 pt-4 pb-2">
+	<div class="flex items-center justify-between gap-2">
+		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Notes</h2>
+		<button type="button" onclick={() => (editingNotes = true)} class="text-xs text-accent">
+			{data.notes.markdown ? 'Edit' : 'Add'}
+		</button>
+	</div>
+	{#if data.notes.html}
+		<div class="md-body mt-2 rounded-xl border border-line bg-panel/40 p-3">
+			{@html data.notes.html}
+		</div>
+	{:else}
+		<p class="mt-1 text-xs text-tertiary">No notes yet.</p>
+	{/if}
 </section>
 
 <section class="px-5 pt-4 pb-2">
@@ -456,7 +490,7 @@
 
 {#if data.bodySections.beforeVisitsHtml || data.bodySections.afterVisitsHtml}
 	<section class="px-5 pt-4 pb-2">
-		<DisclosureSection title="Notes">
+		<DisclosureSection title="Markdown" meta="Overview and extras">
 			<div class="md-body">
 				{#if data.bodySections.beforeVisitsHtml}
 					{@html data.bodySections.beforeVisitsHtml}
@@ -506,6 +540,7 @@
 		restaurantUuid={data.uuid}
 		currentLists={data.lists}
 		availableLists={data.availableLists}
+		currentMemberships={data.listMemberships}
 		onSaved={onSaved}
 		onClose={() => (editingLists = false)}
 	/>
@@ -523,6 +558,7 @@
 {#if linkingArticle}
 	<LinkArticleSheet
 		restaurantUuid={data.uuid}
+		restaurantName={data.name}
 		onSaved={() => {
 			linkingArticle = false;
 			void invalidateAll();
@@ -547,6 +583,15 @@
 		currentName={data.name}
 		onSaved={onNameSaved}
 		onClose={() => (editingName = false)}
+	/>
+{/if}
+
+{#if editingNotes}
+	<RestaurantNotesSheet
+		restaurantUuid={data.uuid}
+		currentNotes={data.notes.markdown}
+		onSaved={onSaved}
+		onClose={() => (editingNotes = false)}
 	/>
 {/if}
 

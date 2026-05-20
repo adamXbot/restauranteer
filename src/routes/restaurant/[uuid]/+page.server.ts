@@ -17,6 +17,8 @@ import { config, restaurantsDir } from '$lib/server/config';
 import { getPreferences } from '$lib/server/preferences';
 import { log } from '$lib/server/log';
 import { getAllListSummaries } from '$lib/server/vault/moc';
+import { extractRestaurantNotes, removeRestaurantNotesSection } from '$lib/server/vault/notes';
+import type { ListMembership } from '$lib/server/vault/types';
 
 marked.setOptions({ breaks: false, gfm: true });
 
@@ -83,10 +85,16 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		}
 	}));
 	const bodySections = {
-		beforeVisitsHtml: renderMarkdown(sections.before),
+		beforeVisitsHtml: renderMarkdown(removeRestaurantNotesSection(sections.before)),
 		visits: bodyVisits,
-		afterVisitsHtml: renderMarkdown(sections.after)
+		afterVisitsHtml: renderMarkdown(removeRestaurantNotesSection(sections.after))
 	};
+	const notesMarkdown = extractRestaurantNotes(body);
+	const listMemberships = Array.isArray(fm.list_memberships)
+		? (fm.list_memberships as ListMembership[]).filter(
+				(m) => m && typeof m === 'object' && typeof m.list === 'string'
+			)
+		: [];
 
 	return {
 		uuid: indexed.uuid,
@@ -98,10 +106,15 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		body,
 		bodyHtml,
 		bodySections,
+		notes: {
+			markdown: notesMarkdown,
+			html: renderMarkdown(notesMarkdown)
+		},
 		rawMarkdown,
 		userPhotos,
 		tags: indexed.tags,
 		lists: indexed.lists,
+		listMemberships,
 		availableLists: (await getAllListSummaries()).map((l) => l.name),
 		place: placeDetailsData,
 		lat: indexed.lat,

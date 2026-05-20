@@ -6,6 +6,7 @@
 	import GoogleListPreview from '$lib/components/GoogleListPreview.svelte';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import DisclosureSection from '$lib/components/DisclosureSection.svelte';
+	import DiscoverMapPreview from '$lib/components/DiscoverMapPreview.svelte';
 
 	type Listing = {
 		source: string;
@@ -529,6 +530,14 @@
 		</button>
 	{/if}
 </section>
+
+<DiscoverMapPreview
+	mapboxToken={data.mapboxToken}
+	googleMapsKey={data.googleMapsKey}
+	googleEnabled={data.googleEnabled}
+	appleAvailable={data.appleAvailable}
+	preferences={data.preferences}
+/>
 
 {#if browseOpen && data.australianCentric}
 <section class="px-5 pt-5 pb-2">
