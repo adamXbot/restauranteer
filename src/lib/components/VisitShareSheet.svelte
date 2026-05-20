@@ -183,12 +183,6 @@
 		</p>
 		<pre
 			class="max-h-40 overflow-y-auto rounded-xl border border-line bg-canvas/50 p-3 text-xs whitespace-pre-wrap text-secondary">{text}</pre>
-		<p class="mt-1 text-[11px] text-tertiary">
-			Change "full / notes only" in <a
-				href="/settings"
-				class="underline decoration-line-strong underline-offset-2">Settings</a
-			>.
-		</p>
 
 		{#if photoCount > 0}
 			<label class="mt-4 flex items-center gap-2 text-sm text-secondary">
@@ -243,9 +237,7 @@
 			{/if}
 		</div>
 		{#if !writeReviewUrl}
-			<p class="mt-3 text-[11px] text-tertiary">
-				Link a Google Maps URL to this restaurant to enable "Open in Google Maps".
-			</p>
+			<p class="mt-3 text-[11px] text-tertiary">Link Google Maps to enable review shortcut.</p>
 		{/if}
 	</section>
 </div>

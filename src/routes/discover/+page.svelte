@@ -5,6 +5,7 @@
 	import BundleImportResults from '$lib/components/BundleImportResults.svelte';
 	import GoogleListPreview from '$lib/components/GoogleListPreview.svelte';
 	import BackLink from '$lib/components/BackLink.svelte';
+	import DisclosureSection from '$lib/components/DisclosureSection.svelte';
 
 	type Listing = {
 		source: string;
@@ -104,6 +105,7 @@
 	let loading = $state(false);
 	let listError = $state<string | null>(null);
 	let lastSearchedSuburb = $state<string | null>(null);
+	let browseOpen = $state(false);
 
 	type Suburb = { slug: string; label: string };
 	let suburbOptions = $state<Suburb[]>([]);
@@ -447,12 +449,10 @@
 <header class="px-5 pt-6 pb-2">
 	<BackLink href="/" />
 	<h1 class="mt-2 text-2xl font-semibold text-primary">Discover</h1>
-	<p class="mt-1 text-sm text-secondary">
-		Search nearby, paste a URL, or browse a publication's directory by suburb.
-	</p>
+	<p class="mt-1 text-sm text-secondary">Find or import places.</p>
 </header>
 
-<section class="px-5 pt-3">
+<section class="grid gap-2 px-5 pt-3">
 	<a
 		href="/near"
 		class="flex items-center justify-between gap-3 rounded-2xl bg-accent px-4 py-3 text-sm font-medium text-on-accent shadow-lg shadow-accent/20"
@@ -473,11 +473,8 @@
 			</svg>
 			Near me
 		</span>
-		<span class="text-xs text-on-accent/80">Vault + Google nearby →</span>
+		<span class="text-xs text-on-accent/80">Map search →</span>
 	</a>
-</section>
-
-<section class="px-5 pt-4 pb-2">
 	<a
 		href="/inbox"
 		class="flex items-center justify-between gap-3 rounded-2xl border border-line bg-panel/60 px-4 py-3 text-sm text-secondary transition-colors hover:border-line-strong hover:bg-panel"
@@ -497,24 +494,47 @@
 			</svg>
 			<span>
 				<span class="block">Paste a URL</span>
-				<span class="block text-[11px] text-tertiary">
-					{data.australianCentric
-						? 'Broadsheet / Good Food / Time Out / AGFG / Google or Apple Maps — auto-imports'
-						: 'Google or Apple Maps share URL — auto-imports'}
-				</span>
+				<span class="block text-[11px] text-tertiary">Import or save</span>
 			</span>
 		</span>
 		<span class="text-xs text-tertiary">Inbox →</span>
 	</a>
+	{#if data.australianCentric}
+		<button
+			type="button"
+			onclick={() => (browseOpen = !browseOpen)}
+			aria-expanded={browseOpen}
+			class="flex items-center justify-between gap-3 rounded-2xl border border-line bg-panel/60 px-4 py-3 text-left text-sm text-secondary transition-colors hover:border-line-strong hover:bg-panel"
+		>
+			<span class="flex items-center gap-2">
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="h-5 w-5 text-accent"
+					aria-hidden="true"
+				>
+					<path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+					<path d="M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z" />
+				</svg>
+				<span>
+					<span class="block">Browse</span>
+					<span class="block text-[11px] text-tertiary">Reviews by city</span>
+				</span>
+			</span>
+			<span class="text-xs text-tertiary">{browseOpen ? 'Hide' : 'Open'} →</span>
+		</button>
+	{/if}
 </section>
 
-{#if data.australianCentric}
+{#if browseOpen && data.australianCentric}
 <section class="px-5 pt-5 pb-2">
-	<h2 class="text-xs tracking-widest text-tertiary uppercase">Browse a publication</h2>
+	<h2 class="text-xs tracking-widest text-tertiary uppercase">Browse publications</h2>
 	{#if browsableSources.length === 0}
-		<p class="mt-2 text-xs text-tertiary">
-			No source supports browsing right now. Use the URL paste above.
-		</p>
+		<p class="mt-2 text-xs text-tertiary">No browsable sources right now.</p>
 	{:else}
 		<div class="mt-2 grid grid-cols-2 gap-2">
 			<label class="flex flex-col gap-1">
@@ -566,8 +586,8 @@
 					bind:value={suburb}
 					list="suburb-options"
 					placeholder={suburbOptions.length > 0
-						? `Type or pick — e.g. ${suburbOptions[0].label}`
-						: 'e.g. Fitzroy, South Yarra, Box Hill'}
+						? `e.g. ${suburbOptions[0].label}`
+						: 'Suburb'}
 					onkeydown={(e) => {
 						if (e.key === 'Enter') loadSuburb(false);
 					}}
@@ -587,10 +607,7 @@
 				{/if}
 			</label>
 		{:else}
-			<p class="mt-2 text-[11px] text-tertiary">
-				{currentSource?.label ?? 'This source'} doesn't filter by suburb — we'll show the city's
-				latest reviews. Suburb is filled in when you import an individual entry.
-			</p>
+			<p class="mt-2 text-[11px] text-tertiary">City-wide results</p>
 		{/if}
 		<div class="mt-3 flex gap-2">
 			<button
@@ -620,79 +637,61 @@
 		{/if}
 		{#if !loading && lastSearchedSuburb && listings.length === 0 && !listError}
 			<p class="mt-2 text-xs text-tertiary">
-				No entries in {lastSearchedSuburb} on {currentSource?.label}. Try a different spelling or suburb.
+				No entries in {lastSearchedSuburb}. Try another suburb.
 			</p>
 		{/if}
-		<p class="mt-3 text-[11px] text-tertiary">
-			Cached forever per request. <button
-				type="button"
-				onclick={clearAllCache}
-				disabled={clearing}
-				class="underline decoration-line-strong underline-offset-2 disabled:opacity-50"
-			>
-				{clearing ? 'Clearing…' : 'Clear all cached pages'}
-			</button>
-			{#if clearMsg}<span class="ml-1">— {clearMsg}</span>{/if}
-		</p>
+		<div class="mt-3">
+			<DisclosureSection title="Cache" meta={clearMsg ?? 'Source pages'}>
+				<button
+					type="button"
+					onclick={clearAllCache}
+					disabled={clearing}
+					class="rounded-xl border border-line-strong bg-panel px-3 py-2 text-xs text-secondary disabled:opacity-50"
+				>
+					{clearing ? 'Clearing…' : 'Clear cached pages'}
+				</button>
+			</DisclosureSection>
+		</div>
 	{/if}
 </section>
 {/if}
 
-<details class="group mx-5 mt-5 rounded-2xl border border-line bg-panel/40">
-	<summary
-		class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-2xl px-4 py-3 text-xs tracking-widest text-secondary uppercase hover:text-secondary"
-	>
-		<span>Advanced · Paste markdown</span>
-		<span class="text-tertiary transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
-	</summary>
-	<div class="border-t border-line px-4 pt-3 pb-4">
-		<p class="text-[11px] text-tertiary">
-			Paste a restaurant <span class="font-mono">.md</span> file shared by another restauranteer —
-			or a multi-file bundle (sections separated by
-			<span class="font-mono">&lt;!-- restauranteer:file … --&gt;</span>).
-		</p>
-		<textarea
-			bind:value={mdText}
-			placeholder="Paste markdown here…"
-			rows="4"
-			class="mt-2 w-full resize-y rounded-xl border border-line bg-panel px-3 py-2 font-mono text-xs text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
-			spellcheck="false"
-			autocomplete="off"
-		></textarea>
-		<div class="mt-2">
-			<button
-				type="button"
-				onclick={runMarkdownImport}
-				disabled={mdBusy || mdText.trim().length === 0}
-				class="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-on-accent disabled:opacity-50"
-			>
-				{mdBusy ? '…' : 'Import markdown'}
-			</button>
+<div class="mx-5 mt-5 mb-5">
+	<DisclosureSection title="Advanced import" meta="Markdown and GitHub">
+		<div>
+			<p class="text-xs font-medium text-secondary">Paste markdown</p>
+			<p class="mt-0.5 text-[11px] text-tertiary">Restaurant files or multi-file bundles.</p>
+			<textarea
+				bind:value={mdText}
+				placeholder="Paste markdown"
+				rows="4"
+				class="mt-2 w-full resize-y rounded-xl border border-line bg-panel px-3 py-2 font-mono text-xs text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
+				spellcheck="false"
+				autocomplete="off"
+			></textarea>
+			<div class="mt-2">
+				<button
+					type="button"
+					onclick={runMarkdownImport}
+					disabled={mdBusy || mdText.trim().length === 0}
+					class="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-on-accent disabled:opacity-50"
+				>
+					{mdBusy ? '…' : 'Import markdown'}
+				</button>
+			</div>
+			{#if mdError}
+				<p class="mt-2 text-xs text-danger">{mdError}</p>
+			{/if}
 		</div>
-		{#if mdError}
-			<p class="mt-2 text-xs text-danger">{mdError}</p>
-		{/if}
-	</div>
-</details>
 
-<details class="group mx-5 mt-3 mb-5 rounded-2xl border border-line bg-panel/40">
-	<summary
-		class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-2xl px-4 py-3 text-xs tracking-widest text-secondary uppercase hover:text-secondary"
-	>
-		<span>Advanced · Sync from a git repo</span>
-		<span class="text-tertiary transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
-	</summary>
-	<div class="border-t border-line px-4 pt-3 pb-4">
-		<p class="text-[11px] text-tertiary">
-			Point at a public GitHub repo that stores restaurants the same way (e.g.
-			<span class="font-mono">Restaurants/*.md</span> with restauranteer frontmatter). Add an
-			<span class="font-mono">info.md</span> to your repo to advertise the schema version.
-		</p>
-		<div class="mt-2 flex gap-2">
+		<div class="mt-5 border-t border-line pt-4">
+			<p class="text-xs font-medium text-secondary">Sync from GitHub</p>
+			<p class="mt-0.5 text-[11px] text-tertiary">Public repos with Restauranteer markdown.</p>
+			<div class="mt-2 flex gap-2">
 			<input
 				type="text"
 				bind:value={ghRepo}
-				placeholder="owner/repo or https://github.com/owner/repo"
+				placeholder="owner/repo"
 				class="flex-1 rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
 				autocomplete="off"
 				autocorrect="off"
@@ -802,7 +801,8 @@
 			</div>
 		{/if}
 	</div>
-</details>
+	</DisclosureSection>
+</div>
 
 {#if mergeContext}
 	<MergePicker

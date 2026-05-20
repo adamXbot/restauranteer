@@ -77,10 +77,7 @@
 			}}
 		/>
 
-		<p class="mt-2 text-xs text-tertiary">
-			Also renames the .md file on disk to match (sanitised). Existing source URLs and lists stay
-			linked.
-		</p>
+		<p class="mt-2 text-xs text-tertiary">Also renames the markdown file.</p>
 
 		{#if err}
 			<p class="mt-2 text-xs text-danger">{err}</p>

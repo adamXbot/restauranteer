@@ -1,11 +1,85 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-	<rect width="64" height="64" rx="14" fill="#0f172a" />
-	<path
-		d="M22 16v32M22 16c0 6 4 10 8 10M30 16v14c0 4-4 6-8 6M42 16v32M42 26c4 0 6-3 6-6V16"
-		stroke="#e6794a"
-		stroke-width="3.5"
-		stroke-linecap="round"
-		stroke-linejoin="round"
-		fill="none"
-	/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Fork bookmark favicon">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FCF8F1"/>
+      <stop offset="0.60" stop-color="#FBF6ED"/>
+      <stop offset="1" stop-color="#F7F0E6"/>
+    </linearGradient>
+    <radialGradient id="bgGlow" cx="50%" cy="43%" r="65%">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.35"/>
+      <stop offset="0.78" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="navyGrad" x1="120" y1="60" x2="390" y2="440" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#14283B"/>
+      <stop offset="1" stop-color="#18293A"/>
+    </linearGradient>
+    <linearGradient id="ribbonGrad" x1="0" y1="348" x2="0" y2="459" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F58E3C"/>
+      <stop offset="1" stop-color="#E87533"/>
+    </linearGradient>
+    <filter id="shapeShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#5E4225" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect x="4" y="4" width="504" height="504" rx="82" fill="url(#bg)" stroke="#EEE5D7" stroke-width="1.5"/>
+  <rect x="4" y="4" width="504" height="504" rx="82" fill="url(#bgGlow)"/>
+
+  <!-- Clean vector loop redrawn from the approved PNG -->
+  <path fill="url(#navyGrad)" filter="url(#shapeShadow)" d="
+    M205 434
+    C184 404 160 367 136 331
+    C113 296 100 260 100 225
+    C100 171 123 132 159 96
+    C185 75 219 61 256 60
+    C326 60 376 98 404 153
+    C430 207 416 278 377 334
+    L311 433
+    L311 342
+    C335 309 359 276 367 240
+    C377 196 365 160 350 145
+    C330 120 294 99 256 99
+    C207 99 167 126 150 165
+    C132 206 140 257 161 285
+    C178 309 194 323 205 343
+    Z"/>
+
+  <!-- Fork -->
+  <path fill="#18293A" filter="url(#shapeShadow)" d="
+    M220 141
+    C215 142 213 148 212 156
+    L207 235
+    C205 253 209 268 218 279
+    C226 289 236 297 242 305
+    C246 313 247 323 247 345
+    L271 345
+    C271 323 272 313 278 304
+    C286 294 296 283 300 274
+    C306 261 308 250 306 235
+    L299 148
+    C298 144 296 141 292 141
+    C288 141 285 145 285 151
+    L285 235
+    C285 240 281 243 276 243
+    C271 243 267 240 266 235
+    L264 148
+    C264 144 261 141 258 141
+    C254 141 251 144 251 149
+    L250 234
+    C250 239 246 243 241 243
+    C236 243 230 239 230 234
+    L229 149
+    C229 144 225 141 220 141
+    Z"/>
+
+  <!-- Bookmark/ribbon -->
+  <path fill="url(#ribbonGrad)" stroke="#E87533" stroke-width="0.75" stroke-linejoin="round" d="
+    M208 348
+    H311
+    V445
+    C311 454 302 459 296 452
+    L256 428
+    L220 452
+    C214 459 208 455 208 445
+    Z"/>
 </svg>

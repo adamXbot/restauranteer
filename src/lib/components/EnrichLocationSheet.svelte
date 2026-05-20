@@ -123,11 +123,6 @@
 			<button type="button" onclick={() => onClose?.()} class="text-xs text-secondary">Cancel</button>
 		</header>
 
-		<p class="mb-2 text-xs text-tertiary">
-			Pick a match from Google to fill in any missing details — your existing values won't be
-			overwritten.
-		</p>
-
 		<div class="flex gap-2">
 			<input
 				type="text"
@@ -162,9 +157,7 @@
 			{#if searching && candidates.length === 0}
 				<li class="text-xs text-tertiary">Searching Google Places…</li>
 			{:else if candidates.length === 0 && !err}
-				<li class="text-xs text-tertiary">
-					No matches yet. Try adjusting the query, or paste a URL below.
-				</li>
+				<li class="text-xs text-tertiary">No matches yet.</li>
 			{/if}
 			{#each candidates as c (c.place_id)}
 				<li>
@@ -188,10 +181,7 @@
 
 		<div class="mt-5 border-t border-line pt-4">
 			<p class="mb-2 text-[11px] tracking-widest text-tertiary uppercase">
-				Or paste a maps URL
-			</p>
-			<p class="mb-2 text-xs text-tertiary">
-				Paste a Google Maps or Apple Maps share URL if you can't find a match above.
+				Paste maps URL
 			</p>
 			<div class="flex gap-2">
 				<input

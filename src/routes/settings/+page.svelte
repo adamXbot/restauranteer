@@ -4,6 +4,7 @@
 	import { dev } from '$app/environment';
 	import type { PageData } from './$types';
 	import BackLink from '$lib/components/BackLink.svelte';
+	import DisclosureSection from '$lib/components/DisclosureSection.svelte';
 	import {
 		THEME_MODES,
 		THEME_PRESET_IDS,
@@ -406,36 +407,6 @@
 </section>
 
 <section class="mt-6 px-5">
-	<h2 class="text-xs tracking-widest text-tertiary uppercase">Vault</h2>
-	<dl class="mt-2 space-y-1 text-sm">
-		<div class="flex justify-between gap-2">
-			<dt class="text-tertiary">Path</dt>
-			<dd class="font-mono break-all text-secondary">{data.vault.path}</dd>
-		</div>
-		<div class="flex justify-between gap-2">
-			<dt class="text-tertiary">Subdir</dt>
-			<dd class="font-mono text-secondary">{data.vault.subdir}</dd>
-		</div>
-		<div class="flex justify-between gap-2">
-			<dt class="text-tertiary">Obsidian vault</dt>
-			<dd class="text-secondary">{data.vault.obsidianVaultName || '— not set —'}</dd>
-		</div>
-		<div class="flex justify-between gap-2">
-			<dt class="text-tertiary">Last reconcile</dt>
-			<dd class="text-secondary">{relativeTime(data.lastReconcile)}</dd>
-		</div>
-	</dl>
-	<button
-		type="button"
-		onclick={runReconcile}
-		disabled={busyReconcile}
-		class="mt-3 w-full rounded-xl border border-line bg-panel/60 px-4 py-2 text-sm text-primary disabled:opacity-50"
-	>
-		{busyReconcile ? 'Reconciling…' : 'Run reconcile now'}
-	</button>
-</section>
-
-<section class="mt-6 px-5">
 	<h2 class="text-xs tracking-widest text-tertiary uppercase">Preferences</h2>
 	<button
 		type="button"
@@ -445,10 +416,7 @@
 	>
 		<div>
 			<p class="text-sm text-primary">Highlight my reviews</p>
-			<p class="mt-0.5 text-[11px] text-tertiary">
-				Shows your latest visit rating + a thumb on the vault list, and a tap-to-cycle
-				latest/earliest/avg toggle on each restaurant page.
-			</p>
+			<p class="mt-0.5 text-[11px] text-tertiary">Vault rating cards</p>
 		</div>
 		<span
 			class="rounded-full px-2.5 py-1 text-xs"
@@ -468,10 +436,9 @@
 		class="mt-3 flex w-full items-center justify-between rounded-xl border border-line bg-panel/60 px-3 py-2.5 text-left disabled:opacity-50"
 	>
 		<div>
-			<p class="text-sm text-primary">Per-area star ratings on visits</p>
+			<p class="text-sm text-primary">Per-area ratings</p>
 			<p class="mt-0.5 text-[11px] text-tertiary">
-				Off: one overall rating. On: rate Vibe / Food / Quality / Service separately and the
-				visit's rating is their average.
+				{data.preferences.per_area_ratings ? 'Vibe / Food / Quality / Service' : 'One rating'}
 			</p>
 		</div>
 		<span
@@ -492,10 +459,9 @@
 		class="mt-3 flex w-full items-center justify-between rounded-xl border border-line bg-panel/60 px-3 py-2.5 text-left disabled:opacity-50"
 	>
 		<div>
-			<p class="text-sm text-primary">Australian-centric publications</p>
+			<p class="text-sm text-primary">Australian publications</p>
 			<p class="mt-0.5 text-[11px] text-tertiary">
-				On: shows Broadsheet, Good Food, Time Out and AGFG in Discover. Off: hides the "Browse a
-				publication" section and the paste box only mentions Google Maps / Apple Maps.
+				{data.preferences.australian_centric ? 'Shown in Discover' : 'Hidden from Discover'}
 			</p>
 		</div>
 		<span
@@ -512,9 +478,7 @@
 	<div class="mt-3 rounded-xl border border-line bg-panel/60 px-3 py-2.5">
 		<p class="text-sm text-primary">Share format for visits</p>
 		<p class="mt-0.5 text-[11px] text-tertiary">
-			What "Share this visit" includes. Full keeps the structured fields (With / Vibe / Food /
-			Quality / Service / Rating); Notes only is the free-form prose plus the restaurant name and
-			date.
+			{data.preferences.share_format === 'full' ? 'Structured fields' : 'Notes only'}
 		</p>
 		<div class="mt-2 grid grid-cols-2 gap-2">
 			{#each ['full', 'notes_only'] as opt (opt)}
@@ -537,7 +501,7 @@
 	<div class="mt-3 rounded-xl border border-line bg-panel/60 px-3 py-2.5">
 		<p class="text-sm text-primary">Navigate using</p>
 		<p class="mt-0.5 text-[11px] text-tertiary">
-			Which app the "Navigate" button on a restaurant should open.
+			{data.preferences.default_navigation_app === 'apple' ? 'Apple Maps' : 'Google Maps'}
 		</p>
 		<div class="mt-2 grid grid-cols-2 gap-2">
 			{#each ['apple', 'google'] as opt (opt)}
@@ -559,9 +523,7 @@
 
 	<div class="mt-3 rounded-xl border border-line bg-panel/60 px-3 py-2.5">
 		<p class="text-sm text-primary">Map provider</p>
-		<p class="mt-0.5 text-[11px] text-tertiary">
-			Which engine renders the Map and Near views. Mapbox needs <code class="font-mono">MAPBOX_PUBLIC_TOKEN</code>; Apple needs <code class="font-mono">APPLE_MAPKIT_*</code>; Google needs <code class="font-mono">GOOGLE_MAPS_PUBLIC_KEY</code>.
-		</p>
+		<p class="mt-0.5 text-[11px] text-tertiary">{data.preferences.default_map_provider}</p>
 		<div class="mt-2 grid grid-cols-3 gap-2">
 			{#each [{ id: 'mapbox', label: 'Mapbox', avail: data.apiKeys.mapbox }, { id: 'apple', label: 'Apple', avail: data.apiKeys.apple_mapkit }, { id: 'google', label: 'Google', avail: data.apiKeys.google_maps }] as opt (opt.id)}
 				<button
@@ -581,207 +543,227 @@
 	</div>
 </section>
 
-<section class="mt-6 px-5">
-	<h2 class="text-xs tracking-widest text-tertiary uppercase">API keys</h2>
-	<p class="mt-1 text-[11px] text-tertiary">Edit <code class="font-mono">.env</code> and restart the container to change these.</p>
-	<dl class="mt-2 space-y-1 text-sm">
-		{#each Object.entries(data.apiKeys) as [name, set] (name)}
-			<div class="flex items-center justify-between">
-				<dt class="text-secondary">{name}</dt>
-				<dd class="text-xs" class:text-success={set} class:text-tertiary={!set}>
-					{set ? '✓ configured' : '— not set —'}
-				</dd>
+<section class="mt-6 space-y-3 px-5 pb-10">
+	<h2 class="text-xs tracking-widest text-tertiary uppercase">Advanced</h2>
+
+	<DisclosureSection title="Vault" meta={data.vault.subdir}>
+		<dl class="space-y-1 text-sm">
+			<div class="flex justify-between gap-2">
+				<dt class="text-tertiary">Path</dt>
+				<dd class="font-mono break-all text-secondary">{data.vault.path}</dd>
 			</div>
-		{/each}
-	</dl>
-</section>
+			<div class="flex justify-between gap-2">
+				<dt class="text-tertiary">Subdir</dt>
+				<dd class="font-mono text-secondary">{data.vault.subdir}</dd>
+			</div>
+			<div class="flex justify-between gap-2">
+				<dt class="text-tertiary">Obsidian</dt>
+				<dd class="text-secondary">{data.vault.obsidianVaultName || 'not set'}</dd>
+			</div>
+			<div class="flex justify-between gap-2">
+				<dt class="text-tertiary">Last reconcile</dt>
+				<dd class="text-secondary">{relativeTime(data.lastReconcile)}</dd>
+			</div>
+		</dl>
+	</DisclosureSection>
 
-<section class="mt-6 px-5">
-	<h2 class="text-xs tracking-widest text-tertiary uppercase">Vault contents</h2>
-	<dl class="mt-2 grid grid-cols-2 gap-2 text-sm">
-		<div class="rounded-xl border border-line bg-panel/40 px-3 py-2">
-			<dt class="text-[10px] tracking-widest text-tertiary uppercase">Restaurants</dt>
-			<dd class="mt-0.5 text-lg font-medium text-primary">{data.stats.restaurants}</dd>
-		</div>
-		<div class="rounded-xl border border-line bg-panel/40 px-3 py-2">
-			<dt class="text-[10px] tracking-widest text-tertiary uppercase">Lists</dt>
-			<dd class="mt-0.5 text-lg font-medium text-primary">{data.stats.lists}</dd>
-		</div>
-		<div class="rounded-xl border border-line bg-panel/40 px-3 py-2">
-			<dt class="text-[10px] tracking-widest text-tertiary uppercase">Distinct tags</dt>
-			<dd class="mt-0.5 text-lg font-medium text-primary">{data.stats.tags}</dd>
-		</div>
-		<div class="rounded-xl border border-line bg-panel/40 px-3 py-2">
-			<dt class="text-[10px] tracking-widest text-tertiary uppercase">Linked articles</dt>
-			<dd class="mt-0.5 text-lg font-medium text-primary">{data.stats.articles}</dd>
-		</div>
-	</dl>
-</section>
+	<DisclosureSection title="Reconcile" meta={relativeTime(data.lastReconcile)}>
+		<button
+			type="button"
+			onclick={runReconcile}
+			disabled={busyReconcile}
+			class="w-full rounded-xl border border-line bg-panel/60 px-4 py-2 text-sm text-primary disabled:opacity-50"
+		>
+			{busyReconcile ? 'Reconciling…' : 'Run reconcile now'}
+		</button>
+	</DisclosureSection>
 
-<section class="mt-6 px-5">
-	<h2 class="text-xs tracking-widest text-tertiary uppercase">Vault attachments</h2>
-	<p class="mt-1 text-[11px] text-tertiary">
-		Visit photos you've uploaded, stored on disk. Read-only — clearing happens by editing files in the vault.
-	</p>
-	{#if data.attachments.total_files === 0}
-		<p class="mt-2 text-xs text-tertiary">No attachments yet.</p>
-	{:else}
+	<DisclosureSection title="API keys" meta={`${Object.values(data.apiKeys).filter(Boolean).length} configured`}>
+		<p class="text-[11px] text-tertiary">Edit <code class="font-mono">.env</code> and restart.</p>
 		<dl class="mt-2 space-y-1 text-sm">
-			<div class="flex items-center justify-between gap-2 border-b border-line pb-1.5">
-				<dt class="text-secondary">Total</dt>
-				<dd class="text-secondary">
-					{data.attachments.total_files} files · {formatBytes(data.attachments.total_bytes)}
-				</dd>
-			</div>
-			{#each data.attachments.by_restaurant as g (g.slug)}
-				<div class="flex items-center justify-between gap-2">
-					<dt class="min-w-0 flex-1 truncate font-mono text-xs text-secondary" title={g.slug}>
-						{g.slug}
-					</dt>
-					<dd class="text-xs text-tertiary">{g.files} · {formatBytes(g.bytes)}</dd>
+			{#each Object.entries(data.apiKeys) as [name, set] (name)}
+				<div class="flex items-center justify-between">
+					<dt class="text-secondary">{name}</dt>
+					<dd class="text-xs" class:text-success={set} class:text-tertiary={!set}>
+						{set ? 'configured' : 'not set'}
+					</dd>
 				</div>
 			{/each}
 		</dl>
-	{/if}
-</section>
+	</DisclosureSection>
 
-<section class="mt-6 px-5">
-	<h2 class="text-xs tracking-widest text-tertiary uppercase">Server cache</h2>
-	<p class="mt-1 text-[11px] text-tertiary">
-		Provider responses (Google, scraped articles) stored on the server so they aren't re-fetched.
-		Cached forever by default; clear here to force re-fetch on next access.
-	</p>
-	<dl class="mt-2 space-y-1 text-sm">
-		<div class="flex items-center justify-between gap-2 border-b border-line pb-1.5">
-			<dt class="text-secondary">Total</dt>
-			<dd class="text-secondary">{data.cache.total}</dd>
-		</div>
-		{#each data.cache.by_provider as p (p.provider)}
-			<div class="flex items-center justify-between gap-2">
-				<dt class="truncate font-mono text-xs text-secondary">{p.provider}</dt>
-				<div class="flex items-center gap-2">
-					<dd class="text-xs text-tertiary">{p.count}</dd>
-					<button
-						type="button"
-						onclick={() => clearProvider(p.provider)}
-						disabled={busyClear === p.provider}
-						class="rounded-md border border-line px-2 py-0.5 text-[11px] text-secondary disabled:opacity-50"
-					>
-						{busyClear === p.provider ? '…' : 'clear'}
-					</button>
-				</div>
+	<DisclosureSection title="Vault contents" meta={`${data.stats.restaurants} restaurants`}>
+		<dl class="grid grid-cols-2 gap-2 text-sm">
+			<div class="rounded-xl border border-line bg-panel/40 px-3 py-2">
+				<dt class="text-[10px] tracking-widest text-tertiary uppercase">Restaurants</dt>
+				<dd class="mt-0.5 text-lg font-medium text-primary">{data.stats.restaurants}</dd>
 			</div>
-		{/each}
-	</dl>
-	<button
-		type="button"
-		onclick={clearAll}
-		disabled={busyClear !== null || data.cache.total === 0}
-		class="mt-4 w-full rounded-xl border border-danger/50 bg-danger/10 px-4 py-2 text-sm text-danger disabled:opacity-50"
-	>
-		{busyClear === 'all' ? 'Clearing…' : 'Clear all caches'}
-	</button>
-</section>
+			<div class="rounded-xl border border-line bg-panel/40 px-3 py-2">
+				<dt class="text-[10px] tracking-widest text-tertiary uppercase">Lists</dt>
+				<dd class="mt-0.5 text-lg font-medium text-primary">{data.stats.lists}</dd>
+			</div>
+			<div class="rounded-xl border border-line bg-panel/40 px-3 py-2">
+				<dt class="text-[10px] tracking-widest text-tertiary uppercase">Tags</dt>
+				<dd class="mt-0.5 text-lg font-medium text-primary">{data.stats.tags}</dd>
+			</div>
+			<div class="rounded-xl border border-line bg-panel/40 px-3 py-2">
+				<dt class="text-[10px] tracking-widest text-tertiary uppercase">Sources</dt>
+				<dd class="mt-0.5 text-lg font-medium text-primary">{data.stats.articles}</dd>
+			</div>
+		</dl>
+	</DisclosureSection>
 
-<section class="mt-6 px-5 pb-10">
-	<div class="flex items-baseline justify-between gap-2">
-		<h2 class="text-xs tracking-widest text-tertiary uppercase">Offline cache</h2>
-		<button
-			type="button"
-			onclick={refreshOffline}
-			disabled={offlineLoading}
-			class="text-[11px] text-secondary disabled:opacity-50"
-		>
-			{offlineLoading ? 'measuring…' : '↻ refresh'}
-		</button>
-	</div>
-	<p class="mt-1 text-[11px] text-tertiary">
-		What this device has saved for offline use (service worker). Photos last ~30 days, restaurant details ~7 days.
-	</p>
-	{#if dev}
-		<p class="mt-2 text-[11px] text-warning/80">
-			Heads up: the service worker only runs in production builds, so this is usually empty in <code class="font-mono">pnpm dev</code>.
-		</p>
-	{/if}
+	<DisclosureSection title="Attachments" meta={`${data.attachments.total_files} files`}>
+		{#if data.attachments.total_files === 0}
+			<p class="text-xs text-tertiary">No attachments yet.</p>
+		{:else}
+			<dl class="space-y-1 text-sm">
+				<div class="flex items-center justify-between gap-2 border-b border-line pb-1.5">
+					<dt class="text-secondary">Total</dt>
+					<dd class="text-secondary">
+						{data.attachments.total_files} · {formatBytes(data.attachments.total_bytes)}
+					</dd>
+				</div>
+				{#each data.attachments.by_restaurant as g (g.slug)}
+					<div class="flex items-center justify-between gap-2">
+						<dt class="min-w-0 flex-1 truncate font-mono text-xs text-secondary" title={g.slug}>
+							{g.slug}
+						</dt>
+						<dd class="text-xs text-tertiary">{g.files} · {formatBytes(g.bytes)}</dd>
+					</div>
+				{/each}
+			</dl>
+		{/if}
+	</DisclosureSection>
 
-	{#if !offlineStats.supported && !offlineLoading}
-		<p class="mt-3 text-xs text-tertiary">Cache Storage API not available in this browser.</p>
-	{:else if offlineStats.caches.length === 0 && !offlineLoading}
-		<p class="mt-3 text-xs text-tertiary">Nothing cached yet on this device.</p>
-	{:else}
+	<DisclosureSection title="Server cache" meta={`${data.cache.total} entries`}>
+		<p class="text-[11px] text-tertiary">Provider responses cached on the server.</p>
 		<dl class="mt-2 space-y-1 text-sm">
 			<div class="flex items-center justify-between gap-2 border-b border-line pb-1.5">
 				<dt class="text-secondary">Total</dt>
-				<dd class="text-secondary">
-					{offlineStats.totalEntries} · {formatBytes(offlineStats.totalBytes)}
-				</dd>
+				<dd class="text-secondary">{data.cache.total}</dd>
 			</div>
-			{#each offlineStats.caches as c (c.name)}
+			{#each data.cache.by_provider as p (p.provider)}
 				<div class="flex items-center justify-between gap-2">
-					<dt class="min-w-0 flex-1 truncate font-mono text-xs text-secondary" title={c.name}>
-						{prettyCacheName(c.name)}
-					</dt>
+					<dt class="truncate font-mono text-xs text-secondary">{p.provider}</dt>
 					<div class="flex items-center gap-2">
-						<dd class="text-xs text-tertiary">{c.entries} · {formatBytes(c.bytes)}</dd>
+						<dd class="text-xs text-tertiary">{p.count}</dd>
 						<button
 							type="button"
-							onclick={() => clearOfflineCache(c.name)}
-							disabled={busyOffline === c.name}
+							onclick={() => clearProvider(p.provider)}
+							disabled={busyClear === p.provider}
 							class="rounded-md border border-line px-2 py-0.5 text-[11px] text-secondary disabled:opacity-50"
 						>
-							{busyOffline === c.name ? '…' : 'clear'}
+							{busyClear === p.provider ? '…' : 'clear'}
 						</button>
 					</div>
 				</div>
 			{/each}
 		</dl>
-	{/if}
-
-	<div class="mt-4 rounded-xl border border-line bg-panel/40 px-3 py-2.5">
-		<p class="text-sm text-primary">Pre-download for offline</p>
-		<p class="mt-0.5 text-[11px] text-tertiary">
-			Fetches every saved restaurant's page + attachments {prewarmPhotos ? 'and one Google photo each' : ''} so they work without a connection.
-		</p>
-		<label class="mt-2 flex items-center gap-2 text-xs text-secondary">
-			<input
-				type="checkbox"
-				bind:checked={prewarmPhotos}
-				disabled={busyPrewarm}
-				class="h-3.5 w-3.5"
-			/>
-			Include Google photos (calls Google once per restaurant on first run)
-		</label>
-		{#if prewarmProgress}
-			<div class="mt-2">
-				<div class="h-1.5 w-full overflow-hidden rounded-full bg-panel-2">
-					<div
-						class="h-full bg-accent transition-all"
-						style:width="{prewarmProgress.total > 0
-							? (prewarmProgress.done / prewarmProgress.total) * 100
-							: 0}%"
-					></div>
-				</div>
-				<p class="mt-1 text-[11px] text-secondary">
-					{prewarmProgress.label} {prewarmProgress.done} / {prewarmProgress.total}
-				</p>
-			</div>
-		{/if}
 		<button
 			type="button"
-			onclick={prewarmForOffline}
-			disabled={busyPrewarm}
-			class="mt-3 w-full rounded-lg border border-line-strong bg-panel-2/60 px-3 py-1.5 text-xs text-primary disabled:opacity-50"
+			onclick={clearAll}
+			disabled={busyClear !== null || data.cache.total === 0}
+			class="mt-4 w-full rounded-xl border border-danger/50 bg-danger/10 px-4 py-2 text-sm text-danger disabled:opacity-50"
 		>
-			{busyPrewarm ? 'Pre-warming…' : 'Pre-warm now'}
+			{busyClear === 'all' ? 'Clearing…' : 'Clear all caches'}
 		</button>
-	</div>
+	</DisclosureSection>
 
-	<button
-		type="button"
-		onclick={clearAllOffline}
-		disabled={busyOffline !== null || offlineStats.totalEntries === 0}
-		class="mt-4 w-full rounded-xl border border-danger/50 bg-danger/10 px-4 py-2 text-sm text-danger disabled:opacity-50"
-	>
-		{busyOffline === 'all' ? 'Clearing…' : 'Clear offline cache'}
-	</button>
+	<DisclosureSection title="Offline cache" meta={`${offlineStats.totalEntries} entries`}>
+		<div class="flex items-center justify-between gap-2">
+			<p class="text-[11px] text-tertiary">Device cache for offline use.</p>
+			<button
+				type="button"
+				onclick={refreshOffline}
+				disabled={offlineLoading}
+				class="text-[11px] text-secondary disabled:opacity-50"
+			>
+				{offlineLoading ? 'measuring…' : '↻ refresh'}
+			</button>
+		</div>
+		{#if dev}
+			<p class="mt-2 text-[11px] text-warning/80">
+				Service worker cache is usually empty in <code class="font-mono">pnpm dev</code>.
+			</p>
+		{/if}
+
+		{#if !offlineStats.supported && !offlineLoading}
+			<p class="mt-3 text-xs text-tertiary">Cache Storage API unavailable.</p>
+		{:else if offlineStats.caches.length === 0 && !offlineLoading}
+			<p class="mt-3 text-xs text-tertiary">Nothing cached on this device.</p>
+		{:else}
+			<dl class="mt-2 space-y-1 text-sm">
+				<div class="flex items-center justify-between gap-2 border-b border-line pb-1.5">
+					<dt class="text-secondary">Total</dt>
+					<dd class="text-secondary">
+						{offlineStats.totalEntries} · {formatBytes(offlineStats.totalBytes)}
+					</dd>
+				</div>
+				{#each offlineStats.caches as c (c.name)}
+					<div class="flex items-center justify-between gap-2">
+						<dt class="min-w-0 flex-1 truncate font-mono text-xs text-secondary" title={c.name}>
+							{prettyCacheName(c.name)}
+						</dt>
+						<div class="flex items-center gap-2">
+							<dd class="text-xs text-tertiary">{c.entries} · {formatBytes(c.bytes)}</dd>
+							<button
+								type="button"
+								onclick={() => clearOfflineCache(c.name)}
+								disabled={busyOffline === c.name}
+								class="rounded-md border border-line px-2 py-0.5 text-[11px] text-secondary disabled:opacity-50"
+							>
+								{busyOffline === c.name ? '…' : 'clear'}
+							</button>
+						</div>
+					</div>
+				{/each}
+			</dl>
+		{/if}
+
+		<div class="mt-4 rounded-xl border border-line bg-panel/40 px-3 py-2.5">
+			<p class="text-sm text-primary">Pre-download for offline</p>
+			<label class="mt-2 flex items-center gap-2 text-xs text-secondary">
+				<input
+					type="checkbox"
+					bind:checked={prewarmPhotos}
+					disabled={busyPrewarm}
+					class="h-3.5 w-3.5"
+				/>
+				Include Google photos
+			</label>
+			{#if prewarmProgress}
+				<div class="mt-2">
+					<div class="h-1.5 w-full overflow-hidden rounded-full bg-panel-2">
+						<div
+							class="h-full bg-accent transition-all"
+							style:width="{prewarmProgress.total > 0
+								? (prewarmProgress.done / prewarmProgress.total) * 100
+								: 0}%"
+						></div>
+					</div>
+					<p class="mt-1 text-[11px] text-secondary">
+						{prewarmProgress.label} {prewarmProgress.done} / {prewarmProgress.total}
+					</p>
+				</div>
+			{/if}
+			<button
+				type="button"
+				onclick={prewarmForOffline}
+				disabled={busyPrewarm}
+				class="mt-3 w-full rounded-lg border border-line-strong bg-panel-2/60 px-3 py-1.5 text-xs text-primary disabled:opacity-50"
+			>
+				{busyPrewarm ? 'Pre-warming…' : 'Pre-warm now'}
+			</button>
+		</div>
+
+		<button
+			type="button"
+			onclick={clearAllOffline}
+			disabled={busyOffline !== null || offlineStats.totalEntries === 0}
+			class="mt-4 w-full rounded-xl border border-danger/50 bg-danger/10 px-4 py-2 text-sm text-danger disabled:opacity-50"
+		>
+			{busyOffline === 'all' ? 'Clearing…' : 'Clear offline cache'}
+		</button>
+	</DisclosureSection>
 </section>

@@ -111,11 +111,6 @@
 			📍
 		</button>
 	</div>
-	{#if query.trim().length < 2}
-		<p class="mt-1 text-[11px] text-tertiary">
-			Combine words — e.g. <span class="text-secondary">greek brunch</span>, <span class="text-secondary">ramen newtown</span>.
-		</p>
-	{/if}
 	{#if geoStatus === 'denied'}
 		<p class="mt-1 text-[11px] text-tertiary">Location denied — search results won't be biased.</p>
 	{/if}

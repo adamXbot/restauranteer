@@ -17,6 +17,7 @@
 	import BackLink from '$lib/components/BackLink.svelte';
 	import CopyMarkdownButton from '$lib/components/CopyMarkdownButton.svelte';
 	import ReviewSummary from '$lib/components/ReviewSummary.svelte';
+	import DisclosureSection from '$lib/components/DisclosureSection.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -64,9 +65,19 @@
 		(fm.place_ids as Record<string, string> | undefined)?.google ?? null
 	);
 	const hasExternalSources = $derived(articles.length > 0 || !!googlePlaceId);
+	const sourceCount = $derived(articles.length + (googlePlaceId ? 1 : 0));
+	const latestVisit = $derived(
+		data.bodySections.visits.length > 0
+			? data.bodySections.visits[data.bodySections.visits.length - 1]
+			: null
+	);
+	const olderVisits = $derived(data.bodySections.visits.slice(0, -1).reverse());
 
 	type SharedVisit = (typeof data.bodySections.visits)[number];
 	let sharingVisit = $state<SharedVisit | null>(null);
+	let showAllSources = $state(false);
+	let expandedSourceUrls = $state<Set<string>>(new Set());
+	const visibleArticles = $derived(showAllSources ? articles : articles.slice(0, 2));
 
 	let editingLists = $state(false);
 	let editingTags = $state(false);
@@ -132,6 +143,17 @@
 			refreshingArticle = null;
 		}
 	}
+
+	function isExpandableInstagramSource(article: ArticleRef): boolean {
+		return article.source === 'instagram' && (article.title.length > 180 || article.title.includes('\n'));
+	}
+
+	function toggleSourceText(url: string) {
+		const next = new Set(expandedSourceUrls);
+		if (next.has(url)) next.delete(url);
+		else next.add(url);
+		expandedSourceUrls = next;
+	}
 </script>
 
 <header class="px-5 pt-6 pb-2">
@@ -192,70 +214,73 @@
 </div>
 
 <section class="px-5 pt-4 pb-2">
-	<div class="flex items-center justify-between">
-		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Lists</h2>
-		<button
-			type="button"
-			onclick={() => (editingLists = true)}
-			class="text-xs text-accent">Edit</button
-		>
-	</div>
-	{#if data.lists.length > 0}
-		<p class="mt-1 text-sm text-secondary">{data.lists.join(' · ')}</p>
-	{:else}
-		<p class="mt-1 text-xs text-tertiary">Not in any list yet.</p>
-	{/if}
-</section>
-
-<section class="px-5 pt-4 pb-2">
-	<div class="flex items-center justify-between">
-		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Tags</h2>
-		<button
-			type="button"
-			onclick={() => (editingTags = true)}
-			class="text-xs text-accent">Edit</button
-		>
-	</div>
-	{#if data.tags.length > 0}
-		<div class="mt-1 flex flex-wrap gap-1">
-			{#each data.tags as t (t)}
-				<span class="rounded-full bg-panel-2/60 px-2 py-0.5 text-xs text-secondary">#{t}</span>
-			{/each}
+	<div class="flex items-center justify-between gap-2">
+		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Organise</h2>
+		<div class="flex items-center gap-3">
+			<button type="button" onclick={() => (editingLists = true)} class="text-xs text-accent">
+				Lists
+			</button>
+			<button type="button" onclick={() => (editingTags = true)} class="text-xs text-accent">
+				Tags
+			</button>
 		</div>
-	{:else}
-		<p class="mt-1 text-xs text-tertiary">No tags yet.</p>
-	{/if}
+	</div>
+	<div class="mt-2 flex flex-wrap gap-1">
+		{#each data.lists as list (list)}
+			<span class="rounded-full bg-panel-2 px-2 py-0.5 text-xs text-secondary">{list}</span>
+		{/each}
+		{#each data.tags as tag (tag)}
+			<span class="rounded-full bg-panel-2/60 px-2 py-0.5 text-xs text-secondary">#{tag}</span>
+		{/each}
+		{#if data.lists.length === 0 && data.tags.length === 0}
+			<span class="text-xs text-tertiary">No lists or tags.</span>
+		{/if}
+	</div>
 </section>
 
 <section class="px-5 pt-4 pb-2">
 	<div class="flex items-center justify-between gap-2">
-		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Articles & sources</h2>
+		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Sources ({sourceCount})</h2>
 		<div class="flex items-center gap-3">
 			{#if hasExternalSources}
 				<a
 					href={`/restaurant/${data.uuid}/compare`}
-					class="text-xs text-secondary hover:text-secondary"
+					class="text-xs text-secondary hover:text-primary"
 					title="Compare info across linked sources"
 				>
-					Compare info
+					Compare
 				</a>
 			{/if}
-			<button
-				type="button"
-				onclick={() => (linkingArticle = true)}
-				class="text-xs text-accent">+ Link URL</button
-			>
+			<button type="button" onclick={() => (linkingArticle = true)} class="text-xs text-accent">
+				Add
+			</button>
 		</div>
 	</div>
-	{#if articles.length === 0}
-		<p class="mt-1 text-xs text-tertiary">
-			No external sources linked yet. Paste any URL — Broadsheet, Good Food, TimeOut, an Instagram
-			or TikTok reel, a Reddit thread, TripAdvisor, or a Google / Apple Maps link.
-		</p>
-	{/if}
-	{#if articles.length > 0}
+	{#if sourceCount === 0}
+		<p class="mt-1 text-xs text-tertiary">No sources linked.</p>
+	{:else}
 		<ul class="mt-2 space-y-2">
-			{#each articles as a (a.url)}
+			{#if googlePlaceId}
+				<li class="rounded-xl border border-line bg-panel/40 p-3">
+					<div class="flex items-center justify-between gap-2">
+						<span class="text-xs text-tertiary">Google Maps</span>
+						{#if data.place?.google_maps_uri}
+							<a
+								href={data.place.google_maps_uri}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="text-xs text-accent underline decoration-line-strong underline-offset-2"
+							>
+								Open ↗
+							</a>
+						{/if}
+					</div>
+					<p class="mt-1 text-sm font-medium text-primary">Place details linked</p>
+				</li>
+			{/if}
+			{#each visibleArticles as a (a.url)}
+				{@const isExpandableInstagram = isExpandableInstagramSource(a)}
+				{@const isSourceExpanded = expandedSourceUrls.has(a.url)}
 				<li class="rounded-xl border border-line bg-panel/40 p-3">
 					<div class="flex items-baseline justify-between gap-2">
 						<span class="text-xs text-tertiary">{sourceLabel(a.source)}</span>
@@ -292,27 +317,53 @@
 							</button>
 						</div>
 					</div>
-					<p class="mt-1 text-sm font-medium text-primary">{a.title}</p>
-					{#if a.excerpt}
-						<p class="mt-1 line-clamp-4 text-sm text-secondary">{a.excerpt}</p>
+					<p
+						class="mt-1 whitespace-pre-line text-sm font-medium text-primary"
+						class:line-clamp-3={isExpandableInstagram && !isSourceExpanded}
+					>
+						{a.title}
+					</p>
+					{#if isExpandableInstagram}
+						<button
+							type="button"
+							onclick={() => toggleSourceText(a.url)}
+							class="mt-1 text-xs text-accent"
+							aria-expanded={isSourceExpanded}
+						>
+							{isSourceExpanded ? 'Show less' : 'Show more'}
+						</button>
+					{/if}
+					{#if a.excerpt && !isExpandableInstagram}
+						<p class="mt-1 line-clamp-2 text-sm text-secondary">{a.excerpt}</p>
 					{/if}
 				</li>
 			{/each}
 		</ul>
+		{#if articles.length > 2}
+			<button
+				type="button"
+				onclick={() => (showAllSources = !showAllSources)}
+				class="mt-2 text-xs text-accent"
+			>
+				{showAllSources ? 'Show fewer' : `Show all ${articles.length}`}
+			</button>
+		{/if}
 	{/if}
 </section>
 
 {#if hours.length > 0}
 	<section class="px-5 pt-4 pb-2">
-		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Hours</h2>
-		<HoursList lines={hours} />
+		<DisclosureSection title="Hours" meta={`${hours.length} days`}>
+			<HoursList lines={hours} />
+		</DisclosureSection>
 	</section>
 {/if}
 
 {#if reviews.length > 0}
 	<section class="px-5 pt-4 pb-2">
-		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Google reviews</h2>
-		<ReviewList {reviews} />
+		<DisclosureSection title="Google reviews" meta={`${reviews.length} reviews`}>
+			<ReviewList {reviews} />
+		</DisclosureSection>
 	</section>
 {/if}
 
@@ -323,64 +374,98 @@
 	</section>
 {/if}
 
-{#if data.bodySections.beforeVisitsHtml || data.bodySections.visits.length > 0 || data.bodySections.afterVisitsHtml}
-	<section class="md-body px-5 pt-4 pb-10">
-		{#if data.bodySections.beforeVisitsHtml}
-			{@html data.bodySections.beforeVisitsHtml}
-		{/if}
-		{#if data.bodySections.visits.length > 0}
-			<h2>Visits</h2>
-			{#each data.bodySections.visits as v (v.id)}
-				<article class="md-visit mt-4">
-					{@html v.html}
-					<div class="mt-1 flex flex-wrap gap-2">
-						<button
-							type="button"
-							onclick={() => (sharingVisit = v)}
-							class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
-						>
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="h-3.5 w-3.5"
-								aria-hidden="true"
+{#if latestVisit}
+	<section class="md-body px-5 pt-4 pb-2">
+		<h2>Latest visit</h2>
+		<article class="md-visit mt-4">
+			{@html latestVisit.html}
+			<div class="mt-1 flex flex-wrap gap-2">
+				<button
+					type="button"
+					onclick={() => (sharingVisit = latestVisit)}
+					class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
+				>
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="h-3.5 w-3.5"
+						aria-hidden="true"
+					>
+						<path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+						<path d="M16 6l-4-4-4 4" />
+						<path d="M12 2v13" />
+					</svg>
+					Share
+				</button>
+				<a
+					href={`/restaurant/${data.uuid}/visit/${latestVisit.index}/edit`}
+					class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
+				>
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="h-3.5 w-3.5"
+						aria-hidden="true"
+					>
+						<path d="M11 4H5a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-6" />
+						<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+					</svg>
+					Edit
+				</a>
+			</div>
+		</article>
+	</section>
+{/if}
+
+{#if olderVisits.length > 0}
+	<section class="px-5 pt-4 pb-2">
+		<DisclosureSection title="Past visits" meta={`${olderVisits.length} older`}>
+			<div class="md-body">
+				{#each olderVisits as v (v.id)}
+					<article class="md-visit mt-4 first:mt-0">
+						{@html v.html}
+						<div class="mt-1 flex flex-wrap gap-2">
+							<button
+								type="button"
+								onclick={() => (sharingVisit = v)}
+								class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
 							>
-								<path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
-								<path d="M16 6l-4-4-4 4" />
-								<path d="M12 2v13" />
-							</svg>
-							Share this visit
-						</button>
-						<a
-							href={`/restaurant/${data.uuid}/visit/${v.index}/edit`}
-							class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
-						>
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="h-3.5 w-3.5"
-								aria-hidden="true"
+								Share
+							</button>
+							<a
+								href={`/restaurant/${data.uuid}/visit/${v.index}/edit`}
+								class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
 							>
-								<path d="M11 4H5a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-6" />
-								<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-							</svg>
-							Edit
-						</a>
-					</div>
-				</article>
-			{/each}
-		{/if}
-		{#if data.bodySections.afterVisitsHtml}
-			{@html data.bodySections.afterVisitsHtml}
-		{/if}
+								Edit
+							</a>
+						</div>
+					</article>
+				{/each}
+			</div>
+		</DisclosureSection>
+	</section>
+{/if}
+
+{#if data.bodySections.beforeVisitsHtml || data.bodySections.afterVisitsHtml}
+	<section class="px-5 pt-4 pb-2">
+		<DisclosureSection title="Notes">
+			<div class="md-body">
+				{#if data.bodySections.beforeVisitsHtml}
+					{@html data.bodySections.beforeVisitsHtml}
+				{/if}
+				{#if data.bodySections.afterVisitsHtml}
+					{@html data.bodySections.afterVisitsHtml}
+				{/if}
+			</div>
+		</DisclosureSection>
 	</section>
 {/if}
 
@@ -410,10 +495,10 @@
 			label="Copy markdown"
 		/>
 	</div>
-	<p class="mt-1 text-[11px] text-tertiary">
-		Copies the full <span class="font-mono">{data.filename}</span> — paste it into another restauranteer's Discover to share.
-	</p>
-	<span class="mt-2 block font-mono break-all">{data.filePath}</span>
+	<DisclosureSection title="Advanced" meta={data.filename}>
+		<p class="text-[11px] text-tertiary">Copy markdown shares the full restaurant file.</p>
+		<span class="mt-2 block font-mono break-all">{data.filePath}</span>
+	</DisclosureSection>
 </footer>
 
 {#if editingLists}

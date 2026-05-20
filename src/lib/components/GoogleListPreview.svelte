@@ -197,7 +197,7 @@
 				maxlength="4"
 				class="mt-1 w-16 rounded-xl border border-line bg-canvas px-3 py-2 text-center text-xl text-primary placeholder:text-tertiary"
 			/>
-			<span class="ml-2 text-[11px] text-tertiary">Emoji or short text — shown on the list page.</span>
+			<span class="ml-2 text-[11px] text-tertiary">Shown on the list.</span>
 		</label>
 
 		<div class="mt-4">
@@ -224,9 +224,7 @@
 			</div>
 			{#if placeIds.length === 0}
 				<p class="mt-2 rounded-xl border border-warning/50 bg-warning/10 p-3 text-xs text-warning">
-					No places auto-detected. Google's list pages load place data client-side, so the static
-					page often doesn't expose them. The list will be created with just the metadata — add
-					places later by pasting their individual Maps URLs.
+					No places auto-detected. The list will be created with metadata only.
 				</p>
 			{:else}
 				<ul class="mt-2 space-y-1.5">

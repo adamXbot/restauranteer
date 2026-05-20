@@ -114,7 +114,7 @@
 			{/each}
 			{#if merged.length === 0}
 				<li class="rounded-xl border border-dashed border-line px-3 py-3 text-xs text-tertiary">
-					No lists yet — add your first one below.
+					No lists yet.
 				</li>
 			{/if}
 		</ul>
@@ -123,7 +123,7 @@
 			<input
 				type="text"
 				bind:value={newName}
-				placeholder="New list — typing then Save is enough"
+				placeholder="New list"
 				maxlength="60"
 				class="flex-1 rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary focus:border-accent/60 focus:ring-2 focus:ring-accent-ring/30 focus:outline-none"
 				onkeydown={(e) => {

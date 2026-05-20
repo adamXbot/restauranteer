@@ -55,8 +55,7 @@
 		</header>
 
 		<p class="mb-3 text-sm text-secondary">
-			You're importing <span class="font-medium text-primary">{preview.name}</span> from
-			{sourceLabel}.
+			<span class="font-medium text-primary">{preview.name}</span> · {sourceLabel}
 			{#if preview.address}<span class="text-tertiary"> — {preview.address}</span>{/if}
 		</p>
 
@@ -94,7 +93,7 @@
 			disabled={busy}
 			class="mt-4 w-full rounded-2xl bg-accent px-5 py-3 text-sm font-medium text-on-accent disabled:opacity-50"
 		>
-			Create a new entry instead
+			Create new
 		</button>
 	</section>
 </div>

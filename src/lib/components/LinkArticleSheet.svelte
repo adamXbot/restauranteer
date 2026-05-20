@@ -48,15 +48,9 @@
 	></button>
 	<section class="rounded-t-3xl border-t border-line bg-panel p-5 pb-8">
 		<header class="mb-3 flex items-center justify-between">
-			<h2 class="text-base font-medium text-primary">Link a URL</h2>
+			<h2 class="text-base font-medium text-primary">Link URL</h2>
 			<button type="button" onclick={() => onClose?.()} class="text-xs text-secondary">Cancel</button>
 		</header>
-
-		<p class="mb-2 text-xs text-tertiary">
-			Anything — Broadsheet, Good Food / The Age / SMH, AGFG, TimeOut, Instagram, TikTok, Reddit,
-			TripAdvisor, or a plain blog post. Google / Apple Maps URLs also pull in address, hours and
-			photos.
-		</p>
 
 		<input
 			type="url"

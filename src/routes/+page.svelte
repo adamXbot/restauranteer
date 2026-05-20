@@ -38,13 +38,14 @@
 {#if data.restaurants.length === 0}
 	<section class="px-5 pb-10">
 		<div class="rounded-2xl border border-dashed border-line-strong bg-panel/30 p-6">
-			<h2 class="text-base font-medium text-primary">Nothing here yet</h2>
-			<p class="mt-2 text-sm text-secondary">
-				Search above to find a restaurant on Google, then tap "Add to vault" — or drop a markdown
-				file with frontmatter into your vault's <code
-					class="rounded bg-panel-2 px-1.5 py-0.5 font-mono text-xs text-secondary">Restaurants/</code
-				> folder.
-			</p>
+			<h2 class="text-base font-medium text-primary">Nothing saved yet</h2>
+			<p class="mt-2 text-sm text-secondary">Search or paste a URL to add a restaurant.</p>
+			<a
+				href="/discover"
+				class="mt-4 inline-flex rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white"
+			>
+				Discover
+			</a>
 		</div>
 	</section>
 {:else}

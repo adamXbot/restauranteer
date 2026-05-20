@@ -4,6 +4,7 @@
 	import type { PageData } from './$types';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import MergePicker from '$lib/components/MergePicker.svelte';
+	import DisclosureSection from '$lib/components/DisclosureSection.svelte';
 
 	type Suggestion = { uuid: string; name: string; suburb: string | null };
 	type InboxItem = {
@@ -396,11 +397,7 @@
 <header class="px-5 pt-6 pb-2">
 	<BackLink href="/" />
 	<h1 class="mt-2 text-2xl font-semibold text-primary">Inbox</h1>
-	<p class="mt-1 text-sm text-secondary">
-		Paste any link (Instagram reel, TikTok, article, Google Maps share, anything). Known
-		publications can be turned into a restaurant immediately; everything else queues here for
-		later.
-	</p>
+	<p class="mt-1 text-sm text-secondary">Save links to import or attach later.</p>
 </header>
 
 <section class="px-5 pt-3">
@@ -429,18 +426,18 @@
 		</button>
 	</div>
 	{#if detectedSource}
-		<label class="mt-2 flex items-start gap-2 rounded-xl border border-accent/40 bg-accent-soft/40 px-3 py-2 text-xs text-secondary">
+		<label class="mt-2 flex items-center justify-between gap-3 rounded-xl border border-accent/40 bg-accent-soft/40 px-3 py-2 text-xs text-secondary">
+			<span>
+				<span class="font-medium text-accent">{detectedSource.label}</span>
+				detected
+			</span>
+			<span class="flex items-center gap-2 text-tertiary">
 			<input
 				type="checkbox"
 				bind:checked={autoImport}
-				class="mt-0.5 h-3.5 w-3.5"
+				class="h-3.5 w-3.5"
 			/>
-			<span class="flex-1">
-				<span class="font-medium text-accent">{detectedSource.label}</span>
-				detected — auto-import as a restaurant.
-				<span class="block text-[11px] text-tertiary">
-					Untick to queue the link here for later instead.
-				</span>
+				Import now
 			</span>
 		</label>
 	{/if}
@@ -459,6 +456,15 @@
 	{/if}
 </section>
 
+<section class="px-5 pt-3">
+	<DisclosureSection title="Supported links" meta="Import when recognized">
+		<p class="text-xs text-tertiary">
+			Google Maps, Apple Maps, Broadsheet, Good Food, Time Out, AGFG, Instagram, TikTok,
+			Reddit, TripAdvisor, YouTube, Facebook, Yelp, and plain articles.
+		</p>
+	</DisclosureSection>
+</section>
+
 {#if mergeContext}
 	<MergePicker
 		candidates={mergeContext.candidates}
@@ -473,10 +479,8 @@
 {#if data.items.length === 0}
 	<section class="px-5 pt-8 pb-10">
 		<div class="rounded-2xl border border-dashed border-line-strong bg-panel/30 p-6">
-			<p class="text-sm text-secondary">
-				Nothing pending. Paste a URL above to save it. On Android, you can share a link straight from
-				Instagram / TikTok / a browser to Restauranteer.
-			</p>
+			<h2 class="text-base font-medium text-primary">Inbox clear</h2>
+			<p class="mt-2 text-sm text-secondary">Paste a URL or share one here.</p>
 		</div>
 	</section>
 {:else}
@@ -502,7 +506,7 @@
 					</div>
 					<h3 class="mt-1 text-sm font-medium text-primary">{item.title}</h3>
 					{#if item.excerpt}
-						<p class="mt-1 line-clamp-3 text-xs text-secondary">{item.excerpt}</p>
+						<p class="mt-1 line-clamp-2 text-xs text-secondary">{item.excerpt}</p>
 					{/if}
 					<a
 						href={item.url}
@@ -525,25 +529,21 @@
 								: `Attach to ${primarySuggestion.name}${primarySuggestion.suburb ? ` · ${primarySuggestion.suburb}` : ''}`}
 						</button>
 						{#if item.suggestions.length > 1}
-							<p class="mt-1 text-[11px] text-tertiary">
-								Other matches:
-								{#each item.suggestions.slice(1, 4) as s, i (s.uuid)}
-									{#if i > 0},{' '}{/if}
+							<div class="mt-2 flex flex-wrap gap-1">
+								{#each item.suggestions.slice(1, 4) as s (s.uuid)}
 									<button
 										type="button"
 										onclick={() => attachToUuid(item.id, s.uuid)}
 										disabled={attachingId === item.id}
-										class="text-accent underline decoration-line-strong underline-offset-2 disabled:opacity-50"
+										class="rounded-full border border-line bg-panel px-2 py-0.5 text-[11px] text-accent disabled:opacity-50"
 									>
-										{s.name}{s.suburb ? ` (${s.suburb})` : ''}
+										{s.name}{s.suburb ? ` · ${s.suburb}` : ''}
 									</button>
 								{/each}
-							</p>
+							</div>
 						{/if}
 					{:else}
-						<p class="mt-3 text-xs text-tertiary">
-							No vault match. Pick one or create a new restaurant.
-						</p>
+						<p class="mt-3 text-xs text-tertiary">No vault match.</p>
 					{/if}
 
 					<div class="mt-2 flex gap-2">
