@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { bboxAround, haversineMeters } from '$lib/geo';
+import { cuisinesFromTypes } from '$lib/cuisine';
 import { findRestaurantsInBox, findByGooglePlaceId } from '$lib/server/db/queries';
 import { hasGoogleKey, nearbySearch } from '$lib/server/providers/google';
 import { log } from '$lib/server/log';
@@ -36,43 +37,6 @@ export type NearGoogleResult = {
 	price_level: number | null;
 	photo_name: string | null;
 };
-
-const TYPE_TO_CUISINE: Record<string, string> = {
-	italian_restaurant: 'Italian',
-	french_restaurant: 'French',
-	japanese_restaurant: 'Japanese',
-	chinese_restaurant: 'Chinese',
-	korean_restaurant: 'Korean',
-	vietnamese_restaurant: 'Vietnamese',
-	thai_restaurant: 'Thai',
-	indian_restaurant: 'Indian',
-	mexican_restaurant: 'Mexican',
-	mediterranean_restaurant: 'Mediterranean',
-	greek_restaurant: 'Greek',
-	american_restaurant: 'American',
-	steak_house: 'Steakhouse',
-	seafood_restaurant: 'Seafood',
-	sushi_restaurant: 'Sushi',
-	ramen_restaurant: 'Ramen',
-	pizza_restaurant: 'Pizza',
-	hamburger_restaurant: 'Burgers',
-	vegan_restaurant: 'Vegan',
-	vegetarian_restaurant: 'Vegetarian',
-	cafe: 'Café',
-	bakery: 'Bakery',
-	bar: 'Bar',
-	wine_bar: 'Wine bar',
-	pub: 'Pub'
-};
-
-function cuisinesFromGoogleTypes(types: string[]): string[] {
-	const out = new Set<string>();
-	for (const t of types) {
-		const label = TYPE_TO_CUISINE[t];
-		if (label) out.add(label);
-	}
-	return [...out];
-}
 
 export const GET: RequestHandler = async ({ url }) => {
 	const latStr = url.searchParams.get('lat');
@@ -136,7 +100,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				.filter((g) => g.place_id && !vaultPlaceIds.has(g.place_id))
 				.filter((g) => !minRating || (g.rating ?? 0) >= minRating)
 				.map((g) => {
-					const inferredCuisines = cuisinesFromGoogleTypes(g.types);
+					const inferredCuisines = cuisinesFromTypes(g.types);
 					return {
 						source: 'google' as const,
 						place_id: g.place_id,

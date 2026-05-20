@@ -101,6 +101,11 @@
 	let geoErr = $state<string | null>(null);
 
 	let vaultPins = $state<VaultPin[]>([]);
+	const sortedVaultPins = $derived(
+		[...vaultPins].sort((a, b) =>
+			a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+		)
+	);
 	let vaultPinsLoading = $state(false);
 	let vaultPinsErr = $state<string | null>(null);
 	let results = $state<Result[]>([]);
@@ -634,15 +639,42 @@
 
 <section class="px-5 pt-4 pb-6">
 	{#if !center}
-		<p class="text-sm text-tertiary">
-			{#if vaultPinsLoading}
-				Loading saved places…
-			{:else if vaultPins.length > 0}
-				{vaultPins.length} saved {vaultPins.length === 1 ? 'place' : 'places'} pinned.
-			{:else}
-				Tap a spot to search nearby.
-			{/if}
-		</p>
+		{#if vaultPinsLoading && vaultPins.length === 0}
+			<p class="text-sm text-tertiary">Loading saved places…</p>
+		{:else if vaultPins.length === 0}
+			<p class="text-sm text-tertiary">
+				No saved places yet. Tap a spot on the map to search nearby.
+			</p>
+		{:else}
+			<p class="mb-2 text-[10px] tracking-widest text-tertiary uppercase">
+				{vaultPins.length} saved {vaultPins.length === 1 ? 'place' : 'places'} · tap a spot above
+				to search nearby
+			</p>
+			<ul class="space-y-2">
+				{#each sortedVaultPins as p (p.uuid)}
+					<li>
+						<button
+							type="button"
+							onclick={() => openVaultPin(p)}
+							class="block w-full min-w-0 rounded-2xl border border-line bg-panel/50 p-3 text-left"
+						>
+							<div class="flex items-start justify-between gap-3">
+								<div class="min-w-0 flex-1">
+									<span class="text-[10px] tracking-widest text-accent uppercase">★ Vault</span>
+									<h3 class="mt-0.5 truncate text-sm font-medium text-primary">{p.name}</h3>
+									{#if p.suburb}
+										<p class="truncate text-xs text-secondary">{p.suburb}</p>
+									{/if}
+								</div>
+								{#if p.rating != null}
+									<span class="shrink-0 text-xs text-rating">★ {p.rating}</span>
+								{/if}
+							</div>
+						</button>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	{:else if loading && results.length === 0}
 		<p class="text-sm text-tertiary">Searching…</p>
 	{:else if results.length === 0}

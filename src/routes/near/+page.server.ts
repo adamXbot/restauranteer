@@ -30,7 +30,9 @@ const COMMON_GOOGLE_CUISINES = [
 	'Bakery',
 	'Bar',
 	'Wine bar',
-	'Pub'
+	'Pub',
+	'Dessert',
+	'Ice cream'
 ];
 
 export const load: PageServerLoad = () => {
