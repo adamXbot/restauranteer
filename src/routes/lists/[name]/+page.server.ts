@@ -2,6 +2,7 @@ import type { PageServerLoad } from './$types';
 import { getDb } from '$lib/server/db/schema';
 import { error } from '@sveltejs/kit';
 import type { ListMembership } from '$lib/server/vault/types';
+import { hasListShell } from '$lib/server/vault/moc';
 
 type Row = {
 	uuid: string;
@@ -12,7 +13,7 @@ type Row = {
 	memberships_json: string | null;
 };
 
-export const load: PageServerLoad = ({ params }) => {
+export const load: PageServerLoad = async ({ params }) => {
 	const name = params.name;
 	const rows = getDb()
 		.prepare(
@@ -29,7 +30,9 @@ export const load: PageServerLoad = ({ params }) => {
 		)
 		.all(name) as Row[];
 
-	if (rows.length === 0) throw error(404, `List "${name}" is empty or does not exist`);
+	if (rows.length === 0 && !(await hasListShell(name))) {
+		throw error(404, `List "${name}" does not exist`);
+	}
 
 	// Pick the first matching list_memberships entry we find — list-level
 	// metadata is stored redundantly across restaurants, so any one of them is

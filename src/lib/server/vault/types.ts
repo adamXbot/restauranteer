@@ -38,6 +38,7 @@ export type Frontmatter = {
 	generated_by?: string;
 	do_not_edit?: boolean;
 	list_name?: string;
+	created_manually?: boolean;
 	// Allow other user-added fields to pass through
 	[key: string]: unknown;
 };

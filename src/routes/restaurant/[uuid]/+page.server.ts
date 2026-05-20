@@ -2,7 +2,7 @@ import path from 'node:path';
 import { error } from '@sveltejs/kit';
 import { marked } from 'marked';
 import type { PageServerLoad } from './$types';
-import { getDistinctLists, getRestaurantByUuid } from '$lib/server/db/queries';
+import { getRestaurantByUuid } from '$lib/server/db/queries';
 import { readRestaurant } from '$lib/server/vault/reader';
 import {
 	extractImagePaths,
@@ -16,6 +16,7 @@ import type { PlaceDetails } from '$lib/server/providers/google';
 import { config, restaurantsDir } from '$lib/server/config';
 import { getPreferences } from '$lib/server/preferences';
 import { log } from '$lib/server/log';
+import { getAllListSummaries } from '$lib/server/vault/moc';
 
 marked.setOptions({ breaks: false, gfm: true });
 
@@ -101,7 +102,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		userPhotos,
 		tags: indexed.tags,
 		lists: indexed.lists,
-		availableLists: getDistinctLists().map((l) => l.name),
+		availableLists: (await getAllListSummaries()).map((l) => l.name),
 		place: placeDetailsData,
 		lat: indexed.lat,
 		lng: indexed.lng,

@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
-import { getDistinctLists } from '$lib/server/db/queries';
+import { getAllListSummaries } from '$lib/server/vault/moc';
 
-export const load: PageServerLoad = () => {
-	return { lists: getDistinctLists() };
+export const load: PageServerLoad = async () => {
+	return { lists: await getAllListSummaries() };
 };

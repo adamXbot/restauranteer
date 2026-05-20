@@ -45,22 +45,35 @@
 </header>
 
 <section class="grid gap-3 px-5 pb-10">
-	{#each data.restaurants as r (r.uuid)}
-		<a
-			href={`/restaurant/${r.uuid}`}
-			class="block min-w-0 rounded-2xl border border-line bg-panel/50 p-4"
-		>
-			<div class="flex items-start justify-between gap-3">
-				<div class="min-w-0 flex-1">
-					<h2 class="truncate text-base font-medium text-primary">{r.name}</h2>
-					{#if r.suburb || r.address}
-						<p class="mt-0.5 truncate text-xs text-secondary">{r.suburb ?? r.address}</p>
+	{#if data.restaurants.length === 0}
+		<div class="rounded-2xl border border-dashed border-line-strong bg-panel/30 p-6">
+			<h2 class="text-base font-medium text-primary">No restaurants yet</h2>
+			<p class="mt-1 text-sm text-secondary">Add this list from a restaurant's Organise section.</p>
+			<a
+				href="/"
+				class="mt-4 inline-flex rounded-xl bg-accent px-4 py-2 text-sm font-medium text-on-accent"
+			>
+				Find restaurant
+			</a>
+		</div>
+	{:else}
+		{#each data.restaurants as r (r.uuid)}
+			<a
+				href={`/restaurant/${r.uuid}`}
+				class="block min-w-0 rounded-2xl border border-line bg-panel/50 p-4"
+			>
+				<div class="flex items-start justify-between gap-3">
+					<div class="min-w-0 flex-1">
+						<h2 class="truncate text-base font-medium text-primary">{r.name}</h2>
+						{#if r.suburb || r.address}
+							<p class="mt-0.5 truncate text-xs text-secondary">{r.suburb ?? r.address}</p>
+						{/if}
+					</div>
+					{#if r.rating != null}
+						<span class="shrink-0 text-sm text-rating">★ {r.rating}</span>
 					{/if}
 				</div>
-				{#if r.rating != null}
-					<span class="shrink-0 text-sm text-rating">★ {r.rating}</span>
-				{/if}
-			</div>
-		</a>
-	{/each}
+			</a>
+		{/each}
+	{/if}
 </section>
