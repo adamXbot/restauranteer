@@ -1,0 +1,13 @@
+node_modules
+.pnpm-store
+.svelte-kit
+build
+.DS_Store
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Local data — these are mounted volumes
+data

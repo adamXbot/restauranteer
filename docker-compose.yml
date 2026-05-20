@@ -1,0 +1,17 @@
+services:
+  app:
+    image: ${RESTAURANTEER_IMAGE:-ghcr.io/systemadmin/restauranteer:latest}
+    container_name: restauranteer
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      # Map your Obsidian vault folder here. The app reads/writes ${VAULT_SUBDIR}
+      # (default: Restaurants) inside this path.
+      - ${VAULT_HOST_PATH:-./data}:/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0

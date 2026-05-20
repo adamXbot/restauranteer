@@ -1,0 +1,9 @@
+allowBuilds:
+  better-sqlite3: true
+  sharp: true
+confirmModulesPurge: false
+managePackageManagerVersions: false
+minimumReleaseAgeExclude:
+  - '@types/node@25.9.0'
+  - mapbox-gl@3.24.0
+  - marked@18.0.4
