@@ -12,7 +12,7 @@ Built for a single user and designed around Australian cities, but the Markdown 
 
 ## Quickstart
 
-Requires Docker. The published image is available at `ghcr.io/systemadmin/restauranteer`.
+Requires Docker. The published image is available on Docker Hub at [`adamxbot/restauranteer`](https://hub.docker.com/r/adamxbot/restauranteer).
 The container is single-user; everything writes into a vault folder you control.
 
 ```bash
@@ -49,7 +49,7 @@ docker compose up -d
 ```
 
 The default compose file pulls the multi-arch image for `linux/amd64` and `linux/arm64`.
-Set `RESTAURANTEER_IMAGE=ghcr.io/owner/restauranteer:tag` in `.env` if you want to run a fork or a pinned tag.
+Set `RESTAURANTEER_IMAGE=adamxbot/restauranteer:vX.Y.Z` in `.env` to pin a version (default is `:latest`); use a different repo string to run a fork.
 
 Open `http://localhost:3000` (or your machine's hostname from another device) and **Add to Home Screen** in Safari on the iPhone to install as a PWA.
 
@@ -110,6 +110,12 @@ YunoHost is Debian + a curated app catalogue and doesn't ship Docker by default 
 - **Markdown body renderer** with `_attachments/` URL rewriting and `[[wikilinks]]` rendered as italics.
 - **Infinite cache** for Google + scraped pages, with per-page or global manual refresh. Settings page also exposes offline service-worker caches so you can clear photo / restaurant-detail caches on the device.
 
+---
+
+## Technical stuff
+
+Everything from here on is implementation detail — architecture, env reference, map-provider setup, routes, the storage model, known limitations. Skip if you just want to use the app; come back when you need to debug, self-host beyond the basics, or hack on the code.
+
 ## How it works
 
 ```
@@ -150,15 +156,103 @@ All env vars (in `.env`):
 | `GOOGLE_PLACES_API_KEY` | Google Places API (New) — search, details, nearby, photos. Server-only | No (recommended) |
 | `MAPBOX_PUBLIC_TOKEN` | Mapbox GL token for the Mapbox map provider | No |
 | `GOOGLE_MAPS_PUBLIC_KEY` | Google Maps JS key for the Google map provider. **Browser-exposed** — restrict it by HTTP referrer in Cloud Console | No |
-| `APPLE_MAPKIT_TEAM_ID` | Apple Developer Team ID for MapKit JS | No (all three Apple vars required if used) |
+| `APPLE_MAPKIT_TEAM_ID` | Apple Developer Team ID for MapKit JS | No (all three Apple vars required if using the signing flow) |
 | `APPLE_MAPKIT_KEY_ID` | MapKit JS Key ID | No |
 | `APPLE_MAPKIT_PRIVATE_KEY` | Contents of the `.p8` file. `\n` escapes accepted for single-line env values | No |
+| `APPLE_MAPKIT_TOKEN` | Pre-signed MapKit JS JWT from the Quickstart token tool. Use this **or** the three signing vars above — not both. Expires per Apple's settings (typically 7 days); rotate manually | No |
 | `LOG_LEVEL` | `debug`, `info`, `warn`, `error` | No (default `info`) |
 | `PORT` | Container listen port | No (default `3000`) |
 
 At least one of `MAPBOX_PUBLIC_TOKEN` / `GOOGLE_MAPS_PUBLIC_KEY` / `APPLE_MAPKIT_*` should be set for the map views. The Settings page disables provider buttons whose keys aren't configured.
 
 API keys are read once at server boot — changing `.env` requires a container restart. The Settings page (gear icon in the nav) shows which keys are configured (presence only, never values).
+
+### Map API setup
+
+You only need one provider — pick whichever is easiest. All three can coexist if you want to switch later. Once the env vars are set and the container restarted, the Settings → Map provider buttons stop being disabled.
+
+#### Mapbox (easiest, free tier)
+1. Sign up at <https://account.mapbox.com/auth/signup/>.
+2. Account → **Tokens** → **Create a token**. The default public token works.
+3. Optional: restrict URL referrers on the token to your deployment's hostname.
+4. Copy the `pk.…` value into `MAPBOX_PUBLIC_TOKEN`.
+
+Free tier covers 50,000 map loads / month — plenty for personal use. The token is browser-exposed (it has to be for Mapbox GL to fetch tiles); URL restriction is the protection.
+
+#### Google Maps JS (good if you already pay for Google Places)
+1. <https://console.cloud.google.com/> → pick the same project as your `GOOGLE_PLACES_API_KEY`.
+2. **APIs & Services** → **Library** → enable **Maps JavaScript API**.
+3. **Credentials** → **Create credentials** → **API key**. (You can reuse your Places key, but only if it has the right HTTP referrer restrictions — otherwise create a separate one.)
+4. Edit the new key → **Application restrictions** → **HTTP referrers** → add your deployment hostnames (e.g. `http://localhost:3000/*`, `https://your.host/*`, and your phone's IP if you LAN-test).
+5. **API restrictions** → restrict to **Maps JavaScript API** only.
+6. Copy the key into `GOOGLE_MAPS_PUBLIC_KEY`.
+
+This key is browser-exposed (Google's JS SDK needs it client-side), so the referrer restriction is mandatory — without it, anyone who views your map page can copy the key and burn your quota.
+
+#### Apple MapKit JS (two paths)
+
+Apple gives you two ways to authenticate MapKit JS, and which you pick determines what you put in `.env`:
+
+##### Path A — Quickstart token (fast, expires)
+
+Easiest for "try Apple Maps right now". Gives you a pre-signed JWT directly, no server-side signing involved.
+
+1. Sign in at <https://maps.developer.apple.com/> with any Apple ID.
+2. Open the **Maps Token Maker** at <https://maps.developer.apple.com/token-maker>.
+3. Set the **Origin** to your deployment's URL (e.g. `http://localhost:3000`, or `*` for testing on the LAN). Pick an **Expiration** — Apple defaults to 7 days, max ~6 months on free tier.
+4. Click **Generate Token**. Copy the resulting `eyJ…` string — it has three dot-separated parts.
+5. Set `APPLE_MAPKIT_TOKEN=eyJ…` in `.env`. Leave `APPLE_MAPKIT_TEAM_ID` / `KEY_ID` / `PRIVATE_KEY` empty.
+6. Restart the container.
+
+The server returns this token verbatim to MapKit JS. When it expires, regenerate from the same page and update `.env`. The server logs a warning when the embedded `exp` is less than 7 days away.
+
+##### Path B — Signing key (proper, auto-renews)
+
+The long-term answer. Requires a **paid Apple Developer Program membership** ($99/year, as Apple retired the free MapKit tier in 2024) but the maps and tokens then auto-renew forever.
+
+1. Join the **Apple Developer Program** at <https://developer.apple.com/programs/> if you haven't.
+2. <https://developer.apple.com/account/resources/identifiers/list/maps> → **Identifiers** → **+** → **Maps IDs**. Reverse-DNS identifier (e.g. `maps.com.you.restauranteer`) and a description.
+3. **Keys** → **+** → name the key, tick **MapKit JS**, **Configure** → pick the Maps ID. Continue → Register → **Download the `.p8` file** (one-time download). Note the **Key ID** (10 chars).
+4. Find your **Team ID** at <https://developer.apple.com/account> (top-right, 10 chars).
+5. Set the three env vars:
+   - `APPLE_MAPKIT_TEAM_ID` — Team ID
+   - `APPLE_MAPKIT_KEY_ID` — Key ID
+   - `APPLE_MAPKIT_PRIVATE_KEY` — contents of the `.p8` file (multi-line PEM, or single line with `\n` escapes)
+
+The `.p8` key never leaves the server. The server signs short-lived JWTs (30-minute TTL) on demand at `/api/apple/maps-token` and MapKit JS calls that endpoint via its `authorizationCallback` — see "How Apple MapKit JS works" below.
+
+##### Picking a path
+
+| | Path A (Quickstart token) | Path B (Signing key) |
+|---|---|---|
+| Account needed | Any Apple ID | Apple Developer Program ($99/year) |
+| Setup steps | 3 minutes | ~15 minutes |
+| Token lifetime | 7 days (free) / ~6 months max | 30 minutes, auto-renewed |
+| Manual rotation? | Yes, before each expiry | No |
+| Production-ready? | Only if you're OK rotating env vars | Yes |
+
+Start with A while you're trying things out, switch to B once you commit to Apple Maps as your daily provider. Setting both works — A wins, B is ignored.
+
+### How Apple MapKit JS works
+
+Apple MapKit JS is the only provider that needs server-side signing — Mapbox and Google use a long-lived browser token, Apple uses short-lived JWTs minted with your private key. The flow:
+
+1. **Browser asks for the SDK.** `src/lib/appleMapKit.ts` lazy-injects `https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js` with `data-callback` pointing at a global, and Apple's loader calls that global once the SDK is ready.
+2. **Browser calls `mapkit.init` with an `authorizationCallback`.** Apple's SDK invokes this callback every time it needs a token — initial load, periodic re-auth, sometimes per-tile. The callback is the only thing that knows how to fetch tokens.
+3. **Callback hits `/api/apple/maps-token`.** That endpoint (`src/routes/api/apple/maps-token/+server.ts`) calls `getMapKitToken()` in `src/lib/server/providers/apple.ts`. Two paths from here:
+   - **If `APPLE_MAPKIT_TOKEN` is set** (Quickstart path), the function returns it verbatim and decodes the embedded `exp` to log a warning when expiry is within 7 days.
+   - **Otherwise**, the signing-key path:
+     - Loads your `.p8` PEM via `jose.importPKCS8` (cached after first read).
+     - Signs an ES256 JWT with `iss = APPLE_MAPKIT_TEAM_ID`, `kid = APPLE_MAPKIT_KEY_ID`, `iat = now`, `exp = now + 30 min`, empty payload.
+     - Caches the JWT in-process until 60s before expiry and serves the same token to subsequent callers.
+4. **Browser passes the token back to MapKit** via the callback. MapKit then includes it as `Authorization: Bearer …` on its CDN requests for tiles, services (geocoding, search), and annotation assets.
+5. **Re-auth.** When the token nears expiry, MapKit calls the same `authorizationCallback` again; our endpoint returns the cached JWT until it itself is close to expiry, at which point a new one is signed.
+
+A few specific consequences worth knowing:
+- **The `.p8` key never leaves the server.** Compromising the running container compromises map auth; compromising your browser doesn't.
+- **Token expiry is short (30 minutes) by choice.** Apple allows up to a year, but a 30-minute ceiling means a leaked JWT is useless quickly. The cost is a JWT signature roughly every half hour per active session — trivial.
+- **Geocoding and place search go through Apple too.** If you use Apple as your map provider, MapKit's `Search` and `Geocoder` services are authenticated by the same JWT — so cuisine names rendered on the map and reverse-geocode results all count toward your Apple Maps quota, not Google's.
+- **The 503 path matters.** `hasAppleMapKit()` short-circuits to a 503 when any of the three vars are missing; the client's catch in `appleMapKit.ts` swallows the error and passes an empty string to MapKit, which then surfaces "Unauthorized" in the map. We rely on the Settings page disabling the Apple button when the keys aren't set so the user doesn't end up here.
 
 ## Routes
 

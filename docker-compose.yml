@@ -1,6 +1,6 @@
 services:
   app:
-    image: ${RESTAURANTEER_IMAGE:-ghcr.io/systemadmin/restauranteer:latest}
+    image: ${RESTAURANTEER_IMAGE:-adamxbot/restauranteer:latest}
     container_name: restauranteer
     restart: unless-stopped
     ports:

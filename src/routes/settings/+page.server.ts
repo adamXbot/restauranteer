@@ -93,7 +93,9 @@ export const load: PageServerLoad = async () => {
 			google_places: !!env.GOOGLE_PLACES_API_KEY,
 			google_maps: !!env.GOOGLE_MAPS_PUBLIC_KEY,
 			mapbox: !!env.MAPBOX_PUBLIC_TOKEN,
-			apple_mapkit: !!(env.APPLE_MAPKIT_TEAM_ID && env.APPLE_MAPKIT_KEY_ID),
+			apple_mapkit:
+				!!(env.APPLE_MAPKIT_TEAM_ID && env.APPLE_MAPKIT_KEY_ID && env.APPLE_MAPKIT_PRIVATE_KEY) ||
+				!!env.APPLE_MAPKIT_TOKEN,
 			yelp: !!env.YELP_API_KEY
 		},
 		stats: {

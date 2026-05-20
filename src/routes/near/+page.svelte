@@ -39,6 +39,14 @@
 		price_level: number | null;
 		photo_name: string | null;
 	};
+	type VaultPin = {
+		uuid: string;
+		name: string;
+		lat: number;
+		lng: number;
+		suburb: string | null;
+		rating: number | null;
+	};
 	type Result = VaultResult | GoogleResult;
 	type MapTheme = {
 		brightness: 'light' | 'dark';
@@ -56,8 +64,6 @@
 	let radiusIdx = $state(2); // 2000m
 	let ratingIdx = $state(0); // any
 	let cuisines = $state<string[]>([]);
-	// svelte-ignore state_referenced_locally
-	let source = $state<'all' | 'vault'>(data.googleEnabled ? 'all' : 'vault');
 	let pickingCuisine = $state(false);
 
 	const effectiveProvider = $derived.by<'mapbox' | 'apple' | 'google'>(() => {
@@ -89,14 +95,17 @@
 	// Provider-agnostic refs (any-typed because the two SDKs have very different APIs)
 	let mapRef: any = null;
 	let centerMarker: any = null;
-	let resultMarkers: any[] = [];
+	let vaultMarkers: any[] = [];
+	let googleMarkers: any[] = [];
+	let fittedVaultPins = false;
 	let geoErr = $state<string | null>(null);
 
+	let vaultPins = $state<VaultPin[]>([]);
+	let vaultPinsLoading = $state(false);
+	let vaultPinsErr = $state<string | null>(null);
 	let results = $state<Result[]>([]);
 	let loading = $state(false);
 	let queryErr = $state<string | null>(null);
-	// svelte-ignore state_referenced_locally
-	let googleEnabledServerSide = $state(data.googleEnabled);
 
 	const radius = $derived(RADII[radiusIdx]);
 	const minRating = $derived(RATINGS[ratingIdx]);
@@ -106,10 +115,6 @@
 	}
 	function cycleRating() {
 		ratingIdx = (ratingIdx + 1) % RATINGS.length;
-	}
-	function toggleSource() {
-		if (!data.googleEnabled) return;
-		source = source === 'all' ? 'vault' : 'all';
 	}
 
 	function useMyLocation() {
@@ -185,6 +190,11 @@
 		mapRef.on('click', (e: { lngLat: { lat: number; lng: number } }) => {
 			center = { lat: e.lngLat.lat, lng: e.lngLat.lng };
 		});
+		await new Promise<void>((resolve) => {
+			const done = () => resolve();
+			mapRef.once('load', done);
+			mapRef.once('error', done);
+		});
 	}
 
 	function panMap() {
@@ -202,6 +212,68 @@
 			return;
 		}
 		mapRef.flyTo({ center: [center.lng, center.lat], zoom: 14, duration: 600 });
+	}
+
+	async function loadVaultPins() {
+		vaultPinsLoading = true;
+		vaultPinsErr = null;
+		try {
+			const res = await fetch('/api/map');
+			if (!res.ok) throw new Error(`Saved pins failed: ${res.status}`);
+			const data = (await res.json()) as { pins: VaultPin[] };
+			vaultPins = data.pins;
+			fittedVaultPins = false;
+		} catch (e) {
+			vaultPinsErr = String(e);
+		} finally {
+			vaultPinsLoading = false;
+		}
+	}
+
+	function fitVaultPins() {
+		if (!mapRef || center || fittedVaultPins || vaultPins.length === 0) return;
+		fittedVaultPins = true;
+		if (effectiveProvider === 'apple') {
+			if (vaultPins.length === 1) {
+				const pin = vaultPins[0];
+				mapRef.region = new window.mapkit.CoordinateRegion(
+					new window.mapkit.Coordinate(pin.lat, pin.lng),
+					new window.mapkit.CoordinateSpan(0.04, 0.04)
+				);
+				return;
+			}
+			const region = mapRef.regionThatFits(
+				vaultPins.map((p) => new window.mapkit.Coordinate(p.lat, p.lng))
+			);
+			if (region) mapRef.region = region;
+			return;
+		}
+		if (effectiveProvider === 'google') {
+			if (vaultPins.length === 1) {
+				const pin = vaultPins[0];
+				mapRef.setCenter({ lat: pin.lat, lng: pin.lng });
+				mapRef.setZoom(12);
+				return;
+			}
+			const bounds = new window.google.maps.LatLngBounds();
+			for (const p of vaultPins) bounds.extend({ lat: p.lat, lng: p.lng });
+			mapRef.fitBounds(bounds, 60);
+			return;
+		}
+		void import('mapbox-gl').then(({ default: mapboxgl }) => {
+			if (!mapRef || center || vaultPins.length === 0) return;
+			if (vaultPins.length === 1) {
+				const pin = vaultPins[0];
+				mapRef.flyTo({ center: [pin.lng, pin.lat], zoom: 12, duration: 0 });
+				return;
+			}
+			const first = vaultPins[0];
+			const bounds = vaultPins.reduce(
+				(b, p) => b.extend([p.lng, p.lat] as [number, number]),
+				new mapboxgl.LngLatBounds([first.lng, first.lat], [first.lng, first.lat])
+			);
+			mapRef.fitBounds(bounds, { padding: 60, maxZoom: 13, duration: 0 });
+		});
 	}
 
 	function drawCenter() {
@@ -249,69 +321,134 @@
 		if (!mapRef) return;
 		const theme = readMapTheme();
 		if (effectiveProvider === 'apple') {
-			for (const m of resultMarkers) mapRef.removeAnnotation(m);
-			resultMarkers = [];
+			for (const m of vaultMarkers) mapRef.removeAnnotation(m);
+			for (const m of googleMarkers) mapRef.removeAnnotation(m);
+			vaultMarkers = [];
+			googleMarkers = [];
+			for (const pin of vaultPins) {
+				const ann = new window.mapkit.MarkerAnnotation(
+					new window.mapkit.Coordinate(pin.lat, pin.lng),
+					{
+						color: theme.accent,
+						glyphText: '★',
+						title: pin.name,
+						selected: false
+					}
+				);
+				ann.addEventListener('select', () => openVaultPin(pin));
+				mapRef.addAnnotation(ann);
+				vaultMarkers.push(ann);
+			}
 			for (const r of results) {
+				if (r.source !== 'google') continue;
 				const ann = new window.mapkit.MarkerAnnotation(
 					new window.mapkit.Coordinate(r.lat, r.lng),
 					{
-						color: r.source === 'vault' ? theme.accent : theme.mapSecondary,
-						glyphText: r.source === 'vault' ? '★' : '•',
+						color: theme.mapSecondary,
+						glyphText: '•',
 						title: r.name,
 						selected: false
 					}
 				);
 				ann.addEventListener('select', () => openResult(r));
 				mapRef.addAnnotation(ann);
-				resultMarkers.push(ann);
+				googleMarkers.push(ann);
 			}
 			return;
 		}
 		if (effectiveProvider === 'google') {
-			for (const m of resultMarkers) m.setMap(null);
-			resultMarkers = [];
-			for (const r of results) {
+			for (const m of vaultMarkers) m.setMap(null);
+			for (const m of googleMarkers) m.setMap(null);
+			vaultMarkers = [];
+			googleMarkers = [];
+			for (const pin of vaultPins) {
 				const marker = new window.google.maps.Marker({
-					position: { lat: r.lat, lng: r.lng },
+					position: { lat: pin.lat, lng: pin.lng },
 					map: mapRef,
-					title: r.name,
+					title: pin.name,
 					label: {
-						text: r.source === 'vault' ? '★' : '•',
-						color: r.source === 'vault' ? theme.onAccent : theme.text,
+						text: '★',
+						color: theme.onAccent,
 						fontSize: '10px',
 						fontWeight: '700'
 					},
 					icon: {
 						path: window.google.maps.SymbolPath.CIRCLE,
-						scale: r.source === 'vault' ? 12 : 9,
-						fillColor: r.source === 'vault' ? theme.accent : theme.mapSecondary,
+						scale: 12,
+						fillColor: theme.accent,
 						fillOpacity: 1,
 						strokeColor: theme.text,
-						strokeWeight: r.source === 'vault' ? 2 : 1
+						strokeWeight: 2
+					}
+				});
+				marker.addListener('click', () => openVaultPin(pin));
+				vaultMarkers.push(marker);
+			}
+			for (const r of results) {
+				if (r.source !== 'google') continue;
+				const marker = new window.google.maps.Marker({
+					position: { lat: r.lat, lng: r.lng },
+					map: mapRef,
+					title: r.name,
+					label: {
+						text: '•',
+						color: theme.text,
+						fontSize: '10px',
+						fontWeight: '700'
+					},
+					icon: {
+						path: window.google.maps.SymbolPath.CIRCLE,
+						scale: 9,
+						fillColor: theme.mapSecondary,
+						fillOpacity: 1,
+						strokeColor: theme.text,
+						strokeWeight: 1
 					}
 				});
 				marker.addListener('click', () => openResult(r));
-				resultMarkers.push(marker);
+				googleMarkers.push(marker);
 			}
 			return;
 		}
 		import('mapbox-gl').then(({ default: mapboxgl }) => {
-			for (const m of resultMarkers) m.remove();
-			resultMarkers = [];
-			for (const r of results) {
+			for (const m of vaultMarkers) m.remove();
+			for (const m of googleMarkers) m.remove();
+			vaultMarkers = [];
+			googleMarkers = [];
+			for (const pin of vaultPins) {
 				const el = document.createElement('button');
 				el.type = 'button';
 				el.className =
-					r.source === 'vault'
-						? 'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 border-primary bg-accent text-[10px] text-on-accent shadow'
-						: 'flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-secondary bg-map-secondary text-[9px] text-primary';
-				el.textContent = r.source === 'vault' ? '★' : '•';
+					'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 border-primary bg-accent text-[10px] text-on-accent shadow';
+				el.textContent = '★';
+				el.title = pin.name;
+				el.setAttribute('aria-label', `Open ${pin.name}`);
+				el.addEventListener('click', (event) => {
+					event.stopPropagation();
+					openVaultPin(pin);
+				});
+				const marker = new mapboxgl.Marker({ element: el })
+					.setLngLat([pin.lng, pin.lat])
+					.addTo(mapRef!);
+				vaultMarkers.push(marker);
+			}
+			for (const r of results) {
+				if (r.source !== 'google') continue;
+				const el = document.createElement('button');
+				el.type = 'button';
+				el.className =
+					'flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-secondary bg-map-secondary text-[9px] text-primary';
+				el.textContent = '•';
 				el.title = r.name;
-				el.addEventListener('click', () => openResult(r));
+				el.setAttribute('aria-label', `Open ${r.name}`);
+				el.addEventListener('click', (event) => {
+					event.stopPropagation();
+					openResult(r);
+				});
 				const marker = new mapboxgl.Marker({ element: el })
 					.setLngLat([r.lng, r.lat])
 					.addTo(mapRef!);
-				resultMarkers.push(marker);
+				googleMarkers.push(marker);
 			}
 		});
 	}
@@ -319,6 +456,10 @@
 	function openResult(r: Result) {
 		if (r.source === 'vault') void goto(`/restaurant/${r.uuid}`);
 		else void goto(`/place/${r.place_id}`);
+	}
+
+	function openVaultPin(pin: VaultPin) {
+		void goto(`/restaurant/${pin.uuid}`);
 	}
 
 	async function runQuery() {
@@ -330,7 +471,7 @@
 				lat: String(center.lat),
 				lng: String(center.lng),
 				radius: String(radius),
-				source
+				source: data.googleEnabled ? 'all' : 'vault'
 			});
 			if (minRating > 0) params.set('min_rating', String(minRating));
 			if (cuisines.length > 0) params.set('cuisines', cuisines.join(','));
@@ -339,12 +480,10 @@
 				queryErr = `Query failed: ${res.status}`;
 				return;
 			}
-			const data = (await res.json()) as {
+			const payload = (await res.json()) as {
 				results: Result[];
-				google_enabled: boolean;
 			};
-			results = data.results;
-			googleEnabledServerSide = data.google_enabled;
+			results = payload.results;
 		} catch (e) {
 			queryErr = String(e);
 		} finally {
@@ -355,14 +494,17 @@
 	function destroyMap() {
 		try {
 			if (effectiveProvider === 'apple') {
-				for (const m of resultMarkers) mapRef?.removeAnnotation?.(m);
+				for (const m of vaultMarkers) mapRef?.removeAnnotation?.(m);
+				for (const m of googleMarkers) mapRef?.removeAnnotation?.(m);
 				if (centerMarker) mapRef?.removeAnnotation?.(centerMarker);
 				mapRef?.destroy?.();
 			} else if (effectiveProvider === 'google') {
-				for (const m of resultMarkers) m.setMap?.(null);
+				for (const m of vaultMarkers) m.setMap?.(null);
+				for (const m of googleMarkers) m.setMap?.(null);
 				centerMarker?.setMap?.(null);
 			} else {
-				for (const m of resultMarkers) m.remove?.();
+				for (const m of vaultMarkers) m.remove?.();
+				for (const m of googleMarkers) m.remove?.();
 				centerMarker?.remove?.();
 				mapRef?.remove?.();
 			}
@@ -371,20 +513,29 @@
 		}
 		mapRef = null;
 		centerMarker = null;
-		resultMarkers = [];
+		vaultMarkers = [];
+		googleMarkers = [];
 	}
 
 	async function reloadMapForTheme() {
 		destroyMap();
 		mapEl?.replaceChildren();
+		fittedVaultPins = false;
 		await loadMap();
 		panMap();
 		drawCenter();
 		drawResultMarkers();
+		fitVaultPins();
 	}
 
 	onMount(() => {
-		void loadMap();
+		void loadVaultPins();
+		void (async () => {
+			await loadMap();
+			drawCenter();
+			drawResultMarkers();
+			fitVaultPins();
+		})();
 		const handleThemeChange = () => {
 			void reloadMapForTheme();
 		};
@@ -397,20 +548,18 @@
 
 	$effect(() => {
 		if (center) {
+			void radius;
+			void minRating;
+			void cuisines;
 			drawCenter();
 			void runQuery();
 		}
 	});
 	$effect(() => {
+		void vaultPins;
+		void results;
 		drawResultMarkers();
-	});
-	$effect(() => {
-		// re-run when filters change (if center known)
-		void radius;
-		void minRating;
-		void cuisines;
-		void source;
-		if (center) void runQuery();
+		fitVaultPins();
 	});
 </script>
 
@@ -418,7 +567,7 @@
 	<BackLink href="/" />
 	<h1 class="mt-2 text-2xl font-semibold text-primary">Near me</h1>
 	<p class="mt-1 text-sm text-secondary">
-		Pinpoint a spot and find a place worth trying.
+		Saved places are pinned. Tap a spot to search nearby.
 	</p>
 </header>
 
@@ -435,9 +584,9 @@
 	{:else if !center}
 		<div class="absolute inset-x-0 bottom-2 text-center text-[11px] text-secondary">
 			{#if effectiveProvider === 'apple'}
-				Use the "Use my location" button below to pin a search point.
+				Saved places are pinned. Use location to search nearby.
 			{:else}
-				Tap anywhere on the map to drop a pin, or use the button below.
+				Saved places are pinned. Tap the map for Google results.
 			{/if}
 		</div>
 	{/if}
@@ -472,20 +621,12 @@
 	>
 		{cuisines.length === 0 ? 'Cuisine: any' : `Cuisine: ${cuisines.length}`}
 	</button>
-	{#if data.googleEnabled}
-		<button
-			type="button"
-			onclick={toggleSource}
-			class="rounded-full border border-line bg-panel px-3 py-1.5 text-xs"
-			class:text-success={source === 'all'}
-			class:text-secondary={source === 'vault'}
-		>
-			{source === 'all' ? 'Vault + Google' : 'Vault only'}
-		</button>
-	{/if}
 </div>
 {#if geoErr}
 	<p class="px-5 pt-1 text-[11px] text-warning">{geoErr}</p>
+{/if}
+{#if vaultPinsErr}
+	<p class="px-5 pt-1 text-[11px] text-warning">{vaultPinsErr}</p>
 {/if}
 {#if queryErr}
 	<p class="px-5 pt-1 text-[11px] text-danger">{queryErr}</p>
@@ -493,7 +634,15 @@
 
 <section class="px-5 pt-4 pb-6">
 	{#if !center}
-		<p class="text-sm text-tertiary">Pinpoint a spot to see what's nearby.</p>
+		<p class="text-sm text-tertiary">
+			{#if vaultPinsLoading}
+				Loading saved places…
+			{:else if vaultPins.length > 0}
+				{vaultPins.length} saved {vaultPins.length === 1 ? 'place' : 'places'} pinned.
+			{:else}
+				Tap a spot to search nearby.
+			{/if}
+		</p>
 	{:else if loading && results.length === 0}
 		<p class="text-sm text-tertiary">Searching…</p>
 	{:else if results.length === 0}
