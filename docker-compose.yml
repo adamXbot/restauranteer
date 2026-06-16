@@ -3,6 +3,9 @@ services:
     image: ${RESTAURANTEER_IMAGE:-adamxbot/restauranteer:latest}
     container_name: restauranteer
     restart: unless-stopped
+    # With Traefik fronting the app you don't need to publish 3000 on the host.
+    # Keep it only if you also want to reach the app directly for debugging;
+    # otherwise remove this block so the app is reachable solely via Traefik.
     ports:
       - "3000:3000"
     env_file:
@@ -15,3 +18,32 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOST=0.0.0.0
+    # Join Traefik's network so it can discover and reach this container.
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      # ── HTTPS router ────────────────────────────────────────────────
+      # CHANGE ME: the public hostname that should route to Restauranteer.
+      - "traefik.http.routers.restauranteer.rule=Host(`restauranteer.example.com`)"
+      - "traefik.http.routers.restauranteer.entrypoints=websecure"
+      - "traefik.http.routers.restauranteer.tls=true"
+      # CHANGE ME: must match the certificatesResolvers name in your Traefik
+      # static config (often "letsencrypt", "le", or "myresolver").
+      - "traefik.http.routers.restauranteer.tls.certresolver=letsencrypt"
+      # Internal container port Traefik forwards to (matches PORT above).
+      - "traefik.http.services.restauranteer.loadbalancer.server.port=3000"
+      # Which network Traefik uses to reach this container.
+      - "traefik.docker.network=proxy"
+      # ── HTTP → HTTPS redirect ───────────────────────────────────────
+      # Same hostname as above; sends plain :80 traffic to :443.
+      - "traefik.http.routers.restauranteer-http.rule=Host(`restauranteer.example.com`)"
+      - "traefik.http.routers.restauranteer-http.entrypoints=web"
+      - "traefik.http.routers.restauranteer-http.middlewares=restauranteer-redirect"
+      - "traefik.http.middlewares.restauranteer-redirect.redirectscheme.scheme=https"
+
+# Traefik's network, created and owned by your Traefik stack. `external: true`
+# means compose joins the existing network instead of creating a new one.
+networks:
+  proxy:
+    external: true
