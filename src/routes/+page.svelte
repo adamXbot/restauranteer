@@ -4,6 +4,30 @@
 
 	let { data }: { data: PageData } = $props();
 
+	type View = 'vault' | 'recent';
+	let view = $state<View>('vault');
+
+	// In "recent" view, sort by most recent visit first; un-visited restaurants
+	// sink to the bottom, ordered alphabetically. The server already returns the
+	// list A–Z, so "vault" view is the unmodified array.
+	const restaurants = $derived.by(() => {
+		if (view === 'vault') return data.restaurants;
+		const latestDate = (r: (typeof data.restaurants)[number]) =>
+			r.visitSummary.latest?.date ?? null;
+		return [...data.restaurants].sort((a, b) => {
+			const da = latestDate(a);
+			const db = latestDate(b);
+			if (da && db) return db.localeCompare(da);
+			if (da) return -1;
+			if (db) return 1;
+			return a.name.localeCompare(b.name);
+		});
+	});
+
+	const visitedCount = $derived(
+		data.restaurants.filter((r) => r.visitSummary.count > 0).length
+	);
+
 	function thumbUrl(relativePath: string): string {
 		const rel = relativePath.replace(/^_attachments\//, '');
 		const stem = rel.replace(/\.(jpg|jpeg|png|webp)$/i, '');
@@ -13,25 +37,59 @@
 		const rel = relativePath.replace(/^_attachments\//, '');
 		return `/api/attachments/${encodeURI(rel)}`;
 	}
+	function shortVisitDate(iso: string): string {
+		const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+		if (!match) return iso;
+		const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+		return `${months[Number(match[2]) - 1]} ${Number(match[3])} ${match[1]}`;
+	}
 </script>
 
 <SearchBar />
 
 <header class="flex items-end justify-between gap-3 px-5 pt-2 pb-3">
 	<div class="min-w-0">
-		<p class="text-xs tracking-widest text-secondary uppercase">Your vault</p>
+		<p class="text-xs tracking-widest text-secondary uppercase">
+			{view === 'recent' ? 'Recent visits' : 'Your vault'}
+		</p>
 		<p class="text-sm text-tertiary">
-			{data.restaurants.length}
-			{data.restaurants.length === 1 ? 'restaurant' : 'restaurants'}
+			{#if view === 'recent'}
+				{visitedCount} of {data.restaurants.length} visited
+			{:else}
+				{data.restaurants.length}
+				{data.restaurants.length === 1 ? 'restaurant' : 'restaurants'}
+			{/if}
 		</p>
 	</div>
 	{#if data.restaurants.length > 0}
-		<a
-			href="/map"
-			class="shrink-0 rounded-xl border border-line bg-panel/60 px-3 py-1.5 text-xs text-secondary"
-		>
-			Map
-		</a>
+		<div class="flex shrink-0 items-center gap-2">
+			<div class="flex rounded-xl border border-line bg-panel/60 p-0.5 text-xs">
+				<button
+					type="button"
+					onclick={() => (view = 'vault')}
+					class="rounded-[10px] px-2.5 py-1 {view === 'vault'
+						? 'bg-panel-2 text-primary'
+						: 'text-secondary'}"
+				>
+					A–Z
+				</button>
+				<button
+					type="button"
+					onclick={() => (view = 'recent')}
+					class="rounded-[10px] px-2.5 py-1 {view === 'recent'
+						? 'bg-panel-2 text-primary'
+						: 'text-secondary'}"
+				>
+					Recent
+				</button>
+			</div>
+			<a
+				href="/map"
+				class="rounded-xl border border-line bg-panel/60 px-3 py-1.5 text-xs text-secondary"
+			>
+				Map
+			</a>
+		</div>
 	{/if}
 </header>
 
@@ -50,7 +108,7 @@
 	</section>
 {:else}
 	<section class="grid gap-3 px-5 pb-10">
-		{#each data.restaurants as r (r.uuid)}
+		{#each restaurants as r (r.uuid)}
 			{@const showUser = data.preferences.show_review_summary && r.visitSummary.count > 0}
 			{@const userRating = showUser ? (r.visitSummary.latest?.rating ?? null) : null}
 			{@const userPhoto = showUser ? (r.visitSummary.latest?.photo ?? null) : null}
@@ -104,6 +162,16 @@
 				{/if}
 				{#if r.lists.length > 0}
 					<p class="mt-2 truncate text-xs text-tertiary">in {r.lists.join(' · ')}</p>
+				{/if}
+				{#if view === 'recent'}
+					<p class="mt-2 text-xs {r.visitSummary.latest ? 'text-secondary' : 'text-tertiary'}">
+						{#if r.visitSummary.latest}
+							Visited {shortVisitDate(r.visitSummary.latest.date)}
+							{#if r.visitSummary.count > 1} · {r.visitSummary.count} visits{/if}
+						{:else}
+							Not visited yet
+						{/if}
+					</p>
 				{/if}
 			</a>
 		{/each}
