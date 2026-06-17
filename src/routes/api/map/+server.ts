@@ -11,6 +11,7 @@ type Row = {
 	address: string | null;
 	rating: number | null;
 	cuisine_json: string | null;
+	attributes_json: string | null;
 };
 
 function parseCuisine(json: string | null): string[] {
@@ -20,6 +21,21 @@ function parseCuisine(json: string | null): string[] {
 		return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
 	} catch {
 		return [];
+	}
+}
+
+function parseAttributes(json: string | null): Record<string, 'yes' | 'no'> {
+	if (!json) return {};
+	try {
+		const parsed = JSON.parse(json) as Record<string, unknown>;
+		if (!parsed || typeof parsed !== 'object') return {};
+		const out: Record<string, 'yes' | 'no'> = {};
+		for (const [k, v] of Object.entries(parsed)) {
+			if (v === 'yes' || v === 'no') out[k] = v;
+		}
+		return out;
+	} catch {
+		return {};
 	}
 }
 
@@ -40,7 +56,8 @@ export const GET: RequestHandler = ({ url }) => {
 				        json_extract(frontmatter_json, '$.suburb') AS suburb,
 				        json_extract(frontmatter_json, '$.address') AS address,
 				        json_extract(frontmatter_json, '$.rating') AS rating,
-				        json_extract(frontmatter_json, '$.cuisine') AS cuisine_json
+				        json_extract(frontmatter_json, '$.cuisine') AS cuisine_json,
+				        json_extract(frontmatter_json, '$.attributes') AS attributes_json
 				 FROM restaurants
 				 WHERE lat IS NOT NULL AND lng IS NOT NULL
 				   AND lat BETWEEN ? AND ?
@@ -55,7 +72,8 @@ export const GET: RequestHandler = ({ url }) => {
 				        json_extract(frontmatter_json, '$.suburb') AS suburb,
 				        json_extract(frontmatter_json, '$.address') AS address,
 				        json_extract(frontmatter_json, '$.rating') AS rating,
-				        json_extract(frontmatter_json, '$.cuisine') AS cuisine_json
+				        json_extract(frontmatter_json, '$.cuisine') AS cuisine_json,
+				        json_extract(frontmatter_json, '$.attributes') AS attributes_json
 				 FROM restaurants
 				 WHERE lat IS NOT NULL AND lng IS NOT NULL
 				 LIMIT 2000`
@@ -72,7 +90,8 @@ export const GET: RequestHandler = ({ url }) => {
 			suburb: r.suburb,
 			address: r.address,
 			rating: typeof r.rating === 'number' ? r.rating : null,
-			cuisine: parseCuisine(r.cuisine_json)
+			cuisine: parseCuisine(r.cuisine_json),
+			attributes: parseAttributes(r.attributes_json)
 		}))
 	});
 };

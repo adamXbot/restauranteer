@@ -61,12 +61,23 @@ export const GET: RequestHandler = async ({ url }) => {
 	const cuisines = cuisinesParam ? cuisinesParam.split(',').filter(Boolean) : undefined;
 	const forceRefresh = url.searchParams.get('refresh') === '1';
 
+	const attributes: Record<string, 'yes' | 'no'> = {};
+	for (const [key, raw] of url.searchParams.entries()) {
+		if (!key.startsWith('attr_')) continue;
+		const id = key.slice('attr_'.length).replace(/[^a-z0-9_]/gi, '_');
+		if (!id) continue;
+		const v = raw.toLowerCase();
+		if (v === 'yes') attributes[id] = 'yes';
+		else if (v === 'no') attributes[id] = 'no';
+	}
+
 	const bbox = bboxAround(lat, lng, radius);
 
 	const vaultCandidates = findRestaurantsInBox({
 		...bbox,
 		minRating,
-		cuisines
+		cuisines,
+		attributes: Object.keys(attributes).length > 0 ? attributes : undefined
 	});
 	const vault: NearVaultResult[] = vaultCandidates
 		.filter((r) => r.lat != null && r.lng != null)

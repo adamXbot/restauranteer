@@ -6,6 +6,7 @@ import { config, attachmentsDir } from '$lib/server/config';
 import { cacheStats } from '$lib/server/providers/cache';
 import { getDb, getMeta } from '$lib/server/db/schema';
 import { getPreferences } from '$lib/server/preferences';
+import { getDistinctLists, getDistinctCuisines } from '$lib/server/db/queries';
 
 type AttachmentGroup = { slug: string; bytes: number; files: number };
 
@@ -83,6 +84,13 @@ export const load: PageServerLoad = async () => {
 		db.prepare('SELECT COUNT(*) AS c FROM article_urls').get() as { c: number }
 	).c;
 
+	const allTagsRows = db
+		.prepare('SELECT DISTINCT tag FROM tags ORDER BY tag COLLATE NOCASE')
+		.all() as { tag: string }[];
+	const allTags = allTagsRows.map((r) => r.tag);
+	const allLists = getDistinctLists().map((l) => l.name);
+	const allCuisines = getDistinctCuisines();
+
 	return {
 		vault: {
 			path: config.vaultPath,
@@ -107,6 +115,11 @@ export const load: PageServerLoad = async () => {
 		cache: cacheStats(),
 		attachments: await attachmentStats(),
 		preferences: getPreferences(),
+		scopeOptions: {
+			tags: allTags,
+			cuisines: allCuisines,
+			lists: allLists
+		},
 		lastReconcile: getMeta('last_reconcile'),
 		dirtyShutdown: getMeta('reconcile_in_progress') === '1'
 	};

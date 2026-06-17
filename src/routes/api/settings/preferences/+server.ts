@@ -11,6 +11,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (!body || typeof body !== 'object') throw error(400, 'invalid body');
 	const updates: Record<string, unknown> = {};
 	if ('per_area_ratings' in body) updates.per_area_ratings = body.per_area_ratings === true;
+	if ('food_breakdown' in body) updates.food_breakdown = body.food_breakdown === true;
 	if ('default_navigation_app' in body) updates.default_navigation_app = body.default_navigation_app;
 	if ('default_map_provider' in body) updates.default_map_provider = body.default_map_provider;
 	if ('share_format' in body) updates.share_format = body.share_format;
@@ -19,6 +20,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	if ('theme_mode' in body) updates.theme_mode = body.theme_mode;
 	if ('theme_preset' in body) updates.theme_preset = body.theme_preset;
 	if ('theme_accent' in body) updates.theme_accent = body.theme_accent;
+	if ('attributes' in body) updates.attributes = body.attributes;
 	const next = setPreferences(updates);
 	return json(next);
 };

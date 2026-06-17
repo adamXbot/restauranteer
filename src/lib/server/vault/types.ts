@@ -1,3 +1,5 @@
+import type { AttributeValue } from '$lib/attributes';
+
 export const CURRENT_SCHEMA_VERSION = 1;
 
 /**
@@ -33,6 +35,7 @@ export type Frontmatter = {
 	list_memberships?: ListMembership[];
 	tags?: string[];
 	rating?: number;
+	attributes?: Record<string, AttributeValue>;
 	last_synced?: string;
 	// MOC-only fields
 	generated_by?: string;

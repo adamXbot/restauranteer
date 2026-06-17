@@ -10,6 +10,12 @@ export type QueuedVisit = {
 	restaurantName: string;
 	fields: Record<string, string>;
 	photos: Blob[];
+	/**
+	 * Optional form-field name for each entry in `photos` (parallel array). Used
+	 * to keep per-dish photos mapped to `dish_photo_<i>` fields. Defaults to
+	 * `photo` when absent — older queued visits stay valid.
+	 */
+	photoFields?: string[];
 	createdAt: number;
 	retries: number;
 	lastError?: string;
@@ -110,7 +116,8 @@ export async function flushQueue(): Promise<FlushResult> {
 				if (v) form.set(k, v);
 			}
 			for (let i = 0; i < visit.photos.length; i++) {
-				form.append('photo', visit.photos[i], `photo-${i + 1}.jpg`);
+				const field = visit.photoFields?.[i] ?? 'photo';
+				form.append(field, visit.photos[i], `${field}-${i + 1}.jpg`);
 			}
 			const res = await fetch(`/api/restaurants/${visit.restaurantUuid}/visits`, {
 				method: 'POST',

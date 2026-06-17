@@ -5,9 +5,23 @@
 	import { enqueueVisit } from '$lib/visitQueue';
 	import StarPicker from '$lib/components/StarPicker.svelte';
 	import BackLink from '$lib/components/BackLink.svelte';
+	import AttributeToggle from '$lib/components/AttributeToggle.svelte';
+	import DishBreakdown, { type EditorDish } from '$lib/components/DishBreakdown.svelte';
+	import type { AttributeValue } from '$lib/attributes';
 
 	let { data }: { data: PageData } = $props();
 	const usePerArea = $derived(data.preferences.per_area_ratings);
+	const useFoodBreakdown = $derived(usePerArea && data.preferences.food_breakdown);
+	let attributeOverrides = $state<Record<string, AttributeValue>>({});
+	let showAttributes = $state(false);
+	let dishEntries = $state<EditorDish[]>([]);
+
+	function setOverride(id: string, next: AttributeValue | null) {
+		const copy = { ...attributeOverrides };
+		if (next === 'yes' || next === 'no') copy[id] = next;
+		else delete copy[id];
+		attributeOverrides = copy;
+	}
 
 	const today = new Date().toISOString().slice(0, 10);
 	let date = $state(today);
@@ -28,9 +42,16 @@
 	let progress = $state<string | null>(null);
 	let err = $state<string | null>(null);
 
-	const areaRatings = $derived([vibeRating, foodRating, qualityRating, serviceRating].filter(
-		(r) => r > 0
-	));
+	const foodAvgLive = $derived.by(() => {
+		const rated = dishEntries.map((d) => d.rating).filter((r) => r > 0);
+		if (rated.length === 0) return null;
+		return Math.round((rated.reduce((a, b) => a + b, 0) / rated.length) * 10) / 10;
+	});
+	const effectiveFoodRating = $derived(useFoodBreakdown ? (foodAvgLive ?? 0) : foodRating);
+
+	const areaRatings = $derived(
+		[vibeRating, effectiveFoodRating, qualityRating, serviceRating].filter((r) => r > 0)
+	);
 	const areaAverage = $derived(
 		areaRatings.length > 0
 			? Math.round((areaRatings.reduce((a, b) => a + b, 0) / areaRatings.length) * 10) / 10
@@ -74,22 +95,52 @@
 		if (notes) out.notes = notes;
 		if (usePerArea) {
 			if (vibeRating > 0) out.vibe_rating = String(vibeRating);
-			if (foodRating > 0) out.food_rating = String(foodRating);
+			if (!useFoodBreakdown && foodRating > 0) out.food_rating = String(foodRating);
 			if (qualityRating > 0) out.quality_rating = String(qualityRating);
 			if (serviceRating > 0) out.service_rating = String(serviceRating);
 		} else if (rating) {
 			out.rating = rating;
 		}
+		if (useFoodBreakdown && dishEntries.length > 0) {
+			out.dishes = JSON.stringify(
+				dishEntries.map((d) => ({
+					name: d.name,
+					rating: d.rating > 0 ? d.rating : null,
+					note: d.note || null,
+					keepPhoto: d.existingPhotoPath
+				}))
+			);
+		}
+		for (const [id, v] of Object.entries(attributeOverrides)) {
+			out[`attribute_${id}`] = v;
+		}
 		return out;
+	}
+
+	/** Newly-picked dish photos paired with their `dish_photo_<i>` field names. */
+	function dishPhotoUploads(): { files: File[]; fields: string[] } {
+		const files: File[] = [];
+		const fields: string[] = [];
+		if (useFoodBreakdown) {
+			dishEntries.forEach((d, i) => {
+				if (d.photo) {
+					files.push(d.photo);
+					fields.push(`dish_photo_${i}`);
+				}
+			});
+		}
+		return { files, fields };
 	}
 
 	async function queueOffline(reason: string) {
 		try {
+			const dishUploads = dishPhotoUploads();
 			await enqueueVisit({
 				restaurantUuid: data.uuid,
 				restaurantName: data.name,
 				fields: buildFields(),
-				photos: pickedFiles
+				photos: [...pickedFiles, ...dishUploads.files],
+				photoFields: [...pickedFiles.map(() => 'photo'), ...dishUploads.fields]
 			});
 			progress = `Saved offline (${reason}). Will sync when online.`;
 			setTimeout(() => goto(`/restaurant/${data.uuid}`), 1200);
@@ -114,6 +165,10 @@
 		const form = new FormData();
 		for (const [k, v] of Object.entries(buildFields())) form.set(k, v);
 		for (const f of pickedFiles) form.append('photo', f);
+		const dishUploads = dishPhotoUploads();
+		for (let i = 0; i < dishUploads.files.length; i++) {
+			form.set(dishUploads.fields[i], dishUploads.files[i]);
+		}
 
 		try {
 			const res = await fetch(`/api/restaurants/${data.uuid}/visits`, {
@@ -192,7 +247,27 @@
 	{/snippet}
 
 	{@render areaField('Vibe', vibe, (v) => (vibe = v), 'Loud, bright, friendly…', vibeRating, (n) => (vibeRating = n))}
-	{@render areaField('Food', food, (v) => (food = v), 'What you ordered', foodRating, (n) => (foodRating = n))}
+
+	{#if useFoodBreakdown}
+		<div class="flex flex-col gap-1">
+			<div class="flex items-center justify-between">
+				<span class="text-xs text-secondary">Food</span>
+				{#if foodAvgLive != null}
+					<span class="text-xs text-rating">★ {foodAvgLive}</span>
+				{/if}
+			</div>
+			<textarea
+				bind:value={food}
+				rows="2"
+				placeholder="Overall food note (optional)"
+				class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
+			></textarea>
+			<DishBreakdown bind:dishes={dishEntries} />
+		</div>
+	{:else}
+		{@render areaField('Food', food, (v) => (food = v), 'What you ordered', foodRating, (n) => (foodRating = n))}
+	{/if}
+
 	{@render areaField('Quality', quality, (v) => (quality = v), 'How it tasted', qualityRating, (n) => (qualityRating = n))}
 	{@render areaField('Service', service, (v) => (service = v), 'Friendly, attentive, slow…', serviceRating, (n) => (serviceRating = n))}
 
@@ -230,6 +305,45 @@
 		></textarea>
 	</label>
 
+	{#if data.applicableAttributes.length > 0}
+		<details
+			bind:open={showAttributes}
+			class="rounded-xl border border-line bg-panel/40"
+		>
+			<summary class="cursor-pointer list-none px-3 py-2 text-xs text-secondary">
+				<span>Attributes (overrides for this visit)</span>
+				{#if Object.keys(attributeOverrides).length > 0}
+					<span class="ml-2 text-accent">{Object.keys(attributeOverrides).length} set</span>
+				{/if}
+			</summary>
+			<div class="border-t border-line/60 px-3 py-2">
+				<p class="mb-2 text-[11px] text-tertiary">
+					Unset = use restaurant default.
+				</p>
+				<ul class="divide-y divide-line/40">
+					{#each data.applicableAttributes as def (def.id)}
+						{@const restaurantValue = data.restaurantAttributes[def.id] ?? null}
+						<li class="flex items-center justify-between gap-3 py-2">
+							<div class="min-w-0 flex-1">
+								<p class="truncate text-sm text-primary">{def.label}</p>
+								<p class="mt-0.5 text-[11px] text-tertiary">
+									Default: {restaurantValue === 'yes' ? '✓ Yes' : restaurantValue === 'no' ? '✕ No' : '—'}
+								</p>
+							</div>
+							<AttributeToggle
+								value={attributeOverrides[def.id] ?? null}
+								label={def.label}
+								unsetLabel="Use default"
+								size="sm"
+								onchange={(next) => setOverride(def.id, next)}
+							/>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		</details>
+	{/if}
+
 	<div>
 		<div class="mb-2 flex items-center justify-between">
 			<span class="text-xs text-secondary">Photos ({pickedFiles.length}/8)</span>
@@ -260,7 +374,6 @@
 			<input
 				type="file"
 				accept="image/*"
-				capture="environment"
 				multiple
 				onchange={onFilePick}
 				class="hidden"

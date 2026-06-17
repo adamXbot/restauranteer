@@ -7,6 +7,7 @@ import {
 	type ThemeMode,
 	type ThemePresetId
 } from '$lib/theme';
+import { coerceAttributeDefinitions, type AttributeDefinition } from '$lib/attributes';
 
 export type NavigationApp = 'apple' | 'google';
 export type MapProvider = 'mapbox' | 'apple' | 'google';
@@ -17,6 +18,12 @@ const SHARE_FORMATS: ShareFormat[] = ['full', 'notes_only'];
 
 export type Preferences = {
 	per_area_ratings: boolean;
+	/**
+	 * Allow breaking the Food area into individually-rated dishes. Only takes
+	 * effect alongside `per_area_ratings`, since the dish average drives the
+	 * Food area rating.
+	 */
+	food_breakdown: boolean;
 	default_navigation_app: NavigationApp;
 	default_map_provider: MapProvider;
 	share_format: ShareFormat;
@@ -31,15 +38,18 @@ export type Preferences = {
 	theme_mode: ThemeMode;
 	theme_preset: ThemePresetId;
 	theme_accent: string | null;
+	attributes: AttributeDefinition[];
 };
 
 const DEFAULTS: Preferences = {
 	per_area_ratings: false,
+	food_breakdown: false,
 	default_navigation_app: 'apple',
 	default_map_provider: 'mapbox',
 	share_format: 'full',
 	australian_centric: true,
 	show_review_summary: true,
+	attributes: [],
 	...DEFAULT_THEME_PREFERENCES
 };
 
@@ -58,11 +68,12 @@ function coerceShareFormat(v: unknown): ShareFormat {
 }
 
 export function parsePreferences(raw: string | null): Preferences {
-	if (!raw) return { ...DEFAULTS };
+	if (!raw) return { ...DEFAULTS, attributes: [] };
 	try {
 		const parsed = JSON.parse(raw) as Partial<Preferences>;
 		return {
 			per_area_ratings: parsed.per_area_ratings === true,
+			food_breakdown: parsed.food_breakdown === true,
 			default_navigation_app: coerceNavApp(parsed.default_navigation_app),
 			default_map_provider: coerceMapProvider(parsed.default_map_provider),
 			share_format: coerceShareFormat(parsed.share_format),
@@ -76,10 +87,11 @@ export function parsePreferences(raw: string | null): Preferences {
 					: parsed.show_review_summary === true,
 			theme_mode: coerceThemeMode(parsed.theme_mode),
 			theme_preset: coerceThemePreset(parsed.theme_preset),
-			theme_accent: normalizeHexAccent(parsed.theme_accent)
+			theme_accent: normalizeHexAccent(parsed.theme_accent),
+			attributes: coerceAttributeDefinitions(parsed.attributes)
 		};
 	} catch {
-		return { ...DEFAULTS };
+		return { ...DEFAULTS, attributes: [] };
 	}
 }
 
@@ -94,6 +106,10 @@ export function setPreferences(updates: Partial<Preferences>): Preferences {
 			updates.per_area_ratings !== undefined
 				? updates.per_area_ratings === true
 				: current.per_area_ratings,
+		food_breakdown:
+			updates.food_breakdown !== undefined
+				? updates.food_breakdown === true
+				: current.food_breakdown,
 		default_navigation_app:
 			updates.default_navigation_app !== undefined
 				? coerceNavApp(updates.default_navigation_app)
@@ -123,7 +139,11 @@ export function setPreferences(updates: Partial<Preferences>): Preferences {
 		theme_accent:
 			updates.theme_accent !== undefined
 				? normalizeHexAccent(updates.theme_accent)
-				: current.theme_accent
+				: current.theme_accent,
+		attributes:
+			updates.attributes !== undefined
+				? coerceAttributeDefinitions(updates.attributes)
+				: current.attributes
 	};
 	setMeta(KEY, JSON.stringify(merged));
 	return merged;

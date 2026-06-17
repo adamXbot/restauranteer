@@ -4,9 +4,13 @@
 	import { resizeForUpload } from '$lib/imageResize';
 	import StarPicker from '$lib/components/StarPicker.svelte';
 	import BackLink from '$lib/components/BackLink.svelte';
+	import AttributeToggle from '$lib/components/AttributeToggle.svelte';
+	import DishBreakdown, { type EditorDish } from '$lib/components/DishBreakdown.svelte';
+	import type { AttributeValue } from '$lib/attributes';
 
 	let { data }: { data: PageData } = $props();
 	const usePerArea = $derived(data.preferences.per_area_ratings);
+	const useFoodBreakdown = $derived(usePerArea && data.preferences.food_breakdown);
 
 	// svelte-ignore state_referenced_locally
 	const initial = data.fields;
@@ -23,9 +27,37 @@
 	let qualityRating = $state(initial.qualityRating ?? 0);
 	let serviceRating = $state(initial.serviceRating ?? 0);
 	let notes = $state(initial.notes ?? '');
+	let attributeOverrides = $state<Record<string, AttributeValue>>({ ...initial.attributeOverrides });
+	let showAttributes = $state(Object.keys(initial.attributeOverrides).length > 0);
 
-	// Existing photos that the user has chosen to keep.
-	let keptPhotos = $state<string[]>(initial.photoPaths.slice());
+	// svelte-ignore state_referenced_locally
+	let dishEntries = $state<EditorDish[]>(
+		initial.dishes.map((d) => ({
+			name: d.name,
+			rating: d.rating ?? 0,
+			note: d.note ?? '',
+			photo: null,
+			existingPhotoPath: d.photoPath
+		}))
+	);
+	// Show the breakdown editor when the preference is on OR the visit already
+	// has dishes — so existing dish data is never silently hidden/dropped.
+	const showDishes = $derived(useFoodBreakdown || dishEntries.length > 0);
+
+	function setOverride(id: string, next: AttributeValue | null) {
+		const copy = { ...attributeOverrides };
+		if (next === 'yes' || next === 'no') copy[id] = next;
+		else delete copy[id];
+		attributeOverrides = copy;
+	}
+
+	// Existing photos that the user has chosen to keep. Dish photos are managed by
+	// the breakdown editor, so exclude them from the general photo list.
+	// svelte-ignore state_referenced_locally
+	const dishPhotoSet = new Set(
+		initial.dishes.map((d) => d.photoPath).filter((p): p is string => !!p)
+	);
+	let keptPhotos = $state<string[]>(initial.photoPaths.filter((p) => !dishPhotoSet.has(p)));
 	let pickedFiles = $state<File[]>([]);
 	let saving = $state(false);
 	let deleting = $state(false);
@@ -37,8 +69,15 @@
 
 	const totalPhotos = $derived(keptPhotos.length + pickedFiles.length);
 
+	const foodAvgLive = $derived.by(() => {
+		const rated = dishEntries.map((d) => d.rating).filter((r) => r > 0);
+		if (rated.length === 0) return null;
+		return Math.round((rated.reduce((a, b) => a + b, 0) / rated.length) * 10) / 10;
+	});
+	const effectiveFoodRating = $derived(showDishes ? (foodAvgLive ?? 0) : foodRating);
+
 	const areaRatings = $derived(
-		[vibeRating, foodRating, qualityRating, serviceRating].filter((r) => r > 0)
+		[vibeRating, effectiveFoodRating, qualityRating, serviceRating].filter((r) => r > 0)
 	);
 	const areaAverage = $derived(
 		areaRatings.length > 0
@@ -104,11 +143,32 @@
 		if (notes) form.set('notes', notes);
 		if (usePerArea) {
 			if (vibeRating > 0) form.set('vibe_rating', String(vibeRating));
-			if (foodRating > 0) form.set('food_rating', String(foodRating));
+			if (!showDishes && foodRating > 0) form.set('food_rating', String(foodRating));
 			if (qualityRating > 0) form.set('quality_rating', String(qualityRating));
 			if (serviceRating > 0) form.set('service_rating', String(serviceRating));
 		} else if (rating) {
 			form.set('rating', rating);
+		}
+		// Dishes (Food breakdown). Always sent when present so edits never drop
+		// existing dish data, even if the global preference is off.
+		if (dishEntries.length > 0) {
+			form.set(
+				'dishes',
+				JSON.stringify(
+					dishEntries.map((d) => ({
+						name: d.name,
+						rating: d.rating > 0 ? d.rating : null,
+						note: d.note || null,
+						keepPhoto: d.existingPhotoPath
+					}))
+				)
+			);
+			dishEntries.forEach((d, i) => {
+				if (d.photo) form.set(`dish_photo_${i}`, d.photo);
+			});
+		}
+		for (const [id, v] of Object.entries(attributeOverrides)) {
+			form.set(`attribute_${id}`, v);
 		}
 		for (const p of keptPhotos) form.append('keep_photo', p);
 		for (const f of pickedFiles) form.append('photo', f);
@@ -210,7 +270,27 @@
 	{/snippet}
 
 	{@render areaField('Vibe', vibe, (v) => (vibe = v), 'Loud, bright, friendly…', vibeRating, (n) => (vibeRating = n))}
-	{@render areaField('Food', food, (v) => (food = v), 'What you ordered', foodRating, (n) => (foodRating = n))}
+
+	{#if showDishes}
+		<div class="flex flex-col gap-1">
+			<div class="flex items-center justify-between">
+				<span class="text-xs text-secondary">Food</span>
+				{#if foodAvgLive != null}
+					<span class="text-xs text-rating">★ {foodAvgLive}</span>
+				{/if}
+			</div>
+			<textarea
+				bind:value={food}
+				rows="2"
+				placeholder="Overall food note (optional)"
+				class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
+			></textarea>
+			<DishBreakdown bind:dishes={dishEntries} />
+		</div>
+	{:else}
+		{@render areaField('Food', food, (v) => (food = v), 'What you ordered', foodRating, (n) => (foodRating = n))}
+	{/if}
+
 	{@render areaField('Quality', quality, (v) => (quality = v), 'How it tasted', qualityRating, (n) => (qualityRating = n))}
 	{@render areaField('Service', service, (v) => (service = v), 'Friendly, attentive, slow…', serviceRating, (n) => (serviceRating = n))}
 
@@ -247,6 +327,45 @@
 			class="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-primary placeholder:text-tertiary"
 		></textarea>
 	</label>
+
+	{#if data.applicableAttributes.length > 0}
+		<details
+			bind:open={showAttributes}
+			class="rounded-xl border border-line bg-panel/40"
+		>
+			<summary class="cursor-pointer list-none px-3 py-2 text-xs text-secondary">
+				<span>Attributes (overrides for this visit)</span>
+				{#if Object.keys(attributeOverrides).length > 0}
+					<span class="ml-2 text-accent">{Object.keys(attributeOverrides).length} set</span>
+				{/if}
+			</summary>
+			<div class="border-t border-line/60 px-3 py-2">
+				<p class="mb-2 text-[11px] text-tertiary">
+					Unset = use restaurant default.
+				</p>
+				<ul class="divide-y divide-line/40">
+					{#each data.applicableAttributes as def (def.id)}
+						{@const restaurantValue = data.restaurantAttributes[def.id] ?? null}
+						<li class="flex items-center justify-between gap-3 py-2">
+							<div class="min-w-0 flex-1">
+								<p class="truncate text-sm text-primary">{def.label}</p>
+								<p class="mt-0.5 text-[11px] text-tertiary">
+									Default: {restaurantValue === 'yes' ? '✓ Yes' : restaurantValue === 'no' ? '✕ No' : '—'}
+								</p>
+							</div>
+							<AttributeToggle
+								value={attributeOverrides[def.id] ?? null}
+								label={def.label}
+								unsetLabel="Use default"
+								size="sm"
+								onchange={(next) => setOverride(def.id, next)}
+							/>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		</details>
+	{/if}
 
 	<div>
 		<div class="mb-2 flex items-center justify-between">
@@ -298,7 +417,6 @@
 				<input
 					type="file"
 					accept="image/*"
-					capture="environment"
 					multiple
 					onchange={onFilePick}
 					class="hidden"

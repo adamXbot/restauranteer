@@ -1,10 +1,27 @@
 import path from 'node:path';
+import {
+	parseOverrideLine,
+	serializeOverrides,
+	type AttributeValue
+} from '$lib/attributes';
 
 export type AreaRatings = {
 	vibe?: number | null;
 	food?: number | null;
 	quality?: number | null;
 	service?: number | null;
+};
+
+/**
+ * A single dish within the Food area's breakdown. When a visit has dishes the
+ * Food rating is derived from their average (see {@link averageDishRatings}).
+ * `photoPath` is the final saved `_attachments/...` path, or null.
+ */
+export type Dish = {
+	name: string;
+	rating: number | null;
+	note: string | null;
+	photoPath: string | null;
 };
 
 export type VisitInput = {
@@ -19,7 +36,74 @@ export type VisitInput = {
 	areaRatings?: AreaRatings | null;
 	notes?: string | null;
 	imagePaths: string[];
+	attributeOverrides?: Record<string, AttributeValue> | null;
+	dishes?: Dish[] | null;
 };
+
+const MAX_DISHES = 20;
+const MAX_DISH_NAME_LEN = 80;
+const MAX_DISH_NOTE_LEN = 280;
+
+/** Validated dish metadata coming off a form (photo handled separately). */
+export type DishMeta = {
+	name: string;
+	rating: number | null;
+	note: string | null;
+	keepPhoto: string | null;
+};
+
+/** Average of the dishes that carry a positive rating, or null when none do. */
+export function averageDishRatings(dishes: Dish[] | null | undefined): number | null {
+	if (!dishes) return null;
+	const values = dishes
+		.map((d) => d.rating)
+		.filter((v): v is number => typeof v === 'number' && v > 0);
+	if (values.length === 0) return null;
+	return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
+}
+
+/**
+ * Coerce the `dishes` form field (a JSON string or already-parsed array) into
+ * validated metadata. Fully-empty entries are dropped; the list is capped.
+ */
+export function coerceDishMeta(raw: unknown): DishMeta[] {
+	let arr: unknown = raw;
+	if (typeof raw === 'string') {
+		try {
+			arr = JSON.parse(raw);
+		} catch {
+			return [];
+		}
+	}
+	if (!Array.isArray(arr)) return [];
+	const out: DishMeta[] = [];
+	for (const entry of arr) {
+		if (!entry || typeof entry !== 'object') continue;
+		const e = entry as Record<string, unknown>;
+		const name = typeof e.name === 'string' ? e.name.trim().slice(0, MAX_DISH_NAME_LEN) : '';
+		const noteRaw = typeof e.note === 'string' ? e.note.trim().slice(0, MAX_DISH_NOTE_LEN) : '';
+		const note = noteRaw.length > 0 ? noteRaw : null;
+		const rNum = typeof e.rating === 'number' ? e.rating : Number(e.rating);
+		const rating = Number.isFinite(rNum) && rNum > 0 && rNum <= 5 ? Math.round(rNum) : null;
+		const keepPhoto =
+			typeof e.keepPhoto === 'string' && e.keepPhoto.startsWith('_attachments/')
+				? e.keepPhoto
+				: null;
+		if (!name && rating === null && !note && !keepPhoto) continue;
+		out.push({ name, rating, note, keepPhoto });
+		if (out.length >= MAX_DISHES) break;
+	}
+	return out;
+}
+
+function dishLine(dish: Dish): string {
+	const name = dish.name.trim() || 'Dish';
+	const parts = [`- **${name}**`];
+	if (typeof dish.rating === 'number' && dish.rating > 0) parts.push(stars(dish.rating));
+	const note = dish.note?.trim();
+	if (note) parts.push(`— ${note}`);
+	return parts.join(' ');
+}
 
 function stars(rating: number | null | undefined, max = 5): string {
 	if (rating == null || rating <= 0) return '';
@@ -55,7 +139,16 @@ export function visitBlock(visit: VisitInput): string {
 	const companions = visit.companions?.trim();
 	if (companions) lines.push(`**With:** ${companions}  `);
 
-	const areaRatings = visit.areaRatings;
+	// Dishes drive the Food rating: when present, the food area rating is their
+	// average rather than any manually-supplied food_rating.
+	const dishes = (visit.dishes ?? []).filter(
+		(d) => d.name?.trim() || d.rating != null || d.note?.trim() || d.photoPath
+	);
+	const foodAvg = dishes.length > 0 ? averageDishRatings(dishes) : null;
+
+	const baseAreaRatings = visit.areaRatings;
+	const areaRatings: AreaRatings | null | undefined =
+		foodAvg != null ? { ...baseAreaRatings, food: foodAvg } : baseAreaRatings;
 	const usingAreaRatings = !!areaRatings && Object.values(areaRatings).some((v) => typeof v === 'number' && v > 0);
 
 	const fields: Array<[string, string | null | undefined, keyof AreaRatings]> = [
@@ -67,11 +160,26 @@ export function visitBlock(visit: VisitInput): string {
 	for (const [label, value, areaKey] of fields) {
 		const v = value?.trim();
 		const r = areaRatings?.[areaKey];
+		let emitted = false;
 		if (usingAreaRatings && typeof r === 'number' && r > 0) {
 			const prefix = `**${label}:** ${stars(r)}`;
 			lines.push(v ? `${prefix} — ${v}  ` : `${prefix}  `);
+			emitted = true;
 		} else if (v) {
 			lines.push(`**${label}:** ${v}  `);
+			emitted = true;
+		}
+		if (areaKey === 'food' && dishes.length > 0) {
+			// Ensure a Food header precedes the bullets so the parser can anchor them.
+			if (!emitted) lines.push('**Food:**  ');
+			for (const dish of dishes) {
+				if (dish.photoPath) {
+					lines.push(`${dishLine(dish)}  `);
+					lines.push(`  ![](${dish.photoPath})`);
+				} else {
+					lines.push(dishLine(dish));
+				}
+			}
 		}
 	}
 
@@ -81,6 +189,9 @@ export function visitBlock(visit: VisitInput): string {
 	} else if (typeof visit.rating === 'number' && visit.rating > 0) {
 		lines.push(`**Rating:** ${visit.rating}/5  `);
 	}
+
+	const attrLine = serializeOverrides(visit.attributeOverrides);
+	if (attrLine) lines.push(`**Attributes:** ${attrLine}  `);
 
 	const notes = visit.notes?.trim();
 	if (notes) {
@@ -198,14 +309,53 @@ export type ParsedVisitFields = {
 	rating: number | null;
 	notes: string | null;
 	photoPaths: string[];
+	attributeOverrides: Record<string, AttributeValue>;
+	dishes: Dish[];
 };
 
-const STRUCT_LINE_RE = /^\*\*(With|Vibe|Food|Quality|Service|Rating):\*\*\s*(.+?)\s*$/i;
+const STRUCT_LINE_RE = /^\*\*(With|Vibe|Food|Quality|Service|Rating|Attributes):\*\*\s*(.+?)\s*$/i;
+const DISH_LINE_RE = /^[-*]\s+\*\*(.+?)\*\*\s*([★☆]*)\s*(?:[—-]\s*(.*))?$/;
+const DISH_IMG_RE = /^!\[[^\]]*\]\(([^)]+)\)$/;
 
 function countStars(s: string): number {
 	let n = 0;
 	for (const ch of s) if (ch === '★') n++;
 	return n;
+}
+
+/**
+ * Consume dish bullets (and each dish's indented photo) starting at `start`.
+ * Returns the dishes and the index of the first line that is not part of the
+ * dish list.
+ */
+function consumeDishes(lines: string[], start: number): { dishes: Dish[]; next: number } {
+	const dishes: Dish[] = [];
+	let j = start;
+	while (j < lines.length) {
+		const dl = lines[j].replace(/ {2,}$/, '').trim();
+		if (dl === '') break;
+		const dm = dl.match(DISH_LINE_RE);
+		if (dm) {
+			const dStars = countStars(dm[2] ?? '');
+			const dNote = (dm[3] ?? '').trim();
+			dishes.push({
+				name: dm[1].trim(),
+				rating: dStars > 0 ? dStars : null,
+				note: dNote.length > 0 ? dNote : null,
+				photoPath: null
+			});
+			j++;
+			continue;
+		}
+		const im = dl.match(DISH_IMG_RE);
+		if (im && dishes.length > 0 && dishes[dishes.length - 1].photoPath === null) {
+			dishes[dishes.length - 1].photoPath = im[1];
+			j++;
+			continue;
+		}
+		break;
+	}
+	return { dishes, next: j };
 }
 
 export function parseVisitFields(visit: ParsedVisit): ParsedVisitFields {
@@ -223,7 +373,9 @@ export function parseVisitFields(visit: ParsedVisit): ParsedVisitFields {
 		serviceRating: null,
 		rating: null,
 		notes: null,
-		photoPaths: visit.photoPaths.slice()
+		photoPaths: visit.photoPaths.slice(),
+		attributeOverrides: {},
+		dishes: []
 	};
 
 	const lines = visit.rawMarkdown
@@ -245,6 +397,24 @@ export function parseVisitFields(visit: ParsedVisit): ParsedVisitFields {
 		}
 		const m = line.match(STRUCT_LINE_RE);
 		if (!m) {
+			// A bare "**Food:**" line (no rating, no note) still anchors a dish
+			// breakdown when the user added dishes without rating any of them.
+			if (/^\*\*Food:\*\*$/i.test(line)) {
+				seenStructural = true;
+				notesStart = i + 1;
+				const consumed = consumeDishes(lines, i + 1);
+				if (consumed.dishes.length > 0) {
+					out.dishes = consumed.dishes;
+					const favg = averageDishRatings(consumed.dishes);
+					if (favg != null) {
+						out.foodRating = favg;
+						usedAreaRatings = true;
+					}
+					i = consumed.next - 1;
+					notesStart = consumed.next;
+				}
+				continue;
+			}
 			notesStart = i;
 			break;
 		}
@@ -263,6 +433,10 @@ export function parseVisitFields(visit: ParsedVisit): ParsedVisitFields {
 			if (/\(avg\)/i.test(value)) isAvgRating = true;
 			continue;
 		}
+		if (label === 'attributes') {
+			out.attributeOverrides = parseOverrideLine(value);
+			continue;
+		}
 		// vibe/food/quality/service
 		const stars = countStars(value);
 		const textAfter = value.replace(/[★☆]+\s*/, '').replace(/^—\s*/, '').trim();
@@ -272,6 +446,22 @@ export function parseVisitFields(visit: ParsedVisit): ParsedVisitFields {
 		out[ratingKey] = stars > 0 ? stars : null;
 		const textKey = label as 'vibe' | 'food' | 'quality' | 'service';
 		out[textKey] = text;
+
+		if (label === 'food') {
+			// Dishes that follow the Food line are the source of truth for the
+			// food rating.
+			const consumed = consumeDishes(lines, i + 1);
+			if (consumed.dishes.length > 0) {
+				out.dishes = consumed.dishes;
+				const favg = averageDishRatings(consumed.dishes);
+				if (favg != null) {
+					out.foodRating = favg;
+					usedAreaRatings = true;
+				}
+				i = consumed.next - 1;
+				notesStart = consumed.next;
+			}
+		}
 	}
 
 	if (!usedAreaRatings && !isAvgRating) {
@@ -413,6 +603,7 @@ export function formatVisitForShare(
 	for (const raw of lines) {
 		const line = raw.replace(/ {2,}$/, '');
 		if (format === 'notes_only' && STRUCT_FIELD_RE.test(line.trim())) continue;
+		if (format === 'notes_only' && DISH_LINE_RE.test(line.trim())) continue;
 		kept.push(line);
 	}
 

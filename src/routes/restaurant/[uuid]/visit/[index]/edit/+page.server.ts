@@ -8,6 +8,11 @@ import {
 	splitBodyAtVisits
 } from '$lib/server/vault/visit';
 import { getPreferences } from '$lib/server/preferences';
+import {
+	attributeAppliesTo,
+	cleanAnswers,
+	type AttributeValue
+} from '$lib/attributes';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const r = getRestaurantByUuid(params.uuid);
@@ -24,12 +29,26 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const fields = parseVisitFields(visit);
 
+	const preferences = getPreferences();
+	const restaurantCuisines = Array.isArray(r.frontmatter.cuisine)
+		? (r.frontmatter.cuisine as string[])
+		: [];
+	const scopeTarget = { tags: r.tags, cuisines: restaurantCuisines, lists: r.lists };
+	const applicableAttributes = preferences.attributes.filter((def) =>
+		attributeAppliesTo(def, scopeTarget)
+	);
+	const restaurantAttributes = cleanAnswers(
+		r.frontmatter.attributes as Record<string, AttributeValue> | undefined
+	);
+
 	return {
 		uuid: r.uuid,
 		name: r.name,
 		index: idx,
 		fields,
 		headline: visit.headline,
-		preferences: getPreferences()
+		preferences,
+		applicableAttributes,
+		restaurantAttributes
 	};
 };

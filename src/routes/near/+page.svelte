@@ -49,6 +49,7 @@
 		address: string | null;
 		rating: number | null;
 		cuisine: string[];
+		attributes?: Record<string, 'yes' | 'no'>;
 	};
 	type Result = VaultResult | GoogleResult;
 	type SelectedPin = (VaultPin & { source: 'vault'; distance_m?: number }) | GoogleResult;
@@ -69,6 +70,16 @@
 	let ratingIdx = $state(0); // any
 	let cuisines = $state<string[]>([]);
 	let pickingCuisine = $state(false);
+	// Per-attribute filter: undefined = unset, 'yes'/'no' = enforce.
+	let attributeFilter = $state<Record<string, 'yes' | 'no'>>({});
+	function cycleAttribute(id: string) {
+		const cur = attributeFilter[id];
+		const next: 'yes' | 'no' | undefined = cur === undefined ? 'yes' : cur === 'yes' ? 'no' : undefined;
+		const copy = { ...attributeFilter };
+		if (next === undefined) delete copy[id];
+		else copy[id] = next;
+		attributeFilter = copy;
+	}
 
 	const effectiveProvider = $derived.by<'mapbox' | 'apple' | 'google'>(() => {
 		const want = data.preferences.default_map_provider;
@@ -120,6 +131,7 @@
 	// once a center pin is dropped.
 	const filteredVaultPins = $derived.by(() => {
 		const cuisinesLc = cuisines.map((c) => c.toLowerCase());
+		const attrEntries = Object.entries(attributeFilter);
 		return [...vaultPins]
 			.filter((p) => {
 				if (minRating > 0 && (p.rating ?? 0) < minRating) return false;
@@ -127,13 +139,18 @@
 					const have = p.cuisine.map((c) => c.toLowerCase());
 					if (!have.some((c) => cuisinesLc.includes(c))) return false;
 				}
+				for (const [id, want] of attrEntries) {
+					if (p.attributes?.[id] !== want) return false;
+				}
 				return true;
 			})
 			.sort((a, b) =>
 				a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
 			);
 	});
-	const filtersActive = $derived(minRating > 0 || cuisines.length > 0);
+	const filtersActive = $derived(
+		minRating > 0 || cuisines.length > 0 || Object.keys(attributeFilter).length > 0
+	);
 	const selectedNavHref = $derived(
 		selectedPin
 			? navigationUrl(
@@ -528,6 +545,9 @@
 			});
 			if (minRating > 0) params.set('min_rating', String(minRating));
 			if (cuisines.length > 0) params.set('cuisines', cuisines.join(','));
+			for (const [id, val] of Object.entries(attributeFilter)) {
+				params.set(`attr_${id}`, val);
+			}
 			const res = await fetch(`/api/near?${params.toString()}`);
 			if (!res.ok) {
 				queryErr = `Query failed: ${res.status}`;
@@ -675,6 +695,23 @@
 	>
 		{cuisines.length === 0 ? 'Cuisine: any' : `Cuisine: ${cuisines.length}`}
 	</button>
+	{#each data.preferences.attributes as def (def.id)}
+		{@const state = attributeFilter[def.id]}
+		<button
+			type="button"
+			onclick={() => cycleAttribute(def.id)}
+			title="Cycle: any → yes → no → any"
+			class="rounded-full px-3 py-1.5 text-xs"
+			class:bg-accent={state !== undefined}
+			class:text-on-accent={state !== undefined}
+			class:border={state === undefined}
+			class:border-line={state === undefined}
+			class:bg-panel={state === undefined}
+			class:text-secondary={state === undefined}
+		>
+			{#if state === 'yes'}✓ {def.label}{:else if state === 'no'}✕ {def.label}{:else}{def.label}: any{/if}
+		</button>
+	{/each}
 </div>
 {#if geoErr}
 	<p class="px-5 pt-1 text-[11px] text-warning">{geoErr}</p>

@@ -23,6 +23,8 @@
 		prettyCacheName,
 		type CacheStats
 	} from '$lib/swCache';
+	import AttributeDefinitionSheet from '$lib/components/AttributeDefinitionSheet.svelte';
+	import { uniqueAttributeId, type AttributeDefinition } from '$lib/attributes';
 
 	let { data }: { data: PageData } = $props();
 
@@ -43,6 +45,59 @@
 	let busyPrewarm = $state(false);
 	let prewarmProgress = $state<{ done: number; total: number; label: string } | null>(null);
 	let prewarmPhotos = $state(true);
+	let editingAttribute = $state<AttributeDefinition | null>(null);
+	let addingAttribute = $state(false);
+	let busyAttribute = $state(false);
+
+	async function saveAttributes(next: AttributeDefinition[]) {
+		busyAttribute = true;
+		try {
+			const res = await fetch('/api/settings/preferences', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ attributes: next })
+			});
+			if (!res.ok) lastMsg = `Failed: ${res.status}`;
+			else {
+				lastMsg = 'Attributes saved';
+				await invalidateAll();
+			}
+		} catch (e) {
+			lastMsg = String(e);
+		} finally {
+			busyAttribute = false;
+		}
+	}
+
+	function onAttributeSaved(def: AttributeDefinition) {
+		const current = data.preferences.attributes;
+		let next: AttributeDefinition[];
+		if (editingAttribute) {
+			next = current.map((d) => (d.id === editingAttribute!.id ? { ...def, id: editingAttribute!.id } : d));
+		} else {
+			const id = def.id || uniqueAttributeId(def.label, current.map((d) => d.id));
+			next = [...current, { ...def, id }];
+		}
+		editingAttribute = null;
+		addingAttribute = false;
+		void saveAttributes(next);
+	}
+
+	function onAttributeDelete() {
+		if (!editingAttribute) return;
+		const removed = editingAttribute.id;
+		const next = data.preferences.attributes.filter((d) => d.id !== removed);
+		editingAttribute = null;
+		void saveAttributes(next);
+	}
+
+	function scopeSummary(def: AttributeDefinition): string {
+		const parts: string[] = [];
+		if (def.scope.tags?.length) parts.push(`tags: ${def.scope.tags.join(', ')}`);
+		if (def.scope.cuisines?.length) parts.push(`cuisines: ${def.scope.cuisines.join(', ')}`);
+		if (def.scope.lists?.length) parts.push(`lists: ${def.scope.lists.join(', ')}`);
+		return parts.length === 0 ? 'Applies to all restaurants' : parts.join(' · ');
+	}
 	let systemDark = $state(true);
 	// svelte-ignore state_referenced_locally
 	let themeMode = $state<ThemeMode>(data.preferences.theme_mode);
@@ -454,6 +509,35 @@
 
 	<button
 		type="button"
+		onclick={() => setPreference('food_breakdown', !data.preferences.food_breakdown)}
+		disabled={busyPref || !data.preferences.per_area_ratings}
+		class="mt-3 flex w-full items-center justify-between rounded-xl border border-line bg-panel/60 px-3 py-2.5 text-left disabled:opacity-50"
+	>
+		<div>
+			<p class="text-sm text-primary">Break food into dishes</p>
+			<p class="mt-0.5 text-[11px] text-tertiary">
+				{#if !data.preferences.per_area_ratings}
+					Turn on Per-area ratings to use this
+				{:else if data.preferences.food_breakdown}
+					Rate each dish; their average is the Food score
+				{:else}
+					One Food rating
+				{/if}
+			</p>
+		</div>
+		<span
+			class="rounded-full px-2.5 py-1 text-xs"
+			class:bg-accent={data.preferences.food_breakdown && data.preferences.per_area_ratings}
+			class:text-on-accent={data.preferences.food_breakdown && data.preferences.per_area_ratings}
+			class:bg-panel-2={!data.preferences.food_breakdown || !data.preferences.per_area_ratings}
+			class:text-secondary={!data.preferences.food_breakdown || !data.preferences.per_area_ratings}
+		>
+			{data.preferences.food_breakdown ? 'On' : 'Off'}
+		</span>
+	</button>
+
+	<button
+		type="button"
 		onclick={() => setPreference('australian_centric', !data.preferences.australian_centric)}
 		disabled={busyPref}
 		class="mt-3 flex w-full items-center justify-between rounded-xl border border-line bg-panel/60 px-3 py-2.5 text-left disabled:opacity-50"
@@ -541,6 +625,51 @@
 			{/each}
 		</div>
 	</div>
+</section>
+
+<section class="mt-6 px-5">
+	<div class="flex items-baseline justify-between gap-3">
+		<h2 class="text-xs tracking-widest text-tertiary uppercase">Attributes</h2>
+		<button
+			type="button"
+			onclick={() => (addingAttribute = true)}
+			class="text-xs text-accent"
+		>
+			+ New attribute
+		</button>
+	</div>
+	<p class="mt-1 text-[11px] text-tertiary">
+		Yes/no facts about a restaurant — pay by card, walk-ins welcome, lunch menu, etc. Show on every
+		restaurant or scope to certain tags, cuisines, or lists.
+	</p>
+
+	{#if data.preferences.attributes.length === 0}
+		<div class="mt-2 rounded-xl border border-dashed border-line-strong bg-panel/40 px-3 py-3 text-xs text-tertiary">
+			No attributes defined yet. Tap <span class="text-secondary">+ New attribute</span> to add one.
+		</div>
+	{:else}
+		<ul class="mt-2 space-y-2">
+			{#each data.preferences.attributes as def (def.id)}
+				<li>
+					<button
+						type="button"
+						onclick={() => (editingAttribute = def)}
+						disabled={busyAttribute}
+						class="flex w-full items-start justify-between gap-3 rounded-xl border border-line bg-panel/60 px-3 py-2.5 text-left disabled:opacity-50"
+					>
+						<div class="min-w-0 flex-1">
+							<p class="truncate text-sm text-primary">{def.label}</p>
+							<p class="mt-0.5 truncate text-[11px] text-tertiary">{scopeSummary(def)}</p>
+							{#if def.description}
+								<p class="mt-0.5 truncate text-[11px] text-secondary">{def.description}</p>
+							{/if}
+						</div>
+						<span class="text-xs text-tertiary">Edit</span>
+					</button>
+				</li>
+			{/each}
+		</ul>
+	{/if}
 </section>
 
 <section class="mt-6 px-5 pb-10">
@@ -805,3 +934,25 @@
 		</div>
 	</DisclosureSection>
 </section>
+
+{#if addingAttribute}
+	<AttributeDefinitionSheet
+		availableTags={data.scopeOptions.tags}
+		availableCuisines={data.scopeOptions.cuisines}
+		availableLists={data.scopeOptions.lists}
+		onSave={onAttributeSaved}
+		onClose={() => (addingAttribute = false)}
+	/>
+{/if}
+
+{#if editingAttribute}
+	<AttributeDefinitionSheet
+		definition={editingAttribute}
+		availableTags={data.scopeOptions.tags}
+		availableCuisines={data.scopeOptions.cuisines}
+		availableLists={data.scopeOptions.lists}
+		onSave={onAttributeSaved}
+		onDelete={onAttributeDelete}
+		onClose={() => (editingAttribute = null)}
+	/>
+{/if}

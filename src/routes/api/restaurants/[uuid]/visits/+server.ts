@@ -7,9 +7,31 @@ import { readRestaurant } from '$lib/server/vault/reader';
 import { saveRestaurant } from '$lib/server/vault/save';
 import { processUploadedImage } from '$lib/server/images';
 import { atomicWriteBinary } from '$lib/server/vault/writer';
-import { appendVisitToBody, slugFromFilePath, type VisitInput } from '$lib/server/vault/visit';
+import {
+	appendVisitToBody,
+	coerceDishMeta,
+	slugFromFilePath,
+	type Dish,
+	type VisitInput
+} from '$lib/server/vault/visit';
 import { attachmentsDir } from '$lib/server/config';
 import { log } from '$lib/server/log';
+import { slugifyLabel, type AttributeValue } from '$lib/attributes';
+
+function readAttributeOverrides(form: FormData): Record<string, AttributeValue> {
+	const out: Record<string, AttributeValue> = {};
+	for (const key of form.keys()) {
+		if (!key.startsWith('attribute_')) continue;
+		const id = slugifyLabel(key.slice('attribute_'.length));
+		if (!id) continue;
+		const raw = form.get(key);
+		if (typeof raw !== 'string') continue;
+		const v = raw.trim().toLowerCase();
+		if (v === 'yes') out[id] = 'yes';
+		else if (v === 'no') out[id] = 'no';
+	}
+	return out;
+}
 
 const MAX_PHOTO_BYTES = 20 * 1024 * 1024; // 20MB raw upload before we resize
 const MAX_PHOTOS_PER_VISIT = 8;
@@ -99,6 +121,35 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		savedPaths.push(`_attachments/${slug}/${baseName}.jpg`);
 	}
 
+	// Dishes (Food breakdown). Metadata arrives as a JSON `dishes` field; each
+	// dish may carry one photo uploaded as `dish_photo_<i>`.
+	const dishMeta = coerceDishMeta(form.get('dishes'));
+	const dishes: Dish[] = [];
+	for (let i = 0; i < dishMeta.length; i++) {
+		const meta = dishMeta[i];
+		const file = form.get(`dish_photo_${i}`);
+		let photoPath: string | null = null;
+		if (file instanceof File && file.size > 0) {
+			if (file.size > MAX_PHOTO_BYTES) {
+				throw error(413, `dish photo ${i + 1} exceeds ${MAX_PHOTO_BYTES} bytes`);
+			}
+			const buf = Buffer.from(await file.arrayBuffer());
+			let processed;
+			try {
+				processed = await processUploadedImage(buf);
+			} catch (e) {
+				log.error('Dish image processing failed', { error: String(e), index: i });
+				throw error(400, `dish photo ${i + 1} could not be processed`);
+			}
+			const baseName = `${stamp}-d${i + 1}`;
+			await atomicWriteBinary(path.join(slugDir, `${baseName}.jpg`), processed.main);
+			await atomicWriteBinary(path.join(slugDir, `${baseName}.thumb.jpg`), processed.thumb);
+			photoPath = `_attachments/${slug}/${baseName}.jpg`;
+		}
+		dishes.push({ name: meta.name, rating: meta.rating, note: meta.note, photoPath });
+	}
+
+	const attributeOverrides = readAttributeOverrides(form);
 	const visit: VisitInput = {
 		date,
 		meal,
@@ -110,7 +161,9 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		rating,
 		areaRatings,
 		notes,
-		imagePaths: savedPaths
+		imagePaths: savedPaths,
+		attributeOverrides: Object.keys(attributeOverrides).length > 0 ? attributeOverrides : null,
+		dishes: dishes.length > 0 ? dishes : null
 	};
 
 	const rf = await readRestaurant(indexed.file_path);

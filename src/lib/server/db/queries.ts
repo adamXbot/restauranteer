@@ -322,6 +322,7 @@ export type NearFilter = {
 	cuisines?: string[]; // case-insensitive substring match against any of these
 	tags?: string[]; // must include all of these tags
 	lists?: string[]; // must include all of these lists
+	attributes?: Record<string, 'yes' | 'no'>; // restaurant frontmatter.attributes.<id> must equal value
 };
 
 /**
@@ -351,6 +352,16 @@ export function findRestaurantsInBox(filter: NearFilter): IndexedRestaurant[] {
 		for (const l of filter.lists) {
 			sql += ` AND EXISTS (SELECT 1 FROM lists WHERE restaurant_uuid = r.uuid AND list_name = ?)`;
 			params.push(l);
+		}
+	}
+	if (filter.attributes) {
+		for (const [id, value] of Object.entries(filter.attributes)) {
+			if (value !== 'yes' && value !== 'no') continue;
+			// JSON path doesn't allow arbitrary chars; we slugify on write, so the id
+			// is always [a-z0-9_]. Still, restrict here as a belt-and-braces guard.
+			const safeId = id.replace(/[^a-z0-9_]/gi, '_');
+			sql += ` AND json_extract(r.frontmatter_json, '$.attributes.${safeId}') = ?`;
+			params.push(value);
 		}
 	}
 	sql += ' LIMIT 1000';

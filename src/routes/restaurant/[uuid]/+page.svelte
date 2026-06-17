@@ -19,6 +19,7 @@
 	import ReviewSummary from '$lib/components/ReviewSummary.svelte';
 	import DisclosureSection from '$lib/components/DisclosureSection.svelte';
 	import RestaurantNotesSheet from '$lib/components/RestaurantNotesSheet.svelte';
+	import AttributeEditorSheet from '$lib/components/AttributeEditorSheet.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -89,6 +90,16 @@
 	let editingTags = $state(false);
 	let editingName = $state(false);
 	let editingNotes = $state(false);
+	let editingAttributes = $state(false);
+
+	const visibleAttributes = $derived(
+		data.applicableAttributes
+			.map((def) => {
+				const v = data.attributeAnswers[def.id];
+				return v === 'yes' || v === 'no' ? { def, value: v } : null;
+			})
+			.filter((x): x is { def: (typeof data.applicableAttributes)[number]; value: 'yes' | 'no' } => x !== null)
+	);
 	let linkingArticle = $state(false);
 	let enrichingField = $state<EnrichField | null>(null);
 	let refreshing = $state(false);
@@ -99,6 +110,7 @@
 		editingLists = false;
 		editingTags = false;
 		editingNotes = false;
+		editingAttributes = false;
 		await invalidateAll();
 	}
 
@@ -304,6 +316,38 @@
 		</ul>
 	{/if}
 </section>
+
+{#if data.applicableAttributes.length > 0}
+	<section class="px-5 pt-4 pb-2">
+		<div class="flex items-center justify-between gap-2">
+			<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Attributes</h2>
+			<button type="button" onclick={() => (editingAttributes = true)} class="text-xs text-accent">
+				{visibleAttributes.length > 0 ? 'Edit' : 'Set'}
+			</button>
+		</div>
+		{#if visibleAttributes.length > 0}
+			<ul class="mt-2 flex flex-wrap gap-1.5">
+				{#each visibleAttributes as item (item.def.id)}
+					<li
+						class="inline-flex items-center gap-1.5 rounded-full bg-panel-2 px-2.5 py-1 text-xs"
+					>
+						<span
+							aria-hidden="true"
+							class:text-success={item.value === 'yes'}
+							class:text-danger={item.value === 'no'}
+							class="font-medium"
+						>
+							{item.value === 'yes' ? '✓' : '✕'}
+						</span>
+						<span class="text-secondary">{item.def.label}</span>
+					</li>
+				{/each}
+			</ul>
+		{:else}
+			<p class="mt-1 text-xs text-tertiary">No attributes set.</p>
+		{/if}
+	</section>
+{/if}
 
 <section class="px-5 pt-4 pb-2">
 	<div class="flex items-center justify-between gap-2">
@@ -653,6 +697,16 @@
 		currentNotes={data.notes.markdown}
 		onSaved={onSaved}
 		onClose={() => (editingNotes = false)}
+	/>
+{/if}
+
+{#if editingAttributes}
+	<AttributeEditorSheet
+		restaurantUuid={data.uuid}
+		definitions={data.applicableAttributes}
+		current={data.attributeAnswers}
+		onSaved={onSaved}
+		onClose={() => (editingAttributes = false)}
 	/>
 {/if}
 

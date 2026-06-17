@@ -8,16 +8,34 @@ import { saveRestaurant } from '$lib/server/vault/save';
 import { processUploadedImage } from '$lib/server/images';
 import { atomicWriteBinary } from '$lib/server/vault/writer';
 import {
+	coerceDishMeta,
 	extractImagePaths,
 	parseVisits,
 	removeVisitFromBody,
 	slugFromFilePath,
 	splitBodyAtVisits,
 	updateVisitInBody,
+	type Dish,
 	type VisitInput
 } from '$lib/server/vault/visit';
 import { attachmentsDir } from '$lib/server/config';
 import { log } from '$lib/server/log';
+import { slugifyLabel, type AttributeValue } from '$lib/attributes';
+
+function readAttributeOverrides(form: FormData): Record<string, AttributeValue> {
+	const out: Record<string, AttributeValue> = {};
+	for (const key of form.keys()) {
+		if (!key.startsWith('attribute_')) continue;
+		const id = slugifyLabel(key.slice('attribute_'.length));
+		if (!id) continue;
+		const raw = form.get(key);
+		if (typeof raw !== 'string') continue;
+		const v = raw.trim().toLowerCase();
+		if (v === 'yes') out[id] = 'yes';
+		else if (v === 'no') out[id] = 'no';
+	}
+	return out;
+}
 
 const MAX_PHOTO_BYTES = 20 * 1024 * 1024;
 const MAX_PHOTOS_PER_VISIT = 8;
@@ -122,9 +140,16 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		throw error(400, `too many photos (max ${MAX_PHOTOS_PER_VISIT})`);
 	}
 
+	const dishMeta = coerceDishMeta(form.get('dishes'));
+	const dishFiles = dishMeta.map((_, i) => {
+		const f = form.get(`dish_photo_${i}`);
+		return f instanceof File && f.size > 0 ? f : null;
+	});
+	const anyDishFile = dishFiles.some((f) => f !== null);
+
 	const slug = slugFromFilePath(indexed.file_path);
 	const slugDir = path.join(attachmentsDir(), slug);
-	if (newPhotos.length > 0) await mkdir(slugDir, { recursive: true });
+	if (newPhotos.length > 0 || anyDishFile) await mkdir(slugDir, { recursive: true });
 	const stamp = timestampStamp();
 	const newPaths: string[] = [];
 
@@ -150,6 +175,39 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 	}
 
 	const imagePaths = [...existing.photoPaths.filter((p) => keptSet.has(p)), ...newPaths];
+
+	// Dishes (Food breakdown). Resolve each dish's photo: a freshly-uploaded
+	// `dish_photo_<i>` wins, else a `keepPhoto` that belongs to this visit, else
+	// none. Replaced/removed dish photos are cleaned up by the diff below.
+	const existingPhotoSet = new Set(existing.photoPaths);
+	const dishes: Dish[] = [];
+	for (let i = 0; i < dishMeta.length; i++) {
+		const meta = dishMeta[i];
+		const file = dishFiles[i];
+		let photoPath: string | null = null;
+		if (file) {
+			if (file.size > MAX_PHOTO_BYTES) {
+				throw error(413, `dish photo ${i + 1} exceeds ${MAX_PHOTO_BYTES} bytes`);
+			}
+			const buf = Buffer.from(await file.arrayBuffer());
+			let processed;
+			try {
+				processed = await processUploadedImage(buf);
+			} catch (e) {
+				log.error('Dish image processing failed', { error: String(e), index: i });
+				throw error(400, `dish photo ${i + 1} could not be processed`);
+			}
+			const baseName = `${stamp}-de${i + 1}`;
+			await atomicWriteBinary(path.join(slugDir, `${baseName}.jpg`), processed.main);
+			await atomicWriteBinary(path.join(slugDir, `${baseName}.thumb.jpg`), processed.thumb);
+			photoPath = `_attachments/${slug}/${baseName}.jpg`;
+		} else if (meta.keepPhoto && existingPhotoSet.has(meta.keepPhoto)) {
+			photoPath = meta.keepPhoto;
+		}
+		dishes.push({ name: meta.name, rating: meta.rating, note: meta.note, photoPath });
+	}
+
+	const attributeOverrides = readAttributeOverrides(form);
 	const visit: VisitInput = {
 		date,
 		meal,
@@ -161,7 +219,9 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		rating,
 		areaRatings,
 		notes,
-		imagePaths
+		imagePaths,
+		attributeOverrides: Object.keys(attributeOverrides).length > 0 ? attributeOverrides : null,
+		dishes: dishes.length > 0 ? dishes : null
 	};
 
 	const newBody = updateVisitInBody(rf.body, idx, visit);
