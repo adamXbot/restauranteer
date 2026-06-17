@@ -28,7 +28,7 @@ async function loadPrivateKey(): Promise<KeyLike> {
 	return key;
 }
 
-let cachedToken: { token: string; expiresAt: number } | null = null;
+let cachedToken: { token: string; expiresAt: number; origin?: string } | null = null;
 const TOKEN_TTL_SECONDS = 60 * 30; // 30 min (Apple allows up to 1 year, we keep short)
 
 let staticTokenExpiryWarned = false;
@@ -53,8 +53,12 @@ function parseJwtExp(token: string): number | null {
  *   2. `APPLE_MAPKIT_TEAM_ID` + `KEY_ID` + `PRIVATE_KEY` set — sign a fresh
  *      JWT here, cached for ~30 min.
  * The static-token path takes precedence when both are set.
+ *
+ * `requestOrigin` is used as the JWT `origin` claim for the signing path when
+ * `APPLE_MAPKIT_ORIGIN` is not set — required for domain-restricted MapKit keys,
+ * which reject a token whose origin doesn't match the page exactly.
  */
-export async function getMapKitToken(): Promise<string> {
+export async function getMapKitToken(requestOrigin?: string): Promise<string> {
 	if (!hasAppleMapKit()) {
 		throw new Error('Apple MapKit JS is not configured');
 	}
@@ -76,19 +80,27 @@ export async function getMapKitToken(): Promise<string> {
 		return token;
 	}
 
+	// Domain-restricted keys require the token's `origin` claim to match the
+	// page origin exactly. Prefer an explicit env value (reliable behind a
+	// reverse proxy, where a derived origin can be wrong); else use the origin
+	// passed from the request. Omitting it leaves the token unrestricted.
+	const origin = env.APPLE_MAPKIT_ORIGIN?.trim() || requestOrigin || undefined;
+
 	const now = Math.floor(Date.now() / 1000);
-	if (cachedToken && cachedToken.expiresAt - 60 > now) return cachedToken.token;
+	if (cachedToken && cachedToken.expiresAt - 60 > now && cachedToken.origin === origin) {
+		return cachedToken.token;
+	}
 
 	try {
 		const key = await loadPrivateKey();
 		const expiresAt = now + TOKEN_TTL_SECONDS;
-		const token = await new SignJWT({})
+		const token = await new SignJWT(origin ? { origin } : {})
 			.setProtectedHeader({ alg: 'ES256', kid: env.APPLE_MAPKIT_KEY_ID!, typ: 'JWT' })
 			.setIssuer(env.APPLE_MAPKIT_TEAM_ID!)
 			.setIssuedAt(now)
 			.setExpirationTime(expiresAt)
 			.sign(key);
-		cachedToken = { token, expiresAt };
+		cachedToken = { token, expiresAt, origin };
 		return token;
 	} catch (e) {
 		log.error('MapKit token sign failed', { error: String(e) });
