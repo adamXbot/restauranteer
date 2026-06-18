@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { getAllRestaurants } from '$lib/server/db/queries';
+import { getAllRestaurants, getAllVisits } from '$lib/server/db/queries';
 import { getPreferences } from '$lib/server/preferences';
+import type { VisitFeedItem } from '$lib/visitSort';
 
 export const load: PageServerLoad = () => {
 	const restaurants = getAllRestaurants().map((r) => ({
@@ -14,5 +15,6 @@ export const load: PageServerLoad = () => {
 		rating: typeof r.frontmatter.rating === 'number' ? r.frontmatter.rating : null,
 		visitSummary: r.visitSummary
 	}));
-	return { restaurants, preferences: getPreferences() };
+	const visits: VisitFeedItem[] = getAllVisits();
+	return { restaurants, visits, preferences: getPreferences() };
 };
