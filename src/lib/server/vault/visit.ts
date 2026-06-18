@@ -542,6 +542,47 @@ export function summarizeBody(body: string): VisitSummary {
 	return summarizeVisits(visits);
 }
 
+/** One visit flattened for the SQLite per-visit index (see migration v6). */
+export type IndexedVisitFields = {
+	index: number;
+	date: string;
+	meal: string | null;
+	overallRating: number | null;
+	vibeRating: number | null;
+	foodRating: number | null;
+	qualityRating: number | null;
+	serviceRating: number | null;
+	notesExcerpt: string | null;
+	photo: string | null;
+};
+
+const NOTES_EXCERPT_LEN = 280;
+
+/**
+ * Parse every visit in a body into the flat shape stored in the `visits` table.
+ * `overallRating` mirrors what the per-restaurant summary uses (explicit rating,
+ * else the average of the area ratings).
+ */
+export function extractVisitsForIndex(body: string): IndexedVisitFields[] {
+	const { visitsSection } = splitBodyAtVisits(body);
+	const visits = parseVisits(visitsSection);
+	return visits.map((v) => {
+		const fields = parseVisitFields(v);
+		return {
+			index: v.index,
+			date: v.date,
+			meal: v.meal,
+			overallRating: deriveVisitRating(fields),
+			vibeRating: fields.vibeRating,
+			foodRating: fields.foodRating,
+			qualityRating: fields.qualityRating,
+			serviceRating: fields.serviceRating,
+			notesExcerpt: fields.notes ? fields.notes.slice(0, NOTES_EXCERPT_LEN) : null,
+			photo: v.photoPaths[0] ?? null
+		};
+	});
+}
+
 /**
  * Find the [start, end) byte offsets of the i-th visit block (including the
  * trailing blank line between it and the next ### header).

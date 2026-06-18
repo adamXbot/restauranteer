@@ -12,6 +12,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	const updates: Record<string, unknown> = {};
 	if ('per_area_ratings' in body) updates.per_area_ratings = body.per_area_ratings === true;
 	if ('food_breakdown' in body) updates.food_breakdown = body.food_breakdown === true;
+	if ('collapse_dish_photos' in body)
+		updates.collapse_dish_photos = body.collapse_dish_photos === true;
 	if ('default_navigation_app' in body) updates.default_navigation_app = body.default_navigation_app;
 	if ('default_map_provider' in body) updates.default_map_provider = body.default_map_provider;
 	if ('share_format' in body) updates.share_format = body.share_format;

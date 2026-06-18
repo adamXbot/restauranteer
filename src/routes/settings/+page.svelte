@@ -25,6 +25,7 @@
 	} from '$lib/swCache';
 	import AttributeDefinitionSheet from '$lib/components/AttributeDefinitionSheet.svelte';
 	import { uniqueAttributeId, type AttributeDefinition } from '$lib/attributes';
+	import { connectivity, OFFLINE_WRITE_MESSAGE } from '$lib/connectivity.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -222,6 +223,7 @@
 	});
 
 	async function setPreference(key: string, value: unknown) {
+		if (!connectivity.online) { lastMsg = OFFLINE_WRITE_MESSAGE; return; }
 		busyPref = true;
 		try {
 			const res = await fetch('/api/settings/preferences', {
@@ -533,6 +535,33 @@
 			class:text-secondary={!data.preferences.food_breakdown || !data.preferences.per_area_ratings}
 		>
 			{data.preferences.food_breakdown ? 'On' : 'Off'}
+		</span>
+	</button>
+
+	<button
+		type="button"
+		onclick={() => setPreference('collapse_dish_photos', !data.preferences.collapse_dish_photos)}
+		disabled={busyPref}
+		class="mt-3 flex w-full items-center justify-between rounded-xl border border-line bg-panel/60 px-3 py-2.5 text-left disabled:opacity-50"
+	>
+		<div>
+			<p class="text-sm text-primary">Collapse dish photos</p>
+			<p class="mt-0.5 text-[11px] text-tertiary">
+				{#if data.preferences.collapse_dish_photos}
+					Show dish photos as small thumbnails (tap to enlarge)
+				{:else}
+					Show dish photos full-size in each visit
+				{/if}
+			</p>
+		</div>
+		<span
+			class="rounded-full px-2.5 py-1 text-xs"
+			class:bg-accent={data.preferences.collapse_dish_photos}
+			class:text-on-accent={data.preferences.collapse_dish_photos}
+			class:bg-panel-2={!data.preferences.collapse_dish_photos}
+			class:text-secondary={!data.preferences.collapse_dish_photos}
+		>
+			{data.preferences.collapse_dish_photos ? 'On' : 'Off'}
 		</span>
 	</button>
 

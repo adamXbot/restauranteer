@@ -109,6 +109,27 @@ const MIGRATIONS: string[] = [
 	// so the vault list can show review state without re-parsing every body.
 	`
 	ALTER TABLE restaurants ADD COLUMN visit_summary_json TEXT;
+	`,
+	// v6 — per-visit index so a cross-restaurant visit feed can sort by date,
+	// restaurant name, or any area rating without re-parsing every body. Rows
+	// are (re)populated in upsertRestaurant, so the full-reconcile on boot
+	// backfills existing vaults with no separate migration step.
+	`
+	CREATE TABLE IF NOT EXISTS visits (
+		restaurant_uuid TEXT NOT NULL REFERENCES restaurants(uuid) ON DELETE CASCADE,
+		visit_index INTEGER NOT NULL,
+		date TEXT NOT NULL,
+		meal TEXT,
+		overall_rating REAL,
+		vibe_rating REAL,
+		food_rating REAL,
+		quality_rating REAL,
+		service_rating REAL,
+		notes_excerpt TEXT,
+		photo_path TEXT,
+		PRIMARY KEY (restaurant_uuid, visit_index)
+	);
+	CREATE INDEX IF NOT EXISTS idx_visits_date ON visits(date);
 	`
 ];
 

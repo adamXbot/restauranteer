@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { connectivity, OFFLINE_WRITE_MESSAGE } from '$lib/connectivity.svelte';
+
 	type Props = {
 		restaurantUuid: string;
 		currentName: string;
@@ -14,6 +16,7 @@
 	let err = $state<string | null>(null);
 
 	async function save() {
+		if (!connectivity.online) { err = OFFLINE_WRITE_MESSAGE; return; }
 		const trimmed = name.trim();
 		if (!trimmed) {
 			err = 'Name cannot be empty';
@@ -86,7 +89,7 @@
 		<button
 			type="button"
 			onclick={save}
-			disabled={saving || name.trim().length === 0}
+			disabled={saving || name.trim().length === 0 || !connectivity.online}
 			class="mt-4 w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent disabled:opacity-50"
 		>
 			{saving ? 'Saving…' : 'Save'}

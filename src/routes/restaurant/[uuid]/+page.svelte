@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import PhotoCarousel from '$lib/components/PhotoCarousel.svelte';
 	import PhotoGrid from '$lib/components/PhotoGrid.svelte';
@@ -20,6 +21,7 @@
 	import DisclosureSection from '$lib/components/DisclosureSection.svelte';
 	import RestaurantNotesSheet from '$lib/components/RestaurantNotesSheet.svelte';
 	import AttributeEditorSheet from '$lib/components/AttributeEditorSheet.svelte';
+	import { lightboxImages } from '$lib/photoswipe';
 
 	let { data }: { data: PageData } = $props();
 
@@ -79,6 +81,30 @@
 			.filter((m) => data.lists.includes(m.list) && typeof m.notes === 'string' && m.notes.trim())
 			.map((m) => ({ list: m.list, notes: m.notes as string }))
 	);
+
+	const anyDishPhotos = $derived(data.bodySections.visits.some((v) => v.hasDishPhotos));
+
+	// Per-dish photos also appear in "Your photos", so default to compact
+	// thumbnails (set in Settings); the toggle overrides per device and sticks.
+	const DISH_PHOTOS_STORAGE_KEY = 'dishPhotosCollapsed';
+	// svelte-ignore state_referenced_locally
+	let dishPhotosCollapsed = $state(data.preferences.collapse_dish_photos);
+	onMount(() => {
+		try {
+			const saved = localStorage.getItem(DISH_PHOTOS_STORAGE_KEY);
+			if (saved === 'true' || saved === 'false') dishPhotosCollapsed = saved === 'true';
+		} catch {
+			// fall back to the settings default
+		}
+	});
+	function setDishPhotosCollapsed(next: boolean) {
+		dishPhotosCollapsed = next;
+		try {
+			localStorage.setItem(DISH_PHOTOS_STORAGE_KEY, String(next));
+		} catch {
+			// ignore
+		}
+	}
 
 	type SharedVisit = (typeof data.bodySections.visits)[number];
 	let sharingVisit = $state<SharedVisit | null>(null);
@@ -212,7 +238,23 @@
 			{/each}
 		</div>
 	{/if}
+	{#if latestVisit}
+		<a
+			href="#latest-visit"
+			class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-accent"
+		>
+			Jump to latest visit
+			<span aria-hidden="true">↓</span>
+		</a>
+	{/if}
 </header>
+
+{#if data.userPhotos.length > 0}
+	<section class="px-5 pt-4 pb-2">
+		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Your photos</h2>
+		<PhotoGrid paths={data.userPhotos} />
+	</section>
+{/if}
 
 {#if photos.length > 0}
 	<PhotoCarousel {photos} />
@@ -506,17 +548,21 @@
 	</section>
 {/if}
 
-{#if data.userPhotos.length > 0}
-	<section class="px-5 pt-4 pb-2">
-		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Your photos</h2>
-		<PhotoGrid paths={data.userPhotos} />
-	</section>
-{/if}
-
 {#if latestVisit}
-	<section class="md-body px-5 pt-4 pb-2">
-		<h2>Latest visit</h2>
-		<article class="md-visit mt-4">
+	<section id="latest-visit" class="md-body px-5 pt-4 pb-2">
+		<div class="flex items-center justify-between gap-2">
+			<h2>Latest visit</h2>
+			{#if anyDishPhotos}
+				<button
+					type="button"
+					onclick={() => setDishPhotosCollapsed(!dishPhotosCollapsed)}
+					class="shrink-0 rounded-full border border-line bg-panel/60 px-2.5 py-1 text-xs text-secondary"
+				>
+					{dishPhotosCollapsed ? 'Expand dish photos' : 'Collapse dish photos'}
+				</button>
+			{/if}
+		</div>
+		<article use:lightboxImages class="md-visit mt-4" class:dishes-collapsed={dishPhotosCollapsed}>
 			{@html latestVisit.html}
 			<div class="mt-1 flex flex-wrap gap-2">
 				<button
@@ -569,7 +615,7 @@
 		<DisclosureSection title="Past visits" meta={`${olderVisits.length} older`}>
 			<div class="md-body">
 				{#each olderVisits as v (v.id)}
-					<article class="md-visit mt-4 first:mt-0">
+					<article class="md-visit mt-4 first:mt-0" class:dishes-collapsed={dishPhotosCollapsed}>
 						{@html v.html}
 						<div class="mt-1 flex flex-wrap gap-2">
 							<button

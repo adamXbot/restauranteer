@@ -84,6 +84,9 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		headline: v.headline,
 		html: renderMarkdown(v.rawMarkdown),
 		photoPaths: v.photoPaths,
+		// Dish photos are emitted as indented `  ![](…)` lines; visit-level photos
+		// are not indented. Lets the page show the collapse toggle only when relevant.
+		hasDishPhotos: /^ {2,}!\[/m.test(v.rawMarkdown),
 		shareText: {
 			full: formatVisitForShare(v, indexed.name, 'full'),
 			notes_only: formatVisitForShare(v, indexed.name, 'notes_only')
