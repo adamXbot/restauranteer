@@ -1,11 +1,31 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 
 	let { data }: { data: PageData } = $props();
 
 	type View = 'vault' | 'recent';
+	const VIEW_STORAGE_KEY = 'restaurantListView';
 	let view = $state<View>('vault');
+
+	onMount(() => {
+		try {
+			const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+			if (saved === 'vault' || saved === 'recent') view = saved;
+		} catch {
+			// localStorage may be blocked; fall back to the default view.
+		}
+	});
+
+	function setView(next: View) {
+		view = next;
+		try {
+			localStorage.setItem(VIEW_STORAGE_KEY, next);
+		} catch {
+			// ignore
+		}
+	}
 
 	// In "recent" view, sort by most recent visit first; un-visited restaurants
 	// sink to the bottom, ordered alphabetically. The server already returns the
@@ -66,7 +86,7 @@
 			<div class="flex rounded-xl border border-line bg-panel/60 p-0.5 text-xs">
 				<button
 					type="button"
-					onclick={() => (view = 'vault')}
+					onclick={() => setView('vault')}
 					class="rounded-[10px] px-2.5 py-1 {view === 'vault'
 						? 'bg-panel-2 text-primary'
 						: 'text-secondary'}"
@@ -75,7 +95,7 @@
 				</button>
 				<button
 					type="button"
-					onclick={() => (view = 'recent')}
+					onclick={() => setView('recent')}
 					class="rounded-[10px] px-2.5 py-1 {view === 'recent'
 						? 'bg-panel-2 text-primary'
 						: 'text-secondary'}"
