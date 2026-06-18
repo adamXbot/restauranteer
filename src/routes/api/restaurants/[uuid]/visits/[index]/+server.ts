@@ -99,7 +99,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 	try {
 		form = await request.formData();
 	} catch {
-		throw error(400, 'invalid form data');
+		throw error(400, 'could not read upload — the request may be too large or malformed');
 	}
 
 	const rf = await readRestaurant(indexed.file_path);

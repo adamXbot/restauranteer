@@ -19,6 +19,9 @@ ENV PORT=3000
 ENV HOST=0.0.0.0
 ENV VAULT_PATH=/data
 ENV VAULT_SUBDIR=Restaurants
+# Max request body the Node server accepts. adapter-node defaults to 512K,
+# which truncates multi-photo visit/dish uploads and surfaces as a generic 400.
+ENV BODY_SIZE_LIMIT=64M
 
 COPY --from=build /app/build ./build
 COPY --from=build /app/node_modules ./node_modules

@@ -18,6 +18,10 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOST=0.0.0.0
+      # Max upload body size. adapter-node defaults to 512K, which is too small
+      # for visits with photos (incl. per-dish photos) and causes "save failed"
+      # 400s. Applied on `docker compose up -d` (no image rebuild); override in .env.
+      - BODY_SIZE_LIMIT=${BODY_SIZE_LIMIT:-64M}
     # Join Traefik's network so it can discover and reach this container.
     networks:
       - proxy
