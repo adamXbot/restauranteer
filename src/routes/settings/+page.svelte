@@ -25,6 +25,7 @@
 	} from '$lib/swCache';
 	import AttributeDefinitionSheet from '$lib/components/AttributeDefinitionSheet.svelte';
 	import { uniqueAttributeId, type AttributeDefinition } from '$lib/attributes';
+	import { connectivity, OFFLINE_WRITE_MESSAGE } from '$lib/connectivity.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -222,6 +223,7 @@
 	});
 
 	async function setPreference(key: string, value: unknown) {
+		if (!connectivity.online) { lastMsg = OFFLINE_WRITE_MESSAGE; return; }
 		busyPref = true;
 		try {
 			const res = await fetch('/api/settings/preferences', {

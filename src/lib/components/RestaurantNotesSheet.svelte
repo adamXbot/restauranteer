@@ -6,6 +6,8 @@
 		onClose?: () => void;
 	};
 
+	import { connectivity, OFFLINE_WRITE_MESSAGE } from '$lib/connectivity.svelte';
+
 	let { restaurantUuid, currentNotes, onSaved, onClose }: Props = $props();
 
 	// svelte-ignore state_referenced_locally
@@ -14,6 +16,7 @@
 	let err = $state<string | null>(null);
 
 	async function save() {
+		if (!connectivity.online) { err = OFFLINE_WRITE_MESSAGE; return; }
 		saving = true;
 		err = null;
 		try {
@@ -71,7 +74,7 @@
 		<button
 			type="button"
 			onclick={save}
-			disabled={saving}
+			disabled={saving || !connectivity.online}
 			class="mt-4 w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent disabled:opacity-50"
 		>
 			{saving ? 'Saving...' : 'Save'}

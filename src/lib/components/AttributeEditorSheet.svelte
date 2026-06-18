@@ -1,6 +1,7 @@
 <script lang="ts">
 	import AttributeToggle from './AttributeToggle.svelte';
 	import type { AttributeDefinition, AttributeValue } from '$lib/attributes';
+	import { connectivity, OFFLINE_WRITE_MESSAGE } from '$lib/connectivity.svelte';
 
 	type Props = {
 		restaurantUuid: string;
@@ -26,6 +27,7 @@
 	}
 
 	async function save() {
+		if (!connectivity.online) { err = OFFLINE_WRITE_MESSAGE; return; }
 		saving = true;
 		err = null;
 		try {
@@ -96,7 +98,7 @@
 		<button
 			type="button"
 			onclick={save}
-			disabled={saving || definitions.length === 0}
+			disabled={saving || definitions.length === 0 || !connectivity.online}
 			class="mt-4 w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent disabled:opacity-50"
 		>
 			{saving ? 'Saving…' : 'Save'}

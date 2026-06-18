@@ -7,6 +7,7 @@
 	import AttributeToggle from '$lib/components/AttributeToggle.svelte';
 	import DishBreakdown, { type EditorDish } from '$lib/components/DishBreakdown.svelte';
 	import type { AttributeValue } from '$lib/attributes';
+	import { connectivity, OFFLINE_WRITE_MESSAGE } from '$lib/connectivity.svelte';
 
 	let { data }: { data: PageData } = $props();
 	const usePerArea = $derived(data.preferences.per_area_ratings);
@@ -128,6 +129,7 @@
 
 	async function submit(e: Event) {
 		e.preventDefault();
+		if (!connectivity.online) { err = OFFLINE_WRITE_MESSAGE; return; }
 		saving = true;
 		err = null;
 		progress = 'Saving…';
@@ -193,6 +195,7 @@
 	}
 
 	async function deleteVisit() {
+		if (!connectivity.online) { err = OFFLINE_WRITE_MESSAGE; return; }
 		deleting = true;
 		err = null;
 		try {
@@ -435,7 +438,7 @@
 
 	<button
 		type="submit"
-		disabled={saving || deleting}
+		disabled={saving || deleting || !connectivity.online}
 		class="mt-2 w-full rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent disabled:opacity-50"
 	>
 		{saving ? 'Saving…' : 'Save changes'}
@@ -524,7 +527,7 @@
 				<button
 					type="button"
 					onclick={deleteVisit}
-					disabled={deleting}
+					disabled={deleting || !connectivity.online}
 					class="rounded-2xl bg-danger px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
 				>
 					{deleting ? 'Deleting…' : 'Delete'}
