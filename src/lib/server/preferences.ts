@@ -24,6 +24,11 @@ export type Preferences = {
 	 * Food area rating.
 	 */
 	food_breakdown: boolean;
+	/**
+	 * Show per-dish photos as small thumbnails on the restaurant page by default
+	 * (they also appear in "Your photos"). Overridable per page via a toggle.
+	 */
+	collapse_dish_photos: boolean;
 	default_navigation_app: NavigationApp;
 	default_map_provider: MapProvider;
 	share_format: ShareFormat;
@@ -44,6 +49,7 @@ export type Preferences = {
 const DEFAULTS: Preferences = {
 	per_area_ratings: false,
 	food_breakdown: false,
+	collapse_dish_photos: true,
 	default_navigation_app: 'apple',
 	default_map_provider: 'mapbox',
 	share_format: 'full',
@@ -74,6 +80,10 @@ export function parsePreferences(raw: string | null): Preferences {
 		return {
 			per_area_ratings: parsed.per_area_ratings === true,
 			food_breakdown: parsed.food_breakdown === true,
+			collapse_dish_photos:
+				parsed.collapse_dish_photos === undefined
+					? DEFAULTS.collapse_dish_photos
+					: parsed.collapse_dish_photos === true,
 			default_navigation_app: coerceNavApp(parsed.default_navigation_app),
 			default_map_provider: coerceMapProvider(parsed.default_map_provider),
 			share_format: coerceShareFormat(parsed.share_format),
@@ -110,6 +120,10 @@ export function setPreferences(updates: Partial<Preferences>): Preferences {
 			updates.food_breakdown !== undefined
 				? updates.food_breakdown === true
 				: current.food_breakdown,
+		collapse_dish_photos:
+			updates.collapse_dish_photos !== undefined
+				? updates.collapse_dish_photos === true
+				: current.collapse_dish_photos,
 		default_navigation_app:
 			updates.default_navigation_app !== undefined
 				? coerceNavApp(updates.default_navigation_app)

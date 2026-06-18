@@ -538,6 +538,33 @@
 
 	<button
 		type="button"
+		onclick={() => setPreference('collapse_dish_photos', !data.preferences.collapse_dish_photos)}
+		disabled={busyPref}
+		class="mt-3 flex w-full items-center justify-between rounded-xl border border-line bg-panel/60 px-3 py-2.5 text-left disabled:opacity-50"
+	>
+		<div>
+			<p class="text-sm text-primary">Collapse dish photos</p>
+			<p class="mt-0.5 text-[11px] text-tertiary">
+				{#if data.preferences.collapse_dish_photos}
+					Show dish photos as small thumbnails (tap to enlarge)
+				{:else}
+					Show dish photos full-size in each visit
+				{/if}
+			</p>
+		</div>
+		<span
+			class="rounded-full px-2.5 py-1 text-xs"
+			class:bg-accent={data.preferences.collapse_dish_photos}
+			class:text-on-accent={data.preferences.collapse_dish_photos}
+			class:bg-panel-2={!data.preferences.collapse_dish_photos}
+			class:text-secondary={!data.preferences.collapse_dish_photos}
+		>
+			{data.preferences.collapse_dish_photos ? 'On' : 'Off'}
+		</span>
+	</button>
+
+	<button
+		type="button"
 		onclick={() => setPreference('australian_centric', !data.preferences.australian_centric)}
 		disabled={busyPref}
 		class="mt-3 flex w-full items-center justify-between rounded-xl border border-line bg-panel/60 px-3 py-2.5 text-left disabled:opacity-50"
