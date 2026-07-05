@@ -5,6 +5,7 @@
 	import PendingVisitsBanner from '$lib/components/PendingVisitsBanner.svelte';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
+	import SideNav from '$lib/components/SideNav.svelte';
 	import QuickAdd from '$lib/components/QuickAdd.svelte';
 	import { buildManifestHref, buildThemeColors } from '$lib/theme';
 	import { installTheme } from '$lib/themeRuntime';
@@ -13,6 +14,7 @@
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
 	let banner: ReturnType<typeof PendingVisitsBanner> | undefined;
+	let quickAddOpen = $state(false);
 	const headBrightness = $derived(data.preferences.theme_mode === 'light' ? 'light' : 'dark');
 	const headTheme = $derived(buildThemeColors(data.preferences, headBrightness));
 	const manifestHref = $derived(buildManifestHref(data.preferences, headBrightness));
@@ -37,8 +39,13 @@
 <OfflineBanner />
 <PendingVisitsBanner bind:this={banner} />
 
-<main class="mx-auto flex min-h-dvh max-w-3xl flex-col">
-	{@render children()}
-	<QuickAdd />
-	<BottomNav inboxCount={data.inboxCount} />
-</main>
+<div class="flex min-h-dvh">
+	<SideNav inboxCount={data.inboxCount} onAdd={() => (quickAddOpen = true)} />
+	<div class="flex min-w-0 flex-1 flex-col">
+		<main class="mx-auto flex w-full max-w-6xl flex-1 flex-col">
+			{@render children()}
+		</main>
+		<BottomNav inboxCount={data.inboxCount} />
+	</div>
+</div>
+<QuickAdd bind:open={quickAddOpen} />

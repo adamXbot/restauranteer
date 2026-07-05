@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import PhotoCarousel from '$lib/components/PhotoCarousel.svelte';
@@ -21,9 +22,17 @@
 	import DisclosureSection from '$lib/components/DisclosureSection.svelte';
 	import RestaurantNotesSheet from '$lib/components/RestaurantNotesSheet.svelte';
 	import AttributeEditorSheet from '$lib/components/AttributeEditorSheet.svelte';
-	import { lightboxImages } from '$lib/photoswipe';
+	import VisitArticle from '$lib/components/VisitArticle.svelte';
+	import VisitTimeline from '$lib/components/VisitTimeline.svelte';
 
 	let { data }: { data: PageData } = $props();
+
+	// Opened from the map (on /near or /discover) → send Back there (its search is
+	// preserved) rather than home.
+	const fromParam = $derived(page.url.searchParams.get('from'));
+	const backHref = $derived(
+		fromParam === 'near' ? '/near' : fromParam === 'discover' ? '/discover' : '/'
+	);
 
 	type ArticleRef = {
 		source: string;
@@ -76,6 +85,9 @@
 			: null
 	);
 	const olderVisits = $derived(data.bodySections.visits.slice(0, -1).reverse());
+	// Once a place passes ~5 visits, older ones fold into a compact timeline so a
+	// regular's page never runs away. Below that they stay as full write-ups.
+	const useTimeline = $derived(data.bodySections.visits.length > 5);
 	const listNotes = $derived(
 		data.listMemberships
 			.filter((m) => data.lists.includes(m.list) && typeof m.notes === 'string' && m.notes.trim())
@@ -87,14 +99,23 @@
 	// Per-dish photos also appear in "Your photos", so default to compact
 	// thumbnails (set in Settings); the toggle overrides per device and sticks.
 	const DISH_PHOTOS_STORAGE_KEY = 'dishPhotosCollapsed';
+	const DETAIL_LAYOUT_STORAGE_KEY = 'restauranteer.detailLayout';
 	// svelte-ignore state_referenced_locally
 	let dishPhotosCollapsed = $state(data.preferences.collapse_dish_photos);
+	// Two-column on desktop by default; overridable per device in Settings.
+	let detailLayout = $state<'two' | 'stacked'>('two');
 	onMount(() => {
 		try {
 			const saved = localStorage.getItem(DISH_PHOTOS_STORAGE_KEY);
 			if (saved === 'true' || saved === 'false') dishPhotosCollapsed = saved === 'true';
 		} catch {
 			// fall back to the settings default
+		}
+		try {
+			const dl = localStorage.getItem(DETAIL_LAYOUT_STORAGE_KEY);
+			if (dl === 'two' || dl === 'stacked') detailLayout = dl;
+		} catch {
+			// ignore
 		}
 	});
 	function setDishPhotosCollapsed(next: boolean) {
@@ -209,9 +230,9 @@
 	}
 </script>
 
-<header class="px-5 pt-6 pb-2">
+<header class="px-5 pt-6 pb-3 lg:px-8">
 	<div class="flex items-start justify-between gap-2">
-		<BackLink href="/" />
+		<BackLink href={backHref} />
 		<button
 			type="button"
 			onclick={refreshAll}
@@ -222,92 +243,294 @@
 			{refreshing ? '↻ Refreshing…' : '↻ Refresh'}
 		</button>
 	</div>
-	<div class="mt-2 flex items-start justify-between gap-3">
-		<h1 class="min-w-0 flex-1 text-2xl font-semibold text-primary">{data.name}</h1>
+	<div class="mt-3 flex items-start justify-between gap-4">
+		<div class="min-w-0 flex-1">
+			<h1 class="text-2xl font-semibold break-words text-primary lg:text-3xl">{data.name}</h1>
+			{#if address}
+				<p class="mt-1 text-sm text-secondary">{address}</p>
+			{/if}
+			{#if cuisine.length > 0}
+				<div class="mt-2 flex flex-wrap gap-1">
+					{#each cuisine as c (c)}
+						<span class="rounded-full bg-panel-2 px-2 py-0.5 text-xs text-secondary">{c}</span>
+					{/each}
+				</div>
+			{/if}
+		</div>
 		{#if data.preferences.show_review_summary && data.visitSummary.count > 0}
 			<ReviewSummary summary={data.visitSummary} />
 		{/if}
 	</div>
-	{#if address}
-		<p class="mt-0.5 text-sm text-secondary">{address}</p>
-	{/if}
-	{#if cuisine.length > 0}
-		<div class="mt-2 flex flex-wrap gap-1">
-			{#each cuisine as c (c)}
-				<span class="rounded-full bg-panel-2 px-2 py-0.5 text-xs text-secondary">{c}</span>
-			{/each}
-		</div>
-	{/if}
-	{#if latestVisit}
-		<a
-			href="#latest-visit"
-			class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-accent"
-		>
-			Jump to latest visit
-			<span aria-hidden="true">↓</span>
-		</a>
-	{/if}
 </header>
 
-{#if data.userPhotos.length > 0}
-	<section class="px-5 pt-4 pb-2">
-		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Your photos</h2>
-		<PhotoGrid paths={data.userPhotos} />
-	</section>
-{/if}
+<div
+	class="px-5 pb-8 lg:px-8 {detailLayout === 'two'
+		? 'lg:grid lg:grid-cols-[minmax(0,1fr)_336px] lg:items-start lg:gap-8'
+		: ''}"
+>
+	<!-- MAIN — the story -->
+	<div class="min-w-0 space-y-6">
+		{#if data.userPhotos.length > 0}
+			<section>
+				<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Your photos</h2>
+				<PhotoGrid paths={data.userPhotos} />
+			</section>
+		{/if}
 
-{#if photos.length > 0}
-	<PhotoCarousel {photos} />
-{/if}
+		{#if photos.length > 0}
+			<section><PhotoCarousel {photos} /></section>
+		{/if}
 
-<ActionRow
-	{phone}
-	{website}
-	mapsUri={data.place?.google_maps_uri ?? null}
-	address={data.place?.address ?? (fm.address as string | undefined) ?? null}
-	lat={data.place?.lat ?? data.lat}
-	lng={data.place?.lng ?? data.lng}
-	name={data.name}
-	navigationApp={data.preferences.default_navigation_app}
-	inVault={true}
-	onEnrich={(field) => (enrichingField = field)}
-/>
+		{#if latestVisit}
+			<section id="latest-visit" class="md-body">
+				<div class="flex items-center justify-between gap-2">
+					<h2>Latest visit</h2>
+					{#if anyDishPhotos}
+						<button
+							type="button"
+							onclick={() => setDishPhotosCollapsed(!dishPhotosCollapsed)}
+							class="shrink-0 rounded-full border border-line bg-panel/60 px-2.5 py-1 text-xs text-secondary"
+						>
+							{dishPhotosCollapsed ? 'Expand dish photos' : 'Collapse dish photos'}
+						</button>
+					{/if}
+				</div>
+				<div class="mt-4">
+					<VisitArticle
+						visit={latestVisit}
+						uuid={data.uuid}
+						{dishPhotosCollapsed}
+						onShare={() => (sharingVisit = latestVisit)}
+					/>
+				</div>
+			</section>
+		{/if}
 
-<section class="px-5 pt-4">
-	<div class="rounded-2xl border border-line bg-panel/50 p-4">
-		<div class="flex items-start justify-between gap-3">
-			<div>
-				<p class="text-xs tracking-widest text-tertiary uppercase">Visits</p>
-				{#if data.visitSummary.count > 0 && data.visitSummary.latest}
-					<p class="mt-1 text-sm text-primary">
-						Latest {shortVisitDate(data.visitSummary.latest.date)}
-						{#if data.visitSummary.latest.meal} · {data.visitSummary.latest.meal}{/if}
-					</p>
-					<p class="mt-0.5 text-xs text-tertiary">
-						{data.visitSummary.count}
-						{data.visitSummary.count === 1 ? 'visit' : 'visits'}
-					</p>
+		{#if olderVisits.length > 0}
+			<section>
+				{#if useTimeline}
+					<h2 class="mb-3 text-sm font-medium tracking-wide text-secondary uppercase">
+						Earlier visits · {olderVisits.length}
+					</h2>
+					<VisitTimeline
+						visits={olderVisits}
+						uuid={data.uuid}
+						{dishPhotosCollapsed}
+						onShare={(v) => (sharingVisit = v)}
+					/>
 				{:else}
-					<p class="mt-1 text-sm text-secondary">No visits yet.</p>
+					<DisclosureSection title="Past visits" meta={`${olderVisits.length} older`}>
+						<div class="space-y-6">
+							{#each olderVisits as v (v.id)}
+								<VisitArticle
+									visit={v}
+									uuid={data.uuid}
+									{dishPhotosCollapsed}
+									onShare={() => (sharingVisit = v)}
+								/>
+							{/each}
+						</div>
+					</DisclosureSection>
 				{/if}
+			</section>
+		{/if}
+
+		<section>
+			<div class="flex items-center justify-between gap-2">
+				<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Notes</h2>
+				<button type="button" onclick={() => (editingNotes = true)} class="text-xs text-accent">
+					{data.notes.markdown ? 'Edit' : 'Add'}
+				</button>
 			</div>
-			{#if data.visitSummary.average != null}
-				<span class="shrink-0 text-sm text-rating">Avg ★ {data.visitSummary.average}</span>
-			{:else if data.visitSummary.latest?.rating != null}
-				<span class="shrink-0 text-sm text-rating">★ {data.visitSummary.latest.rating}</span>
+			{#if data.notes.html}
+				<div class="md-body mt-2 rounded-xl border border-line bg-panel/40 p-3">
+					{@html data.notes.html}
+				</div>
+			{:else}
+				<p class="mt-1 text-xs text-tertiary">No notes yet.</p>
 			{/if}
-		</div>
-		<div class="mt-3 grid grid-cols-2 gap-2">
+		</section>
+
+		<section>
+			<div class="flex items-center justify-between gap-2">
+				<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Sources ({sourceCount})</h2>
+				<div class="flex items-center gap-3">
+					{#if hasExternalSources}
+						<a
+							href={`/restaurant/${data.uuid}/compare`}
+							class="text-xs text-secondary hover:text-primary"
+							title="Compare info across linked sources"
+						>
+							Compare
+						</a>
+					{/if}
+					<button type="button" onclick={() => (linkingArticle = true)} class="text-xs text-accent">
+						Add
+					</button>
+				</div>
+			</div>
+			{#if sourceCount === 0}
+				<div class="mt-2 rounded-xl border border-dashed border-line-strong bg-panel/30 p-3">
+					<p class="text-xs text-secondary">No sources linked.</p>
+					<p class="mt-1 text-[11px] text-tertiary">
+						Paste Google Maps, Apple Maps, review pages, articles, or social links.
+					</p>
+					<button
+						type="button"
+						onclick={() => (linkingArticle = true)}
+						class="mt-3 rounded-xl bg-accent px-4 py-2 text-xs font-medium text-on-accent"
+					>
+						Add source
+					</button>
+				</div>
+			{:else}
+				<ul class="mt-2 space-y-2">
+					{#if googlePlaceId}
+						<li class="rounded-xl border border-line bg-panel/40 p-3">
+							<div class="flex items-center justify-between gap-2">
+								<span class="text-xs text-tertiary">Google Maps</span>
+								{#if data.place?.google_maps_uri}
+									<a
+										href={data.place.google_maps_uri}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-xs text-accent underline decoration-line-strong underline-offset-2"
+									>
+										Open ↗
+									</a>
+								{/if}
+							</div>
+							<p class="mt-1 text-sm font-medium text-primary">Place details linked</p>
+						</li>
+					{/if}
+					{#each visibleArticles as a (a.url)}
+						{@const isExpandableInstagram = isExpandableInstagramSource(a)}
+						{@const isSourceExpanded = expandedSourceUrls.has(a.url)}
+						<li class="rounded-xl border border-line bg-panel/40 p-3">
+							<div class="flex items-baseline justify-between gap-2">
+								<span class="text-xs text-tertiary">{sourceLabel(a.source)}</span>
+								<div class="flex items-center gap-3">
+									{#if REFRESHABLE_SOURCES.has(a.source)}
+										<button
+											type="button"
+											onclick={() => refreshArticle(a.url, a.source)}
+											disabled={refreshingArticle === a.url}
+											title="Re-fetch article from the source"
+											class="text-xs text-tertiary hover:text-secondary disabled:opacity-50"
+										>
+											{refreshingArticle === a.url ? '↻…' : '↻'}
+										</button>
+									{/if}
+									<ShareButton url={a.url} title={`${data.name} — ${a.title}`} />
+									<a
+										href={a.url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-xs text-accent underline decoration-line-strong underline-offset-2"
+									>
+										Read ↗
+									</a>
+									<button
+										type="button"
+										onclick={() => deleteArticle(a.url)}
+										disabled={deletingArticle === a.url}
+										title="Remove this source from the restaurant"
+										aria-label="Remove source"
+										class="text-xs text-tertiary hover:text-danger disabled:opacity-50"
+									>
+										{deletingArticle === a.url ? '…' : '✕'}
+									</button>
+								</div>
+							</div>
+							<p
+								class="mt-1 whitespace-pre-line text-sm font-medium text-primary"
+								class:line-clamp-3={isExpandableInstagram && !isSourceExpanded}
+							>
+								{a.title}
+							</p>
+							{#if isExpandableInstagram}
+								<button
+									type="button"
+									onclick={() => toggleSourceText(a.url)}
+									class="mt-1 text-xs text-accent"
+									aria-expanded={isSourceExpanded}
+								>
+									{isSourceExpanded ? 'Show less' : 'Show more'}
+								</button>
+							{/if}
+							{#if a.excerpt && !isExpandableInstagram}
+								<p class="mt-1 line-clamp-2 text-sm text-secondary">{a.excerpt}</p>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+				{#if articles.length > 2}
+					<button
+						type="button"
+						onclick={() => (showAllSources = !showAllSources)}
+						class="mt-2 text-xs text-accent"
+					>
+						{showAllSources ? 'Show fewer' : `Show all ${articles.length}`}
+					</button>
+				{/if}
+			{/if}
+		</section>
+
+		{#if reviews.length > 0}
+			<section>
+				<DisclosureSection title="Google reviews" meta={`${reviews.length} reviews`}>
+					<ReviewList {reviews} />
+				</DisclosureSection>
+			</section>
+		{/if}
+
+		{#if data.bodySections.beforeVisitsHtml || data.bodySections.afterVisitsHtml}
+			<section>
+				<DisclosureSection title="Markdown" meta="Overview and extras">
+					<div class="md-body">
+						{#if data.bodySections.beforeVisitsHtml}
+							{@html data.bodySections.beforeVisitsHtml}
+						{/if}
+						{#if data.bodySections.afterVisitsHtml}
+							{@html data.bodySections.afterVisitsHtml}
+						{/if}
+					</div>
+				</DisclosureSection>
+			</section>
+		{/if}
+	</div>
+
+	<!-- RAIL — facts + actions -->
+	<aside
+		class="mt-6 space-y-4 {detailLayout === 'two' ? 'lg:sticky lg:top-4 lg:mt-0' : ''}"
+	>
+		<div class="rounded-2xl border border-line bg-panel/50 p-4">
+			<p class="text-[10px] tracking-widest text-tertiary uppercase">Visits</p>
+			{#if data.visitSummary.count > 0 && data.visitSummary.latest}
+				<p class="mt-1 text-sm text-primary">
+					Latest {shortVisitDate(data.visitSummary.latest.date)}
+					{#if data.visitSummary.latest.meal} · {data.visitSummary.latest.meal}{/if}
+				</p>
+				<p class="mt-0.5 text-xs text-tertiary">
+					{data.visitSummary.count}
+					{data.visitSummary.count === 1 ? 'visit' : 'visits'}
+					{#if data.visitSummary.average != null}
+						· Avg ★ {data.visitSummary.average}
+					{/if}
+				</p>
+			{:else}
+				<p class="mt-1 text-sm text-secondary">No visits yet.</p>
+			{/if}
 			<a
 				href={`/restaurant/${data.uuid}/visit`}
-				class="rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent"
+				class="mt-3 block rounded-2xl bg-accent px-5 py-3 text-center text-sm font-medium text-on-accent"
 			>
 				Start visit
 			</a>
 			{#if latestVisit}
 				<a
 					href={`/restaurant/${data.uuid}/visit/${latestVisit.index}/edit`}
-					class="rounded-2xl border border-line bg-panel/70 px-5 py-3 text-center text-sm font-medium text-secondary"
+					class="mt-2 block rounded-2xl border border-line bg-panel/70 px-5 py-2.5 text-center text-sm font-medium text-secondary"
 				>
 					Edit latest
 				</a>
@@ -315,346 +538,106 @@
 				<button
 					type="button"
 					onclick={() => (editingNotes = true)}
-					class="rounded-2xl border border-line bg-panel/70 px-5 py-3 text-sm font-medium text-secondary"
+					class="mt-2 block w-full rounded-2xl border border-line bg-panel/70 px-5 py-2.5 text-center text-sm font-medium text-secondary"
 				>
 					Add note
 				</button>
 			{/if}
 		</div>
-	</div>
-</section>
 
-<section class="px-5 pt-4 pb-2">
-	<div class="flex items-center justify-between gap-2">
-		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Organise</h2>
-		<div class="flex items-center gap-3">
-			<button type="button" onclick={() => (editingLists = true)} class="text-xs text-accent">
-				Lists
-			</button>
-			<button type="button" onclick={() => (editingTags = true)} class="text-xs text-accent">
-				Tags
-			</button>
+		<div>
+			<h2 class="mb-1 text-sm font-medium tracking-wide text-secondary uppercase">Contact</h2>
+			<ActionRow
+				bare
+				{phone}
+				{website}
+				mapsUri={data.place?.google_maps_uri ?? null}
+				address={data.place?.address ?? (fm.address as string | undefined) ?? null}
+				lat={data.place?.lat ?? data.lat}
+				lng={data.place?.lng ?? data.lng}
+				name={data.name}
+				navigationApp={data.preferences.default_navigation_app}
+				inVault={true}
+				onEnrich={(field) => (enrichingField = field)}
+			/>
 		</div>
-	</div>
-	<div class="mt-2 flex flex-wrap gap-1">
-		{#each data.lists as list (list)}
-			<span class="rounded-full bg-panel-2 px-2 py-0.5 text-xs text-secondary">{list}</span>
-		{/each}
-		{#each data.tags as tag (tag)}
-			<span class="rounded-full bg-panel-2/60 px-2 py-0.5 text-xs text-secondary">#{tag}</span>
-		{/each}
-		{#if data.lists.length === 0 && data.tags.length === 0}
-			<span class="text-xs text-tertiary">No lists or tags.</span>
-		{/if}
-	</div>
-	{#if listNotes.length > 0}
-		<ul class="mt-2 space-y-1">
-			{#each listNotes as note (note.list)}
-				<li class="text-xs text-secondary">
-					<span class="font-medium text-primary">{note.list}:</span>
-					<span>{note.notes}</span>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</section>
 
-{#if data.applicableAttributes.length > 0}
-	<section class="px-5 pt-4 pb-2">
-		<div class="flex items-center justify-between gap-2">
-			<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Attributes</h2>
-			<button type="button" onclick={() => (editingAttributes = true)} class="text-xs text-accent">
-				{visibleAttributes.length > 0 ? 'Edit' : 'Set'}
-			</button>
-		</div>
-		{#if visibleAttributes.length > 0}
-			<ul class="mt-2 flex flex-wrap gap-1.5">
-				{#each visibleAttributes as item (item.def.id)}
-					<li
-						class="inline-flex items-center gap-1.5 rounded-full bg-panel-2 px-2.5 py-1 text-xs"
-					>
-						<span
-							aria-hidden="true"
-							class:text-success={item.value === 'yes'}
-							class:text-danger={item.value === 'no'}
-							class="font-medium"
-						>
-							{item.value === 'yes' ? '✓' : '✕'}
-						</span>
-						<span class="text-secondary">{item.def.label}</span>
-					</li>
+		<section>
+			<div class="flex items-center justify-between gap-2">
+				<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Organise</h2>
+				<div class="flex items-center gap-3">
+					<button type="button" onclick={() => (editingLists = true)} class="text-xs text-accent">
+						Lists
+					</button>
+					<button type="button" onclick={() => (editingTags = true)} class="text-xs text-accent">
+						Tags
+					</button>
+				</div>
+			</div>
+			<div class="mt-2 flex flex-wrap gap-1">
+				{#each data.lists as list (list)}
+					<span class="rounded-full bg-panel-2 px-2 py-0.5 text-xs text-secondary">{list}</span>
 				{/each}
-			</ul>
-		{:else}
-			<p class="mt-1 text-xs text-tertiary">No attributes set.</p>
-		{/if}
-	</section>
-{/if}
-
-<section class="px-5 pt-4 pb-2">
-	<div class="flex items-center justify-between gap-2">
-		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Notes</h2>
-		<button type="button" onclick={() => (editingNotes = true)} class="text-xs text-accent">
-			{data.notes.markdown ? 'Edit' : 'Add'}
-		</button>
-	</div>
-	{#if data.notes.html}
-		<div class="md-body mt-2 rounded-xl border border-line bg-panel/40 p-3">
-			{@html data.notes.html}
-		</div>
-	{:else}
-		<p class="mt-1 text-xs text-tertiary">No notes yet.</p>
-	{/if}
-</section>
-
-<section class="px-5 pt-4 pb-2">
-	<div class="flex items-center justify-between gap-2">
-		<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Sources ({sourceCount})</h2>
-		<div class="flex items-center gap-3">
-			{#if hasExternalSources}
-				<a
-					href={`/restaurant/${data.uuid}/compare`}
-					class="text-xs text-secondary hover:text-primary"
-					title="Compare info across linked sources"
-				>
-					Compare
-				</a>
+				{#each data.tags as tag (tag)}
+					<span class="rounded-full bg-panel-2/60 px-2 py-0.5 text-xs text-secondary">#{tag}</span>
+				{/each}
+				{#if data.lists.length === 0 && data.tags.length === 0}
+					<span class="text-xs text-tertiary">No lists or tags.</span>
+				{/if}
+			</div>
+			{#if listNotes.length > 0}
+				<ul class="mt-2 space-y-1">
+					{#each listNotes as note (note.list)}
+						<li class="text-xs text-secondary">
+							<span class="font-medium text-primary">{note.list}:</span>
+							<span>{note.notes}</span>
+						</li>
+					{/each}
+				</ul>
 			{/if}
-			<button type="button" onclick={() => (linkingArticle = true)} class="text-xs text-accent">
-				Add
-			</button>
-		</div>
-	</div>
-	{#if sourceCount === 0}
-		<div class="mt-2 rounded-xl border border-dashed border-line-strong bg-panel/30 p-3">
-			<p class="text-xs text-secondary">No sources linked.</p>
-			<p class="mt-1 text-[11px] text-tertiary">
-				Paste Google Maps, Apple Maps, review pages, articles, or social links.
-			</p>
-			<button
-				type="button"
-				onclick={() => (linkingArticle = true)}
-				class="mt-3 rounded-xl bg-accent px-4 py-2 text-xs font-medium text-on-accent"
-			>
-				Add source
-			</button>
-		</div>
-	{:else}
-		<ul class="mt-2 space-y-2">
-			{#if googlePlaceId}
-				<li class="rounded-xl border border-line bg-panel/40 p-3">
-					<div class="flex items-center justify-between gap-2">
-						<span class="text-xs text-tertiary">Google Maps</span>
-						{#if data.place?.google_maps_uri}
-							<a
-								href={data.place.google_maps_uri}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="text-xs text-accent underline decoration-line-strong underline-offset-2"
-							>
-								Open ↗
-							</a>
-						{/if}
-					</div>
-					<p class="mt-1 text-sm font-medium text-primary">Place details linked</p>
-				</li>
-			{/if}
-			{#each visibleArticles as a (a.url)}
-				{@const isExpandableInstagram = isExpandableInstagramSource(a)}
-				{@const isSourceExpanded = expandedSourceUrls.has(a.url)}
-				<li class="rounded-xl border border-line bg-panel/40 p-3">
-					<div class="flex items-baseline justify-between gap-2">
-						<span class="text-xs text-tertiary">{sourceLabel(a.source)}</span>
-						<div class="flex items-center gap-3">
-							{#if REFRESHABLE_SOURCES.has(a.source)}
-								<button
-									type="button"
-									onclick={() => refreshArticle(a.url, a.source)}
-									disabled={refreshingArticle === a.url}
-									title="Re-fetch article from the source"
-									class="text-xs text-tertiary hover:text-secondary disabled:opacity-50"
+		</section>
+
+		{#if data.applicableAttributes.length > 0}
+			<section>
+				<div class="flex items-center justify-between gap-2">
+					<h2 class="text-sm font-medium tracking-wide text-secondary uppercase">Attributes</h2>
+					<button type="button" onclick={() => (editingAttributes = true)} class="text-xs text-accent">
+						{visibleAttributes.length > 0 ? 'Edit' : 'Set'}
+					</button>
+				</div>
+				{#if visibleAttributes.length > 0}
+					<ul class="mt-2 flex flex-wrap gap-1.5">
+						{#each visibleAttributes as item (item.def.id)}
+							<li class="inline-flex items-center gap-1.5 rounded-full bg-panel-2 px-2.5 py-1 text-xs">
+								<span
+									aria-hidden="true"
+									class:text-success={item.value === 'yes'}
+									class:text-danger={item.value === 'no'}
+									class="font-medium"
 								>
-									{refreshingArticle === a.url ? '↻…' : '↻'}
-								</button>
-							{/if}
-							<ShareButton url={a.url} title={`${data.name} — ${a.title}`} />
-							<a
-								href={a.url}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="text-xs text-accent underline decoration-line-strong underline-offset-2"
-							>
-								Read ↗
-							</a>
-							<button
-								type="button"
-								onclick={() => deleteArticle(a.url)}
-								disabled={deletingArticle === a.url}
-								title="Remove this source from the restaurant"
-								aria-label="Remove source"
-								class="text-xs text-tertiary hover:text-danger disabled:opacity-50"
-							>
-								{deletingArticle === a.url ? '…' : '✕'}
-							</button>
-						</div>
-					</div>
-					<p
-						class="mt-1 whitespace-pre-line text-sm font-medium text-primary"
-						class:line-clamp-3={isExpandableInstagram && !isSourceExpanded}
-					>
-						{a.title}
-					</p>
-					{#if isExpandableInstagram}
-						<button
-							type="button"
-							onclick={() => toggleSourceText(a.url)}
-							class="mt-1 text-xs text-accent"
-							aria-expanded={isSourceExpanded}
-						>
-							{isSourceExpanded ? 'Show less' : 'Show more'}
-						</button>
-					{/if}
-					{#if a.excerpt && !isExpandableInstagram}
-						<p class="mt-1 line-clamp-2 text-sm text-secondary">{a.excerpt}</p>
-					{/if}
-				</li>
-			{/each}
-		</ul>
-		{#if articles.length > 2}
-			<button
-				type="button"
-				onclick={() => (showAllSources = !showAllSources)}
-				class="mt-2 text-xs text-accent"
-			>
-				{showAllSources ? 'Show fewer' : `Show all ${articles.length}`}
-			</button>
+									{item.value === 'yes' ? '✓' : '✕'}
+								</span>
+								<span class="text-secondary">{item.def.label}</span>
+							</li>
+						{/each}
+					</ul>
+				{:else}
+					<p class="mt-1 text-xs text-tertiary">No attributes set.</p>
+				{/if}
+			</section>
 		{/if}
-	{/if}
-</section>
 
-{#if hours.length > 0}
-	<section class="px-5 pt-4 pb-2">
-		<DisclosureSection title="Hours" meta={`${hours.length} days`}>
-			<HoursList lines={hours} />
-		</DisclosureSection>
-	</section>
-{/if}
+		{#if hours.length > 0}
+			<section>
+				<DisclosureSection title="Hours" meta={`${hours.length} days`}>
+					<HoursList lines={hours} />
+				</DisclosureSection>
+			</section>
+		{/if}
+	</aside>
+</div>
 
-{#if reviews.length > 0}
-	<section class="px-5 pt-4 pb-2">
-		<DisclosureSection title="Google reviews" meta={`${reviews.length} reviews`}>
-			<ReviewList {reviews} />
-		</DisclosureSection>
-	</section>
-{/if}
-
-{#if latestVisit}
-	<section id="latest-visit" class="md-body px-5 pt-4 pb-2">
-		<div class="flex items-center justify-between gap-2">
-			<h2>Latest visit</h2>
-			{#if anyDishPhotos}
-				<button
-					type="button"
-					onclick={() => setDishPhotosCollapsed(!dishPhotosCollapsed)}
-					class="shrink-0 rounded-full border border-line bg-panel/60 px-2.5 py-1 text-xs text-secondary"
-				>
-					{dishPhotosCollapsed ? 'Expand dish photos' : 'Collapse dish photos'}
-				</button>
-			{/if}
-		</div>
-		<article use:lightboxImages class="md-visit mt-4" class:dishes-collapsed={dishPhotosCollapsed}>
-			{@html latestVisit.html}
-			<div class="mt-1 flex flex-wrap gap-2">
-				<button
-					type="button"
-					onclick={() => (sharingVisit = latestVisit)}
-					class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
-				>
-					<svg
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="h-3.5 w-3.5"
-						aria-hidden="true"
-					>
-						<path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
-						<path d="M16 6l-4-4-4 4" />
-						<path d="M12 2v13" />
-					</svg>
-					Share
-				</button>
-				<a
-					href={`/restaurant/${data.uuid}/visit/${latestVisit.index}/edit`}
-					class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
-				>
-					<svg
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="h-3.5 w-3.5"
-						aria-hidden="true"
-					>
-						<path d="M11 4H5a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-6" />
-						<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-					</svg>
-					Edit
-				</a>
-			</div>
-		</article>
-	</section>
-{/if}
-
-{#if olderVisits.length > 0}
-	<section class="px-5 pt-4 pb-2">
-		<DisclosureSection title="Past visits" meta={`${olderVisits.length} older`}>
-			<div class="md-body">
-				{#each olderVisits as v (v.id)}
-					<article class="md-visit mt-4 first:mt-0" class:dishes-collapsed={dishPhotosCollapsed}>
-						{@html v.html}
-						<div class="mt-1 flex flex-wrap gap-2">
-							<button
-								type="button"
-								onclick={() => (sharingVisit = v)}
-								class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
-							>
-								Share
-							</button>
-							<a
-								href={`/restaurant/${data.uuid}/visit/${v.index}/edit`}
-								class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-panel/70 px-3 py-1 text-xs text-secondary hover:bg-panel-2 hover:text-primary"
-							>
-								Edit
-							</a>
-						</div>
-					</article>
-				{/each}
-			</div>
-		</DisclosureSection>
-	</section>
-{/if}
-
-{#if data.bodySections.beforeVisitsHtml || data.bodySections.afterVisitsHtml}
-	<section class="px-5 pt-4 pb-2">
-		<DisclosureSection title="Markdown" meta="Overview and extras">
-			<div class="md-body">
-				{#if data.bodySections.beforeVisitsHtml}
-					{@html data.bodySections.beforeVisitsHtml}
-				{/if}
-				{#if data.bodySections.afterVisitsHtml}
-					{@html data.bodySections.afterVisitsHtml}
-				{/if}
-			</div>
-		</DisclosureSection>
-	</section>
-{/if}
-
-<div class="px-5 pt-4">
+<div class="px-5 pb-2 lg:px-8">
 	<button
 		type="button"
 		onclick={() => (editingName = true)}
@@ -664,7 +647,7 @@
 	</button>
 </div>
 
-<footer class="mt-auto px-5 pt-4 pb-6 text-xs text-tertiary">
+<footer class="mt-auto px-5 pt-4 pb-6 text-xs text-tertiary lg:px-8">
 	<div class="mb-2 flex flex-wrap items-center gap-2">
 		{#if data.obsidianUri}
 			<a
@@ -674,11 +657,7 @@
 				Open in Obsidian
 			</a>
 		{/if}
-		<CopyMarkdownButton
-			text={data.rawMarkdown}
-			title={data.name}
-			label="Copy markdown"
-		/>
+		<CopyMarkdownButton text={data.rawMarkdown} title={data.name} label="Copy markdown" />
 	</div>
 	<DisclosureSection title="Advanced" meta={data.filename}>
 		<p class="text-[11px] text-tertiary">Copy markdown shares the full restaurant file.</p>

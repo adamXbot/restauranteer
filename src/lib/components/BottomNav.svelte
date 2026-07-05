@@ -42,7 +42,7 @@
 </script>
 
 <nav
-	class="sticky bottom-0 mt-auto grid grid-cols-5 gap-1 border-t border-line bg-canvas/90 px-2 pt-2 pb-2 text-[10px] backdrop-blur"
+	class="sticky bottom-0 mt-auto grid grid-cols-5 gap-1 border-t border-line bg-canvas/90 px-2 pt-2 pb-2 text-[10px] backdrop-blur lg:hidden"
 >
 	{#each items as item (item.href)}
 		{@const active = isActive(item, page.url.pathname)}
