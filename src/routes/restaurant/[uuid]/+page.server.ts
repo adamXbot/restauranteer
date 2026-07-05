@@ -5,8 +5,10 @@ import type { PageServerLoad } from './$types';
 import { getRestaurantByUuid } from '$lib/server/db/queries';
 import { readRestaurant } from '$lib/server/vault/reader';
 import {
+	deriveVisitRating,
 	extractImagePaths,
 	formatVisitForShare,
+	parseVisitFields,
 	parseVisits,
 	splitBodyAtVisits,
 	summarizeVisits
@@ -76,12 +78,18 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	const sections = splitBodyAtVisits(body);
 	const parsedVisits = parseVisits(sections.visitsSection);
 	const visitSummary = summarizeVisits(parsedVisits);
-	const bodyVisits = parsedVisits.map((v) => ({
+	const bodyVisits = parsedVisits.map((v) => {
+		const fields = parseVisitFields(v);
+		const notes = fields.notes?.trim() ?? '';
+		return {
 		id: v.id,
 		index: v.index,
 		date: v.date,
 		meal: v.meal,
 		headline: v.headline,
+		// Overall rating + a short snippet power the compact timeline for regulars.
+		rating: deriveVisitRating(fields),
+		excerpt: notes ? notes.replace(/\s+/g, ' ').slice(0, 160) : null,
 		html: renderMarkdown(v.rawMarkdown),
 		photoPaths: v.photoPaths,
 		// Dish photos are emitted as indented `  ![](…)` lines; visit-level photos
@@ -91,7 +99,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			full: formatVisitForShare(v, indexed.name, 'full'),
 			notes_only: formatVisitForShare(v, indexed.name, 'notes_only')
 		}
-	}));
+		};
+	});
 	const bodySections = {
 		beforeVisitsHtml: renderMarkdown(removeRestaurantNotesSection(sections.before)),
 		visits: bodyVisits,

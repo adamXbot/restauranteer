@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import RestaurantCard from '$lib/components/RestaurantCard.svelte';
 	import {
 		sortVisits,
 		activeRatingArea,
@@ -14,10 +15,14 @@
 	let { data }: { data: PageData } = $props();
 
 	type View = 'vault' | 'recent' | 'visits';
+	type VaultView = 'grid' | 'list';
 	const VIEW_STORAGE_KEY = 'restaurantListView';
 	const VISIT_SORT_STORAGE_KEY = 'visitSortMode';
+	const VAULT_VIEW_STORAGE_KEY = 'restauranteer.vaultView';
 	let view = $state<View>('vault');
 	let visitSort = $state<VisitSortMode>(DEFAULT_VISIT_SORT);
+	// Grid vs list layout for the vault/recent lists. Desktop-only; set in Settings.
+	let vaultView = $state<VaultView>('grid');
 
 	onMount(() => {
 		try {
@@ -29,6 +34,12 @@
 		try {
 			const savedSort = localStorage.getItem(VISIT_SORT_STORAGE_KEY);
 			if (isVisitSortMode(savedSort)) visitSort = savedSort;
+		} catch {
+			// ignore
+		}
+		try {
+			const savedVaultView = localStorage.getItem(VAULT_VIEW_STORAGE_KEY);
+			if (savedVaultView === 'grid' || savedVaultView === 'list') vaultView = savedVaultView;
 		} catch {
 			// ignore
 		}
@@ -106,31 +117,52 @@
 	}
 </script>
 
-<SearchBar />
-
-<header class="flex items-end justify-between gap-3 px-5 pt-2 pb-3">
-	<div class="min-w-0">
-		<p class="text-xs tracking-widest text-secondary uppercase">
-			{view === 'visits' ? 'All visits' : view === 'recent' ? 'Recent visits' : 'Your vault'}
-		</p>
-		<p class="text-sm text-tertiary">
-			{#if view === 'visits'}
-				{data.visits.length}
-				{data.visits.length === 1 ? 'visit' : 'visits'}
-				{#if visitPlaceCount > 0}
-					· {visitPlaceCount} {visitPlaceCount === 1 ? 'place' : 'places'}
+<header class="px-5 pt-4 pb-3">
+	<div class="flex items-start justify-between gap-3">
+		<div class="min-w-0">
+			<p class="text-xs tracking-widest text-secondary uppercase">
+				{view === 'visits' ? 'All visits' : view === 'recent' ? 'Recent visits' : 'Your vault'}
+			</p>
+			<p class="text-sm text-tertiary">
+				{#if view === 'visits'}
+					{data.visits.length}
+					{data.visits.length === 1 ? 'visit' : 'visits'}
+					{#if visitPlaceCount > 0}
+						· {visitPlaceCount} {visitPlaceCount === 1 ? 'place' : 'places'}
+					{/if}
+				{:else if view === 'recent'}
+					{visitedCount} of {data.restaurants.length} visited
+				{:else}
+					{data.restaurants.length}
+					{data.restaurants.length === 1 ? 'restaurant' : 'restaurants'}
 				{/if}
-			{:else if view === 'recent'}
-				{visitedCount} of {data.restaurants.length} visited
-			{:else}
-				{data.restaurants.length}
-				{data.restaurants.length === 1 ? 'restaurant' : 'restaurants'}
-			{/if}
-		</p>
+			</p>
+		</div>
+		<a
+			href="/map"
+			class="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line bg-panel/60 px-3 py-1.5 text-xs text-secondary transition-colors hover:text-primary"
+		>
+			<svg
+				viewBox="0 0 24 24"
+				class="h-4 w-4"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.6"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" /><path d="M9 4v14M15 6v14" />
+			</svg>
+			Map
+		</a>
 	</div>
-	{#if data.restaurants.length > 0}
-		<div class="flex shrink-0 items-center gap-2">
-			<div class="flex rounded-xl border border-line bg-panel/60 p-0.5 text-xs">
+
+	<div class="mt-3 flex flex-wrap items-center gap-3">
+		<div class="min-w-[15rem] flex-1">
+			<SearchBar allowImport placeholder="Search a name, or paste a link…" />
+		</div>
+		{#if data.restaurants.length > 0}
+			<div class="flex shrink-0 rounded-xl border border-line bg-panel/60 p-0.5 text-xs">
 				<button
 					type="button"
 					onclick={() => setView('vault')}
@@ -159,14 +191,8 @@
 					Visits
 				</button>
 			</div>
-			<a
-				href="/map"
-				class="rounded-xl border border-line bg-panel/60 px-3 py-1.5 text-xs text-secondary"
-			>
-				Map
-			</a>
-		</div>
-	{/if}
+		{/if}
+	</div>
 </header>
 
 {#if view === 'visits' && data.restaurants.length > 0}
@@ -262,73 +288,37 @@
 		</div>
 	</section>
 {:else}
-	<section class="grid gap-3 px-5 pb-10">
-		{#each restaurants as r (r.uuid)}
-			{@const showUser = data.preferences.show_review_summary && r.visitSummary.count > 0}
-			{@const userRating = showUser ? (r.visitSummary.latest?.rating ?? null) : null}
-			{@const userPhoto = showUser ? (r.visitSummary.latest?.photo ?? null) : null}
-			<a
-				href={`/restaurant/${r.uuid}`}
-				class="block min-w-0 rounded-2xl border border-line bg-panel/50 p-4 {showUser
-					? 'ring-1 ring-rating/20'
-					: ''}"
-			>
-				<div class="flex items-start justify-between gap-3">
-					<div class="min-w-0 flex-1">
-						<h2 class="truncate text-base font-medium text-primary">{r.name}</h2>
-						{#if r.suburb || r.address}
-							<p class="mt-0.5 truncate text-xs text-secondary">{r.suburb ?? r.address}</p>
-						{/if}
-					</div>
-					{#if userRating != null || userPhoto}
-						<div class="flex shrink-0 items-center gap-2">
-							{#if userRating != null}
-								<span class="text-sm text-rating">★ {userRating}</span>
-							{/if}
-							{#if userPhoto}
-								<img
-									src={thumbUrl(userPhoto)}
-									alt=""
-									loading="lazy"
-									class="h-10 w-10 rounded-lg bg-panel-2 object-cover"
-									onerror={(e) => {
-										const t = e.currentTarget as HTMLImageElement;
-										const full = fullAttachmentUrl(userPhoto);
-										if (t.src !== full) t.src = full;
-									}}
-								/>
-							{/if}
-						</div>
-					{:else if r.rating != null}
-						<span class="shrink-0 text-sm text-rating">★ {r.rating}</span>
-					{/if}
-				</div>
-				{#if r.cuisine.length > 0 || r.tags.length > 0}
-					<div class="mt-2 flex flex-wrap gap-1">
-						{#each r.cuisine as c (c)}
-							<span class="rounded-full bg-panel-2 px-2 py-0.5 text-xs text-secondary">{c}</span>
-						{/each}
-						{#each r.tags as t (t)}
-							<span class="rounded-full bg-panel-2/60 px-2 py-0.5 text-xs text-secondary"
-								>#{t}</span
-							>
-						{/each}
-					</div>
-				{/if}
-				{#if r.lists.length > 0}
-					<p class="mt-2 truncate text-xs text-tertiary">in {r.lists.join(' · ')}</p>
-				{/if}
-				{#if view === 'recent'}
-					<p class="mt-2 text-xs {r.visitSummary.latest ? 'text-secondary' : 'text-tertiary'}">
-						{#if r.visitSummary.latest}
-							Visited {shortVisitDate(r.visitSummary.latest.date)}
-							{#if r.visitSummary.count > 1} · {r.visitSummary.count} visits{/if}
-						{:else}
-							Not visited yet
-						{/if}
-					</p>
-				{/if}
-			</a>
-		{/each}
+	<section class="px-5 pb-10">
+		<div
+			class={vaultView === 'list'
+				? 'flex flex-col gap-3 lg:gap-2'
+				: 'grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'}
+		>
+			{#each restaurants as r (r.uuid)}
+				{@const showUser = data.preferences.show_review_summary && r.visitSummary.count > 0}
+				{@const userRating = showUser ? (r.visitSummary.latest?.rating ?? null) : null}
+				{@const userPhoto = showUser ? (r.visitSummary.latest?.photo ?? null) : null}
+				<RestaurantCard
+					href={`/restaurant/${r.uuid}`}
+					name={r.name}
+					subtitle={r.suburb ?? r.address}
+					rating={userRating ?? r.rating}
+					photoThumb={userPhoto ? thumbUrl(userPhoto) : null}
+					photoFull={userPhoto ? fullAttachmentUrl(userPhoto) : null}
+					cuisine={r.cuisine}
+					tags={r.tags}
+					lists={r.lists}
+					highlight={showUser}
+					view={vaultView}
+					footer={view === 'recent'
+						? r.visitSummary.latest
+							? `Visited ${shortVisitDate(r.visitSummary.latest.date)}${
+									r.visitSummary.count > 1 ? ` · ${r.visitSummary.count} visits` : ''
+								}`
+							: 'Not visited yet'
+						: null}
+				/>
+			{/each}
+		</div>
 	</section>
 {/if}

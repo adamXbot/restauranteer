@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 
-	let open = $state(false);
+	let { open = $bindable(false) }: { open?: boolean } = $props();
 	let url = $state('');
 	let busy = $state(false);
 	let err = $state<string | null>(null);
@@ -55,7 +55,7 @@
 	aria-label="Quick add"
 	title="Quick add"
 	onclick={() => (open = true)}
-	class="fixed right-5 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-30 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-2xl leading-none font-medium text-on-accent shadow-xl shadow-accent/25"
+	class="fixed right-5 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-30 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-2xl leading-none font-medium text-on-accent shadow-xl shadow-accent/25 lg:hidden"
 >
 	+
 </button>

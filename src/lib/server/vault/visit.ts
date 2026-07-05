@@ -502,7 +502,7 @@ export type VisitSummary = {
 	average: number | null;
 };
 
-function deriveVisitRating(fields: ParsedVisitFields): number | null {
+export function deriveVisitRating(fields: ParsedVisitFields): number | null {
 	if (typeof fields.rating === 'number' && fields.rating > 0) return fields.rating;
 	const areas = [fields.vibeRating, fields.foodRating, fields.qualityRating, fields.serviceRating]
 		.filter((n): n is number => typeof n === 'number' && n > 0);
