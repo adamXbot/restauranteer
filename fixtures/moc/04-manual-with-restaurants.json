@@ -1,0 +1,10 @@
+{
+	"name": "04-manual-with-restaurants",
+	"list_name": "Weeknight",
+	"restaurant_names": [
+		"Neighbourhood Wine",
+		"Kazuki"
+	],
+	"created_manually": true,
+	"meta": null
+}

@@ -1,0 +1,139 @@
+{
+	"name": "04-unknown-keys-passthrough",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "11112222-3333-4444-8555-666677778888"
+				}
+			],
+			[
+				"schema_version",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Etta"
+				}
+			],
+			[
+				"articles",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "map",
+							"v": [
+								[
+									"title",
+									{
+										"t": "str",
+										"v": "The 38 Essential Restaurants You Absolutely Must Visit In Melbourne Before The End Of This Decade"
+									}
+								],
+								[
+									"url",
+									{
+										"t": "str",
+										"v": "https://www.broadsheet.com.au/melbourne/food-and-drink/article/38-essential-restaurants-you-must-visit"
+									}
+								],
+								[
+									"source",
+									{
+										"t": "str",
+										"v": "broadsheet"
+									}
+								],
+								[
+									"published",
+									{
+										"t": "str",
+										"v": "2024-11-02"
+									}
+								]
+							]
+						},
+						{
+							"t": "map",
+							"v": [
+								[
+									"title",
+									{
+										"t": "str",
+										"v": "Short one"
+									}
+								],
+								[
+									"url",
+									{
+										"t": "str",
+										"v": "https://example.com/a"
+									}
+								],
+								[
+									"source",
+									{
+										"t": "str",
+										"v": "manual"
+									}
+								]
+							]
+						}
+					]
+				}
+			],
+			[
+				"custom_note",
+				{
+					"t": "str",
+					"v": "first line\nsecond line\nthird line"
+				}
+			],
+			[
+				"custom_flag",
+				{
+					"t": "bool",
+					"v": true
+				}
+			],
+			[
+				"custom_null",
+				{
+					"t": "null"
+				}
+			],
+			[
+				"custom_int",
+				{
+					"t": "int",
+					"v": "42"
+				}
+			],
+			[
+				"custom_float",
+				{
+					"t": "float",
+					"v": "0.5",
+					"bitsHex": "3fe0000000000000"
+				}
+			],
+			[
+				"review_score",
+				{
+					"t": "str",
+					"v": "4.5"
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\nA Flinders Lane classic.\n\n## Visits\n"
+}

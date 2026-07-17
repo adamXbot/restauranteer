@@ -1,0 +1,75 @@
+{
+	"description": "Body-level visit operations through the production functions. append = appendVisitToBody(body, visit); update = updateVisitInBody(body, index, visit); remove = removeVisitFromBody(body, index).",
+	"append": [
+		{
+			"name": "append-to-existing-section",
+			"body": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-01 — Lunch\n\n**Rating:** 3/5  \n\nolder notes\n\n### 2026-05-02 — Dinner\n\n**Rating:** 4/5  \n\nnewer notes\n",
+			"visit": {
+				"date": "2026-05-15",
+				"meal": "Dinner",
+				"rating": 5,
+				"notes": "appended",
+				"imagePaths": []
+			},
+			"expected": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-01 — Lunch\n\n**Rating:** 3/5  \n\nolder notes\n\n### 2026-05-02 — Dinner\n\n**Rating:** 4/5  \n\nnewer notes\n\n### 2026-05-15 — Dinner\n\n**Rating:** 5/5  \n\nappended\n"
+		},
+		{
+			"name": "append-creates-section",
+			"body": "## Overview\n\nA place.\n",
+			"visit": {
+				"date": "2026-05-15",
+				"meal": "Dinner",
+				"rating": 5,
+				"notes": "appended",
+				"imagePaths": []
+			},
+			"expected": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-15 — Dinner\n\n**Rating:** 5/5  \n\nappended\n"
+		}
+	],
+	"update": [
+		{
+			"name": "update-first",
+			"body": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-01 — Lunch\n\n**Rating:** 3/5  \n\nolder notes\n\n### 2026-05-02 — Dinner\n\n**Rating:** 4/5  \n\nnewer notes\n",
+			"index": 0,
+			"visit": {
+				"date": "2026-05-01",
+				"meal": "Lunch",
+				"vibe": "replaced",
+				"imagePaths": []
+			},
+			"expected": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-01 — Lunch\n\n**Vibe:** replaced  \n\n### 2026-05-02 — Dinner\n\n**Rating:** 4/5  \n\nnewer notes\n"
+		},
+		{
+			"name": "update-last",
+			"body": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-01 — Lunch\n\n**Rating:** 3/5  \n\nolder notes\n\n### 2026-05-02 — Dinner\n\n**Rating:** 4/5  \n\nnewer notes\n",
+			"index": 1,
+			"visit": {
+				"date": "2026-05-01",
+				"meal": "Lunch",
+				"vibe": "replaced",
+				"imagePaths": []
+			},
+			"expected": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-01 — Lunch\n\n**Rating:** 3/5  \n\nolder notes\n\n### 2026-05-01 — Lunch\n\n**Vibe:** replaced  \n"
+		}
+	],
+	"remove": [
+		{
+			"name": "remove-first",
+			"body": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-01 — Lunch\n\n**Rating:** 3/5  \n\nolder notes\n\n### 2026-05-02 — Dinner\n\n**Rating:** 4/5  \n\nnewer notes\n",
+			"index": 0,
+			"expected": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-02 — Dinner\n\n**Rating:** 4/5  \n\nnewer notes\n"
+		},
+		{
+			"name": "remove-last",
+			"body": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-01 — Lunch\n\n**Rating:** 3/5  \n\nolder notes\n\n### 2026-05-02 — Dinner\n\n**Rating:** 4/5  \n\nnewer notes\n",
+			"index": 1,
+			"expected": "## Overview\n\nA place.\n\n## Visits\n\n### 2026-05-01 — Lunch\n\n**Rating:** 3/5  \n\nolder notes\n"
+		},
+		{
+			"name": "remove-only-visit-keeps-header",
+			"body": "## Overview\nA spot.\n\n## Visits\n\n### 2026-05-15\n**Vibe:** ok  \nnotes\n",
+			"index": 0,
+			"expected": "## Overview\nA spot.\n\n## Visits\n"
+		}
+	]
+}

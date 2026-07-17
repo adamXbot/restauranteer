@@ -1,0 +1,106 @@
+{
+	"name": "14-kitchen-sink-summary",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-01-10",
+			"meal": "Lunch",
+			"headline": "2026-01-10 — Lunch",
+			"rawMarkdown": "### 2026-01-10 — Lunch\n\n**Rating:** 3/5",
+			"photoPaths": [],
+			"fields": {
+				"date": "2026-01-10",
+				"meal": "Lunch",
+				"companions": null,
+				"vibe": null,
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": 3,
+				"notes": null,
+				"photoPaths": [],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		},
+		{
+			"id": "visit-1",
+			"index": 1,
+			"date": "2026-02-20",
+			"meal": "Dinner",
+			"headline": "2026-02-20 — Dinner",
+			"rawMarkdown": "### 2026-02-20 — Dinner\n\n**Vibe:** ★★★★☆  \n**Food:** ★★★★★  \n**Rating:** 4.5/5 (avg)  \n\n![](_attachments/spot/20260220-1.jpg)",
+			"photoPaths": [
+				"_attachments/spot/20260220-1.jpg"
+			],
+			"fields": {
+				"date": "2026-02-20",
+				"meal": "Dinner",
+				"companions": null,
+				"vibe": null,
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": 4,
+				"foodRating": 5,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": null,
+				"notes": null,
+				"photoPaths": [
+					"_attachments/spot/20260220-1.jpg"
+				],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		},
+		{
+			"id": "visit-2",
+			"index": 2,
+			"date": "2026-03-05",
+			"meal": null,
+			"headline": "2026-03-05",
+			"rawMarkdown": "### 2026-03-05\n\nNo rating at all here.",
+			"photoPaths": [],
+			"fields": {
+				"date": "2026-03-05",
+				"meal": null,
+				"companions": null,
+				"vibe": null,
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": null,
+				"notes": "No rating at all here.",
+				"photoPaths": [],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		}
+	],
+	"summary": {
+		"count": 3,
+		"earliest": {
+			"date": "2026-01-10",
+			"meal": "Lunch",
+			"rating": 3,
+			"photo": null
+		},
+		"latest": {
+			"date": "2026-03-05",
+			"meal": null,
+			"rating": null,
+			"photo": null
+		},
+		"average": 3.8
+	}
+}

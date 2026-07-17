@@ -1,0 +1,57 @@
+{
+	"name": "07-attribute-override-variants",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-06-04",
+			"meal": null,
+			"headline": "2026-06-04",
+			"rawMarkdown": "### 2026-06-04\n\n**Rating:** 3/5  \n**Attributes:** dog_friendly=yes, sunday_lunch=no, loud=true, quiet=false, packed=1, empty_tables=0, reset=clear, junk, spaced = yes, CAPS=YES",
+			"photoPaths": [],
+			"fields": {
+				"date": "2026-06-04",
+				"meal": null,
+				"companions": null,
+				"vibe": null,
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": 3,
+				"notes": null,
+				"photoPaths": [],
+				"attributeOverrides": {
+					"dog_friendly": "yes",
+					"sunday_lunch": "no",
+					"loud": "yes",
+					"quiet": "no",
+					"packed": "yes",
+					"empty_tables": "no",
+					"spaced": "yes",
+					"caps": "yes"
+				},
+				"dishes": []
+			}
+		}
+	],
+	"summary": {
+		"count": 1,
+		"earliest": {
+			"date": "2026-06-04",
+			"meal": null,
+			"rating": 3,
+			"photo": null
+		},
+		"latest": {
+			"date": "2026-06-04",
+			"meal": null,
+			"rating": 3,
+			"photo": null
+		},
+		"average": 3
+	}
+}

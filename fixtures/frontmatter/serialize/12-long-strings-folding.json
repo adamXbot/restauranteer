@@ -1,0 +1,79 @@
+{
+	"name": "12-long-strings-folding",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "2b2b2b2b-3c3c-4d4d-8e5e-6f6f6f6f6f6f"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Fold Inn"
+				}
+			],
+			[
+				"folds",
+				{
+					"t": "str",
+					"v": "This is a deliberately long sentence that exceeds the eighty character line width and therefore must fold."
+				}
+			],
+			[
+				"long_url",
+				{
+					"t": "str",
+					"v": "https://example.com/a/very/long/path/that/exceeds/eighty/characters/without/any/spaces-so-it-cannot-break"
+				}
+			],
+			[
+				"len79",
+				{
+					"t": "str",
+					"v": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+				}
+			],
+			[
+				"len80",
+				{
+					"t": "str",
+					"v": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+				}
+			],
+			[
+				"len81",
+				{
+					"t": "str",
+					"v": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+				}
+			],
+			[
+				"long_word_then_tail",
+				{
+					"t": "str",
+					"v": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx tail"
+				}
+			],
+			[
+				"head_then_long_word",
+				{
+					"t": "str",
+					"v": "head yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+				}
+			],
+			[
+				"many_words",
+				{
+					"t": "str",
+					"v": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word"
+				}
+			]
+		]
+	},
+	"body": ""
+}

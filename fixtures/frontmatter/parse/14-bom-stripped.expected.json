@@ -1,0 +1,16 @@
+{
+	"name": "14-bom-stripped",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "BOM File"
+				}
+			]
+		]
+	},
+	"body": "body\n"
+}

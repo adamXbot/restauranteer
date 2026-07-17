@@ -1,0 +1,8 @@
+{
+	"name": "10-no-frontmatter",
+	"frontmatter": {
+		"t": "map",
+		"v": []
+	},
+	"body": "# Cumulus Inc\n\nJust body text, no frontmatter block at all.\n"
+}

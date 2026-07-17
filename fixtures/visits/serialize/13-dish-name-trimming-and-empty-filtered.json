@@ -1,0 +1,27 @@
+{
+	"name": "13-dish-name-trimming-and-empty-filtered",
+	"visit": {
+		"date": "2026-06-09",
+		"dishes": [
+			{
+				"name": "  padded name  ",
+				"rating": 3,
+				"note": "  padded note  ",
+				"photoPath": null
+			},
+			{
+				"name": "",
+				"rating": null,
+				"note": null,
+				"photoPath": null
+			},
+			{
+				"name": "",
+				"rating": null,
+				"note": null,
+				"photoPath": "_attachments/x/20260609-1-d1.jpg"
+			}
+		],
+		"imagePaths": []
+	}
+}

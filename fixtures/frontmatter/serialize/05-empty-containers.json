@@ -1,0 +1,65 @@
+{
+	"name": "05-empty-containers",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "99998888-7777-4666-8555-444433332222"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Empty Nest"
+				}
+			],
+			[
+				"aliases",
+				{
+					"t": "arr",
+					"v": []
+				}
+			],
+			[
+				"lists",
+				{
+					"t": "arr",
+					"v": []
+				}
+			],
+			[
+				"tags",
+				{
+					"t": "arr",
+					"v": []
+				}
+			],
+			[
+				"socials",
+				{
+					"t": "map",
+					"v": []
+				}
+			],
+			[
+				"hours",
+				{
+					"t": "map",
+					"v": []
+				}
+			],
+			[
+				"attributes",
+				{
+					"t": "map",
+					"v": []
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\n## Visits\n"
+}

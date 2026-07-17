@@ -1,0 +1,9 @@
+{
+	"name": "09-companions-wikilinks",
+	"visit": {
+		"date": "2026-06-05",
+		"companions": "[[Sarah]], [[Tom Marvolo]] and one more",
+		"notes": "Notes can hold [[Wikilinks]] too.",
+		"imagePaths": []
+	}
+}

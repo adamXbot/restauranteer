@@ -1,0 +1,75 @@
+{
+	"name": "05-dishes-full",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-06-02",
+			"meal": "Dinner",
+			"headline": "2026-06-02 — Dinner",
+			"rawMarkdown": "### 2026-06-02 — Dinner\n\n**With:** [[Alex]]  \n**Vibe:** ★★★★☆  \n**Food:**  \n- **Wood-grilled octopus** ★★★★★ — best dish of the year  \n  ![](_attachments/etta/20260602-193000-d0.jpg)\n- **Cavatelli** ★★★★\n- **Basque cheesecake** ★★★★ — em-dash — inside note  \n  ![](_attachments/etta/20260602-193000-d2.jpg)\n**Service:** ★★★☆☆  \n**Rating:** 4/5 (avg)  \n\nDish average drives the Food rating.\n\n![](_attachments/etta/20260602-193000-1.jpg)",
+			"photoPaths": [
+				"_attachments/etta/20260602-193000-d0.jpg",
+				"_attachments/etta/20260602-193000-d2.jpg",
+				"_attachments/etta/20260602-193000-1.jpg"
+			],
+			"fields": {
+				"date": "2026-06-02",
+				"meal": "Dinner",
+				"companions": "[[Alex]]",
+				"vibe": null,
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": 4,
+				"foodRating": 4.3,
+				"qualityRating": null,
+				"serviceRating": 3,
+				"rating": null,
+				"notes": "Dish average drives the Food rating.",
+				"photoPaths": [
+					"_attachments/etta/20260602-193000-d0.jpg",
+					"_attachments/etta/20260602-193000-d2.jpg",
+					"_attachments/etta/20260602-193000-1.jpg"
+				],
+				"attributeOverrides": {},
+				"dishes": [
+					{
+						"name": "Wood-grilled octopus",
+						"rating": 5,
+						"note": "best dish of the year",
+						"photoPath": "_attachments/etta/20260602-193000-d0.jpg"
+					},
+					{
+						"name": "Cavatelli",
+						"rating": 4,
+						"note": null,
+						"photoPath": null
+					},
+					{
+						"name": "Basque cheesecake",
+						"rating": 4,
+						"note": "em-dash — inside note",
+						"photoPath": "_attachments/etta/20260602-193000-d2.jpg"
+					}
+				]
+			}
+		}
+	],
+	"summary": {
+		"count": 1,
+		"earliest": {
+			"date": "2026-06-02",
+			"meal": "Dinner",
+			"rating": 3.8,
+			"photo": "_attachments/etta/20260602-193000-d0.jpg"
+		},
+		"latest": {
+			"date": "2026-06-02",
+			"meal": "Dinner",
+			"rating": 3.8,
+			"photo": "_attachments/etta/20260602-193000-d0.jpg"
+		},
+		"average": 3.8
+	}
+}

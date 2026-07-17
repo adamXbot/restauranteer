@@ -1,0 +1,230 @@
+{
+	"name": "03-dirty-field-wins-over-disk",
+	"input": {
+		"loaded": {
+			"frontmatter": {
+				"t": "map",
+				"v": [
+					[
+						"id",
+						{
+							"t": "str",
+							"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+						}
+					],
+					[
+						"schema_version",
+						{
+							"t": "int",
+							"v": "1"
+						}
+					],
+					[
+						"name",
+						{
+							"t": "str",
+							"v": "Cumulus Inc"
+						}
+					],
+					[
+						"tags",
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "str",
+									"v": "wine"
+								}
+							]
+						}
+					],
+					[
+						"rating",
+						{
+							"t": "int",
+							"v": "4"
+						}
+					],
+					[
+						"custom_key",
+						{
+							"t": "str",
+							"v": "kept"
+						}
+					]
+				]
+			},
+			"body": "## Overview\n\n## Visits\n"
+		},
+		"current": {
+			"frontmatter": {
+				"t": "map",
+				"v": [
+					[
+						"id",
+						{
+							"t": "str",
+							"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+						}
+					],
+					[
+						"schema_version",
+						{
+							"t": "int",
+							"v": "1"
+						}
+					],
+					[
+						"name",
+						{
+							"t": "str",
+							"v": "Cumulus Inc. (Renamed on disk)"
+						}
+					],
+					[
+						"tags",
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "str",
+									"v": "wine"
+								}
+							]
+						}
+					],
+					[
+						"rating",
+						{
+							"t": "int",
+							"v": "4"
+						}
+					],
+					[
+						"custom_key",
+						{
+							"t": "str",
+							"v": "kept"
+						}
+					]
+				]
+			},
+			"body": "## Overview\n\n## Visits\n"
+		},
+		"pending": {
+			"frontmatter": {
+				"t": "map",
+				"v": [
+					[
+						"id",
+						{
+							"t": "str",
+							"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+						}
+					],
+					[
+						"schema_version",
+						{
+							"t": "int",
+							"v": "1"
+						}
+					],
+					[
+						"name",
+						{
+							"t": "str",
+							"v": "Cumulus Up"
+						}
+					],
+					[
+						"tags",
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "str",
+									"v": "wine"
+								}
+							]
+						}
+					],
+					[
+						"rating",
+						{
+							"t": "int",
+							"v": "4"
+						}
+					],
+					[
+						"custom_key",
+						{
+							"t": "str",
+							"v": "kept"
+						}
+					]
+				]
+			},
+			"body": "## Overview\n\n## Visits\n"
+		},
+		"dirtyFields": [
+			"name"
+		],
+		"bodyDirty": false
+	},
+	"expected": {
+		"kind": "clean",
+		"frontmatter": {
+			"t": "map",
+			"v": [
+				[
+					"id",
+					{
+						"t": "str",
+						"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+					}
+				],
+				[
+					"schema_version",
+					{
+						"t": "int",
+						"v": "1"
+					}
+				],
+				[
+					"name",
+					{
+						"t": "str",
+						"v": "Cumulus Up"
+					}
+				],
+				[
+					"tags",
+					{
+						"t": "arr",
+						"v": [
+							{
+								"t": "str",
+								"v": "wine"
+							}
+						]
+					}
+				],
+				[
+					"rating",
+					{
+						"t": "int",
+						"v": "4"
+					}
+				],
+				[
+					"custom_key",
+					{
+						"t": "str",
+						"v": "kept"
+					}
+				]
+			]
+		},
+		"body": "## Overview\n\n## Visits\n"
+	}
+}

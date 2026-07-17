@@ -1,0 +1,75 @@
+{
+	"name": "04-date-only-and-non-date-headers",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-05-17",
+			"meal": null,
+			"headline": "2026-05-17",
+			"rawMarkdown": "### 2026-05-17\n\nJust notes, nothing structured.",
+			"photoPaths": [],
+			"fields": {
+				"date": "2026-05-17",
+				"meal": null,
+				"companions": null,
+				"vibe": null,
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": null,
+				"notes": "Just notes, nothing structured.",
+				"photoPaths": [],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		},
+		{
+			"id": "visit-1",
+			"index": 1,
+			"date": "Birthday dinner",
+			"meal": null,
+			"headline": "Birthday dinner",
+			"rawMarkdown": "### Birthday dinner\n\nFree-form header, no date.",
+			"photoPaths": [],
+			"fields": {
+				"date": "Birthday dinner",
+				"meal": null,
+				"companions": null,
+				"vibe": null,
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": null,
+				"notes": "Free-form header, no date.",
+				"photoPaths": [],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		}
+	],
+	"summary": {
+		"count": 2,
+		"earliest": {
+			"date": "2026-05-17",
+			"meal": null,
+			"rating": null,
+			"photo": null
+		},
+		"latest": {
+			"date": "Birthday dinner",
+			"meal": null,
+			"rating": null,
+			"photo": null
+		},
+		"average": null
+	}
+}

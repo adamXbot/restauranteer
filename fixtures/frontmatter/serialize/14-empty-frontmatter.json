@@ -1,0 +1,8 @@
+{
+	"name": "14-empty-frontmatter",
+	"frontmatter": {
+		"t": "map",
+		"v": []
+	},
+	"body": "# Just A Note\n\nNo frontmatter block should be emitted for an empty map.\n"
+}

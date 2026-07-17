@@ -1,0 +1,19 @@
+{
+	"name": "03-per-area-full",
+	"visit": {
+		"date": "2026-05-18",
+		"meal": "Dinner",
+		"vibe": "Loud, fun",
+		"food": "Pasta",
+		"quality": "Sharp",
+		"service": "Attentive",
+		"areaRatings": {
+			"vibe": 4,
+			"food": 5,
+			"quality": 5,
+			"service": 4
+		},
+		"notes": "Even better the second time.",
+		"imagePaths": []
+	}
+}

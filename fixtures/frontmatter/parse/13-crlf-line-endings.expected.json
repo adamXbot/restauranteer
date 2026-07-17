@@ -1,0 +1,28 @@
+{
+	"name": "13-crlf-line-endings",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Windows File"
+				}
+			],
+			[
+				"tags",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "a"
+						}
+					]
+				}
+			]
+		]
+	},
+	"body": "body line\r\nsecond line\r\n"
+}

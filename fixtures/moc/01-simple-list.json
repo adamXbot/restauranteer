@@ -1,0 +1,11 @@
+{
+	"name": "01-simple-list",
+	"list_name": "Date Night",
+	"restaurant_names": [
+		"marion",
+		"Cumulus Inc",
+		"Etta"
+	],
+	"created_manually": false,
+	"meta": null
+}

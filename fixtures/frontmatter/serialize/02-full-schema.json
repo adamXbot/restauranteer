@@ -1,0 +1,340 @@
+{
+	"name": "02-full-schema",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "4b3a2c1d-0e9f-4a51-8e0f-aa4a3b2c1d0e"
+				}
+			],
+			[
+				"schema_version",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Cumulus Inc"
+				}
+			],
+			[
+				"aliases",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "Cumulus"
+						},
+						{
+							"t": "str",
+							"v": "カフェ・キュムラス"
+						}
+					]
+				}
+			],
+			[
+				"address",
+				{
+					"t": "str",
+					"v": "45 Flinders Ln, Melbourne VIC 3000, Australia"
+				}
+			],
+			[
+				"suburb",
+				{
+					"t": "str",
+					"v": "Melbourne"
+				}
+			],
+			[
+				"lat",
+				{
+					"t": "float",
+					"v": "-37.8148096",
+					"bitsHex": "c042e84bae543bc1"
+				}
+			],
+			[
+				"lng",
+				{
+					"t": "float",
+					"v": "144.9704353",
+					"bitsHex": "40621f0dce548c49"
+				}
+			],
+			[
+				"phone",
+				{
+					"t": "str",
+					"v": "+61 3 9650 1445"
+				}
+			],
+			[
+				"website",
+				{
+					"t": "str",
+					"v": "https://cumulusinc.com.au/"
+				}
+			],
+			[
+				"socials",
+				{
+					"t": "map",
+					"v": [
+						[
+							"instagram",
+							{
+								"t": "str",
+								"v": "https://www.instagram.com/cumulusinc_/"
+							}
+						],
+						[
+							"facebook",
+							{
+								"t": "str",
+								"v": "https://www.facebook.com/cumulusinc"
+							}
+						]
+					]
+				}
+			],
+			[
+				"hours",
+				{
+					"t": "map",
+					"v": [
+						[
+							"mon",
+							{
+								"t": "str",
+								"v": "7:00 am – 11:00 pm"
+							}
+						],
+						[
+							"tue",
+							{
+								"t": "str",
+								"v": "7:00 am – 11:00 pm"
+							}
+						],
+						[
+							"wed",
+							{
+								"t": "str",
+								"v": "7:00 am – 11:00 pm"
+							}
+						],
+						[
+							"thu",
+							{
+								"t": "str",
+								"v": "7:00 am – 11:00 pm"
+							}
+						],
+						[
+							"fri",
+							{
+								"t": "str",
+								"v": "7:00 am – 12:00 am"
+							}
+						],
+						[
+							"sat",
+							{
+								"t": "str",
+								"v": "8:00 am – 12:00 am"
+							}
+						],
+						[
+							"sun",
+							{
+								"t": "str",
+								"v": "Closed"
+							}
+						]
+					]
+				}
+			],
+			[
+				"cuisine",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "Modern Australian"
+						},
+						{
+							"t": "str",
+							"v": "Wine Bar"
+						}
+					]
+				}
+			],
+			[
+				"price_level",
+				{
+					"t": "int",
+					"v": "3"
+				}
+			],
+			[
+				"place_ids",
+				{
+					"t": "map",
+					"v": [
+						[
+							"google",
+							{
+								"t": "str",
+								"v": "ChIJwYCC5spC1moRZ3TV4zNAfDo"
+							}
+						],
+						[
+							"apple",
+							{
+								"t": "str",
+								"v": "IA1B2C3D4E5F6789"
+							}
+						]
+					]
+				}
+			],
+			[
+				"lists",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "Date Night"
+						},
+						{
+							"t": "str",
+							"v": "CBD Lunch"
+						}
+					]
+				}
+			],
+			[
+				"list_memberships",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "map",
+							"v": [
+								[
+									"list",
+									{
+										"t": "str",
+										"v": "Date Night"
+									}
+								],
+								[
+									"notes",
+									{
+										"t": "str",
+										"v": "ask for the window bench"
+									}
+								],
+								[
+									"icon",
+									{
+										"t": "str",
+										"v": "🍷"
+									}
+								]
+							]
+						},
+						{
+							"t": "map",
+							"v": [
+								[
+									"list",
+									{
+										"t": "str",
+										"v": "CBD Lunch"
+									}
+								]
+							]
+						}
+					]
+				}
+			],
+			[
+				"tags",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "wine"
+						},
+						{
+							"t": "str",
+							"v": "small-plates"
+						},
+						{
+							"t": "str",
+							"v": "brunch"
+						}
+					]
+				}
+			],
+			[
+				"rating",
+				{
+					"t": "float",
+					"v": "4.5",
+					"bitsHex": "4012000000000000"
+				}
+			],
+			[
+				"attributes",
+				{
+					"t": "map",
+					"v": [
+						[
+							"dog_friendly",
+							{
+								"t": "str",
+								"v": "yes"
+							}
+						],
+						[
+							"sunday_lunch",
+							{
+								"t": "str",
+								"v": "no"
+							}
+						],
+						[
+							"has_fireplace",
+							{
+								"t": "str",
+								"v": "yes"
+							}
+						]
+					]
+				}
+			],
+			[
+				"last_synced",
+				{
+					"t": "str",
+					"v": "2026-07-01T10:30:00.000Z"
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\nA Flinders Lane classic.\n\n## Visits\n"
+}

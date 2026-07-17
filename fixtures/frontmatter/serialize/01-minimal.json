@@ -1,0 +1,30 @@
+{
+	"name": "01-minimal",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "0d9f6f5a-3c9b-4a51-8e0f-6a4a3b2c1d0e"
+				}
+			],
+			[
+				"schema_version",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Cumulus Inc"
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\n## Visits\n"
+}

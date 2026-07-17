@@ -1,0 +1,80 @@
+{
+	"name": "04-legacy-unquoted-values",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+				}
+			],
+			[
+				"schema_version",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Old Timer"
+				}
+			],
+			[
+				"rating",
+				{
+					"t": "int",
+					"v": "4"
+				}
+			],
+			[
+				"attributes",
+				{
+					"t": "map",
+					"v": [
+						[
+							"dog_friendly",
+							{
+								"t": "str",
+								"v": "yes"
+							}
+						],
+						[
+							"sunday_lunch",
+							{
+								"t": "str",
+								"v": "no"
+							}
+						]
+					]
+				}
+			],
+			[
+				"last_synced",
+				{
+					"t": "str",
+					"v": "2026-07-01T10:30:00.000Z"
+				}
+			],
+			[
+				"opened",
+				{
+					"t": "str",
+					"v": "2001-12-14T00:00:00.000Z"
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\n## Visits\n",
+	"visits": [],
+	"summary": {
+		"count": 0,
+		"latest": null,
+		"earliest": null,
+		"average": null
+	}
+}

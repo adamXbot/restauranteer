@@ -1,0 +1,16 @@
+{
+	"name": "17-no-newline-at-eof",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Abrupt"
+				}
+			]
+		]
+	},
+	"body": ""
+}

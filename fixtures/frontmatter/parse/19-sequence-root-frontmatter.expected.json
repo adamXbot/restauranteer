@@ -1,0 +1,17 @@
+{
+	"name": "19-sequence-root-frontmatter",
+	"frontmatter": {
+		"t": "arr",
+		"v": [
+			{
+				"t": "str",
+				"v": "a"
+			},
+			{
+				"t": "str",
+				"v": "b"
+			}
+		]
+	},
+	"body": "body\n"
+}

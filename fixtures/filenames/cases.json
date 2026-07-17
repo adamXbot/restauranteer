@@ -1,0 +1,255 @@
+{
+	"description": "Filename + slug conventions. collision: resolveCollisionFreePath(name, suburb) with `taken` filenames already existing in the Restaurants dir — expected is the resolved basename. sanitize: sanitizeFilename. fileSlugs: slugFromFilePath (attachment dir slugs). attributeSlugs: slugifyLabel. uniqueAttributeIds: uniqueAttributeId(label, existing).",
+	"collision": [
+		{
+			"name": "Cumulus Inc",
+			"suburb": "Melbourne",
+			"taken": [],
+			"expected": "Cumulus Inc.md"
+		},
+		{
+			"name": "Cumulus Inc",
+			"suburb": "Melbourne",
+			"taken": [
+				"Cumulus Inc.md"
+			],
+			"expected": "Cumulus Inc (Melbourne).md"
+		},
+		{
+			"name": "Cumulus Inc",
+			"suburb": "Melbourne",
+			"taken": [
+				"Cumulus Inc.md",
+				"Cumulus Inc (Melbourne).md"
+			],
+			"expected": "Cumulus Inc (2).md"
+		},
+		{
+			"name": "Cumulus Inc",
+			"suburb": null,
+			"taken": [
+				"Cumulus Inc.md"
+			],
+			"expected": "Cumulus Inc (2).md"
+		},
+		{
+			"name": "Cumulus Inc",
+			"suburb": null,
+			"taken": [
+				"Cumulus Inc.md",
+				"Cumulus Inc (2).md",
+				"Cumulus Inc (3).md"
+			],
+			"expected": "Cumulus Inc (4).md"
+		},
+		{
+			"name": "Cumulus Inc",
+			"suburb": "Fitzroy",
+			"taken": [
+				"Cumulus Inc.md",
+				"Cumulus Inc (Fitzroy).md",
+				"Cumulus Inc (2).md"
+			],
+			"expected": "Cumulus Inc (3).md"
+		},
+		{
+			"name": "Bar: The \"Best\" <Ever>?",
+			"suburb": null,
+			"taken": [],
+			"expected": "Bar The Best Ever.md"
+		},
+		{
+			"name": "Slash/Back\\Pipe|Star*",
+			"suburb": "Q?",
+			"taken": [
+				"SlashBackPipeStar.md"
+			],
+			"expected": "SlashBackPipeStar (Q).md"
+		},
+		{
+			"name": "***",
+			"suburb": null,
+			"taken": [],
+			"expected": "Restaurant.md"
+		},
+		{
+			"name": "***",
+			"suburb": null,
+			"taken": [
+				"Restaurant.md"
+			],
+			"expected": "Restaurant (2).md"
+		},
+		{
+			"name": "  Spaced   Out  ",
+			"suburb": null,
+			"taken": [],
+			"expected": "Spaced Out.md"
+		},
+		{
+			"name": "Café Höhe — Süd",
+			"suburb": "St Kilda",
+			"taken": [
+				"Café Höhe — Süd.md"
+			],
+			"expected": "Café Höhe — Süd (St Kilda).md"
+		}
+	],
+	"sanitize": [
+		{
+			"input": "Cumulus Inc",
+			"expected": "Cumulus Inc"
+		},
+		{
+			"input": "Bar: The \"Best\" <Ever>?",
+			"expected": "Bar The Best Ever"
+		},
+		{
+			"input": "Slash/Back\\Pipe|Star*",
+			"expected": "SlashBackPipeStar"
+		},
+		{
+			"input": "   leading and trailing   ",
+			"expected": "leading and trailing"
+		},
+		{
+			"input": "multi   internal    spaces",
+			"expected": "multi internal spaces"
+		},
+		{
+			"input": "***",
+			"expected": "Restaurant"
+		},
+		{
+			"input": "",
+			"expected": "Restaurant"
+		},
+		{
+			"input": "Café Höhe — Süd",
+			"expected": "Café Höhe — Süd"
+		},
+		{
+			"input": "Tab\there",
+			"expected": "Tab here"
+		},
+		{
+			"input": "dots.are.kept.md",
+			"expected": "dots.are.kept.md"
+		}
+	],
+	"fileSlugs": [
+		{
+			"filePath": "/vault/Restaurants/Cumulus Inc.md",
+			"expected": "cumulus-inc"
+		},
+		{
+			"filePath": "/x/Vue de Monde (Fitzroy).md",
+			"expected": "vue-de-monde-fitzroy"
+		},
+		{
+			"filePath": "Restaurants/Café Höhe — Süd.md",
+			"expected": "caf-h-he-s-d"
+		},
+		{
+			"filePath": "Restaurants/日本食堂.md",
+			"expected": ""
+		},
+		{
+			"filePath": "Restaurants/L'Hôtel: The \"Best\" Bar.md",
+			"expected": "l-h-tel-the-best-bar"
+		},
+		{
+			"filePath": "Restaurants/--- Weird --- Name ---.md",
+			"expected": "weird-name"
+		},
+		{
+			"filePath": "Restaurants/UPPER case MiXeD.md",
+			"expected": "upper-case-mixed"
+		},
+		{
+			"filePath": "Restaurants/1800-Pizza!.md",
+			"expected": "1800-pizza"
+		},
+		{
+			"filePath": "Restaurants/☆★☆.md",
+			"expected": ""
+		},
+		{
+			"filePath": "Restaurants/a.md",
+			"expected": "a"
+		}
+	],
+	"attributeSlugs": [
+		{
+			"input": "Dog Friendly",
+			"expected": "dog_friendly"
+		},
+		{
+			"input": "dog_friendly",
+			"expected": "dog_friendly"
+		},
+		{
+			"input": "Crème brûlée",
+			"expected": "cr_me_br_l_e"
+		},
+		{
+			"input": "  padded  ",
+			"expected": "padded"
+		},
+		{
+			"input": "ALL CAPS!",
+			"expected": "all_caps"
+		},
+		{
+			"input": "24 Hour",
+			"expected": "24_hour"
+		},
+		{
+			"input": "★ starred ★",
+			"expected": "starred"
+		},
+		{
+			"input": "---",
+			"expected": "attribute"
+		},
+		{
+			"input": "multi -- dash",
+			"expected": "multi_dash"
+		},
+		{
+			"input": "",
+			"expected": "attribute"
+		}
+	],
+	"uniqueAttributeIds": [
+		{
+			"label": "Dog Friendly",
+			"existing": [],
+			"expected": "dog_friendly"
+		},
+		{
+			"label": "Dog Friendly",
+			"existing": [
+				"dog_friendly"
+			],
+			"expected": "dog_friendly_2"
+		},
+		{
+			"label": "Dog Friendly",
+			"existing": [
+				"dog_friendly",
+				"dog_friendly_2"
+			],
+			"expected": "dog_friendly_3"
+		},
+		{
+			"label": "★★★",
+			"existing": [
+				"attribute",
+				"attribute_2",
+				"attribute_3"
+			],
+			"expected": "attribute_4"
+		}
+	]
+}

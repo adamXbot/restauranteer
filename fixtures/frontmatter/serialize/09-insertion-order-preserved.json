@@ -1,0 +1,44 @@
+{
+	"name": "09-insertion-order-preserved",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"zeta",
+				{
+					"t": "str",
+					"v": "last alphabetically, first in file"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Order Matters"
+				}
+			],
+			[
+				"custom_between",
+				{
+					"t": "int",
+					"v": "7"
+				}
+			],
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "0123abcd-4444-4555-8666-777788889999"
+				}
+			],
+			[
+				"alpha",
+				{
+					"t": "str",
+					"v": "first alphabetically, last in file"
+				}
+			]
+		]
+	},
+	"body": ""
+}

@@ -1,0 +1,52 @@
+{
+	"name": "01-single-rating",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-05-15",
+			"meal": "Lunch",
+			"headline": "2026-05-15 — Lunch",
+			"rawMarkdown": "### 2026-05-15 — Lunch\n\n**With:** Sarah, Tom  \n**Vibe:** Bright and busy  \n**Food:** Lamb shoulder  \n**Quality:** Tender  \n**Service:** Friendly  \n**Rating:** 4/5  \n\nLoved it. Would bring [[Friend]] next time.\n\n![](_attachments/cumulus-inc/20260515-133000-1.jpg)",
+			"photoPaths": [
+				"_attachments/cumulus-inc/20260515-133000-1.jpg"
+			],
+			"fields": {
+				"date": "2026-05-15",
+				"meal": "Lunch",
+				"companions": "Sarah, Tom",
+				"vibe": "Bright and busy",
+				"food": "Lamb shoulder",
+				"quality": "Tender",
+				"service": "Friendly",
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": 4,
+				"notes": "Loved it. Would bring [[Friend]] next time.",
+				"photoPaths": [
+					"_attachments/cumulus-inc/20260515-133000-1.jpg"
+				],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		}
+	],
+	"summary": {
+		"count": 1,
+		"earliest": {
+			"date": "2026-05-15",
+			"meal": "Lunch",
+			"rating": 4,
+			"photo": "_attachments/cumulus-inc/20260515-133000-1.jpg"
+		},
+		"latest": {
+			"date": "2026-05-15",
+			"meal": "Lunch",
+			"rating": 4,
+			"photo": "_attachments/cumulus-inc/20260515-133000-1.jpg"
+		},
+		"average": 4
+	}
+}

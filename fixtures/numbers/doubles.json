@@ -1,0 +1,776 @@
+{
+	"description": "JS number formatting pack. bitsHex = IEEE-754 double bits (big-endian hex) — reconstruct the exact double from it. js = ECMA-262 String(n). flat/nested = full document bytes from the production serializer at two indent levels (stringify({v: n}, \"\") and stringify({nest: {list: [n]}}, \"\")). Note the int vs float dump paths: integer-valued doubles emit String(n) verbatim (even 1e+21); non-integers get js-yaml's \".e\" insertion (1e-7 → 1.e-7); -0 emits -0.0; NaN/±Infinity emit .nan/.inf/-.inf.",
+	"seed": "0x5eed20bc",
+	"cases": [
+		{
+			"name": "zero",
+			"bitsHex": "0000000000000000",
+			"js": "0",
+			"flat": "---\nv: 0\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0\n---\n\n"
+		},
+		{
+			"name": "neg-zero",
+			"bitsHex": "8000000000000000",
+			"js": "0",
+			"flat": "---\nv: -0.0\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -0.0\n---\n\n"
+		},
+		{
+			"name": "one",
+			"bitsHex": "3ff0000000000000",
+			"js": "1",
+			"flat": "---\nv: 1\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1\n---\n\n"
+		},
+		{
+			"name": "neg-one",
+			"bitsHex": "bff0000000000000",
+			"js": "-1",
+			"flat": "---\nv: -1\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -1\n---\n\n"
+		},
+		{
+			"name": "four",
+			"bitsHex": "4010000000000000",
+			"js": "4",
+			"flat": "---\nv: 4\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 4\n---\n\n"
+		},
+		{
+			"name": "four-point-five",
+			"bitsHex": "4012000000000000",
+			"js": "4.5",
+			"flat": "---\nv: 4.5\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 4.5\n---\n\n"
+		},
+		{
+			"name": "neg-two-point-five",
+			"bitsHex": "c004000000000000",
+			"js": "-2.5",
+			"flat": "---\nv: -2.5\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -2.5\n---\n\n"
+		},
+		{
+			"name": "tenth",
+			"bitsHex": "3fb999999999999a",
+			"js": "0.1",
+			"flat": "---\nv: 0.1\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0.1\n---\n\n"
+		},
+		{
+			"name": "three-tenths",
+			"bitsHex": "3fd3333333333333",
+			"js": "0.3",
+			"flat": "---\nv: 0.3\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0.3\n---\n\n"
+		},
+		{
+			"name": "point-one-plus-point-two",
+			"bitsHex": "3fd3333333333334",
+			"js": "0.30000000000000004",
+			"flat": "---\nv: 0.30000000000000004\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0.30000000000000004\n---\n\n"
+		},
+		{
+			"name": "third",
+			"bitsHex": "3fd5555555555555",
+			"js": "0.3333333333333333",
+			"flat": "---\nv: 0.3333333333333333\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0.3333333333333333\n---\n\n"
+		},
+		{
+			"name": "two-thirds",
+			"bitsHex": "3fe5555555555555",
+			"js": "0.6666666666666666",
+			"flat": "---\nv: 0.6666666666666666\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0.6666666666666666\n---\n\n"
+		},
+		{
+			"name": "visit-avg-4-3",
+			"bitsHex": "4011333333333333",
+			"js": "4.3",
+			"flat": "---\nv: 4.3\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 4.3\n---\n\n"
+		},
+		{
+			"name": "half",
+			"bitsHex": "3fe0000000000000",
+			"js": "0.5",
+			"flat": "---\nv: 0.5\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0.5\n---\n\n"
+		},
+		{
+			"name": "pi-ish",
+			"bitsHex": "400921fb54442d18",
+			"js": "3.141592653589793",
+			"flat": "---\nv: 3.141592653589793\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 3.141592653589793\n---\n\n"
+		},
+		{
+			"name": "hundred",
+			"bitsHex": "4059000000000000",
+			"js": "100",
+			"flat": "---\nv: 100\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 100\n---\n\n"
+		},
+		{
+			"name": "thousand",
+			"bitsHex": "408f400000000000",
+			"js": "1000",
+			"flat": "---\nv: 1000\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1000\n---\n\n"
+		},
+		{
+			"name": "lat-melbourne",
+			"bitsHex": "c042e8240b780347",
+			"js": "-37.8136",
+			"flat": "---\nv: -37.8136\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -37.8136\n---\n\n"
+		},
+		{
+			"name": "lng-melbourne",
+			"bitsHex": "40621ed1b71758e2",
+			"js": "144.9631",
+			"flat": "---\nv: 144.9631\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 144.9631\n---\n\n"
+		},
+		{
+			"name": "decimal-mix",
+			"bitsHex": "40c81cd6e631f8a1",
+			"js": "12345.6789",
+			"flat": "---\nv: 12345.6789\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 12345.6789\n---\n\n"
+		},
+		{
+			"name": "e15",
+			"bitsHex": "430c6bf526340000",
+			"js": "1000000000000000",
+			"flat": "---\nv: 1000000000000000\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1000000000000000\n---\n\n"
+		},
+		{
+			"name": "e16",
+			"bitsHex": "4341c37937e08000",
+			"js": "10000000000000000",
+			"flat": "---\nv: 10000000000000000\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 10000000000000000\n---\n\n"
+		},
+		{
+			"name": "e20",
+			"bitsHex": "4415af1d78b58c40",
+			"js": "100000000000000000000",
+			"flat": "---\nv: 100000000000000000000\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 100000000000000000000\n---\n\n"
+		},
+		{
+			"name": "e21-exponent-threshold",
+			"bitsHex": "444b1ae4d6e2ef50",
+			"js": "1e+21",
+			"flat": "---\nv: 1e+21\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1e+21\n---\n\n"
+		},
+		{
+			"name": "e22",
+			"bitsHex": "4480f0cf064dd592",
+			"js": "1e+22",
+			"flat": "---\nv: 1e+22\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1e+22\n---\n\n"
+		},
+		{
+			"name": "five-e21",
+			"bitsHex": "4470f0cf064dd592",
+			"js": "5e+21",
+			"flat": "---\nv: 5e+21\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 5e+21\n---\n\n"
+		},
+		{
+			"name": "e100",
+			"bitsHex": "54b249ad2594c37d",
+			"js": "1e+100",
+			"flat": "---\nv: 1e+100\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1e+100\n---\n\n"
+		},
+		{
+			"name": "max-safe-integer",
+			"bitsHex": "433fffffffffffff",
+			"js": "9007199254740991",
+			"flat": "---\nv: 9007199254740991\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 9007199254740991\n---\n\n"
+		},
+		{
+			"name": "above-max-safe",
+			"bitsHex": "4340000000000000",
+			"js": "9007199254740992",
+			"flat": "---\nv: 9007199254740992\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 9007199254740992\n---\n\n"
+		},
+		{
+			"name": "two-pow-53",
+			"bitsHex": "4340000000000000",
+			"js": "9007199254740992",
+			"flat": "---\nv: 9007199254740992\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 9007199254740992\n---\n\n"
+		},
+		{
+			"name": "two-pow-63",
+			"bitsHex": "43e0000000000000",
+			"js": "9223372036854776000",
+			"flat": "---\nv: 9223372036854776000\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 9223372036854776000\n---\n\n"
+		},
+		{
+			"name": "e-5",
+			"bitsHex": "3ee4f8b588e368f1",
+			"js": "0.00001",
+			"flat": "---\nv: 0.00001\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0.00001\n---\n\n"
+		},
+		{
+			"name": "e-6-decimal-threshold",
+			"bitsHex": "3eb0c6f7a0b5ed8d",
+			"js": "0.000001",
+			"flat": "---\nv: 0.000001\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0.000001\n---\n\n"
+		},
+		{
+			"name": "e-7-exponent",
+			"bitsHex": "3e7ad7f29abcaf48",
+			"js": "1e-7",
+			"flat": "---\nv: 1.e-7\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.e-7\n---\n\n"
+		},
+		{
+			"name": "one-point-five-e-7",
+			"bitsHex": "3e8421f5f40d8376",
+			"js": "1.5e-7",
+			"flat": "---\nv: 1.5e-7\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.5e-7\n---\n\n"
+		},
+		{
+			"name": "two-point-five-e-8",
+			"bitsHex": "3e5ad7f29abcaf48",
+			"js": "2.5e-8",
+			"flat": "---\nv: 2.5e-8\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 2.5e-8\n---\n\n"
+		},
+		{
+			"name": "e-21",
+			"bitsHex": "3b92e3b40a0e9b4f",
+			"js": "1e-21",
+			"flat": "---\nv: 1.e-21\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.e-21\n---\n\n"
+		},
+		{
+			"name": "min-subnormal",
+			"bitsHex": "0000000000000001",
+			"js": "5e-324",
+			"flat": "---\nv: 5.e-324\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 5.e-324\n---\n\n"
+		},
+		{
+			"name": "subnormal",
+			"bitsHex": "000012688b70e62b",
+			"js": "1e-310",
+			"flat": "---\nv: 1.e-310\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.e-310\n---\n\n"
+		},
+		{
+			"name": "min-normal",
+			"bitsHex": "0010000000000000",
+			"js": "2.2250738585072014e-308",
+			"flat": "---\nv: 2.2250738585072014e-308\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 2.2250738585072014e-308\n---\n\n"
+		},
+		{
+			"name": "max-value",
+			"bitsHex": "7fefffffffffffff",
+			"js": "1.7976931348623157e+308",
+			"flat": "---\nv: 1.7976931348623157e+308\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.7976931348623157e+308\n---\n\n"
+		},
+		{
+			"name": "neg-max-value",
+			"bitsHex": "ffefffffffffffff",
+			"js": "-1.7976931348623157e+308",
+			"flat": "---\nv: -1.7976931348623157e+308\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -1.7976931348623157e+308\n---\n\n"
+		},
+		{
+			"name": "epsilon",
+			"bitsHex": "3cb0000000000000",
+			"js": "2.220446049250313e-16",
+			"flat": "---\nv: 2.220446049250313e-16\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 2.220446049250313e-16\n---\n\n"
+		},
+		{
+			"name": "nan",
+			"bitsHex": "7ff8000000000000",
+			"js": "NaN",
+			"flat": "---\nv: .nan\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - .nan\n---\n\n"
+		},
+		{
+			"name": "infinity",
+			"bitsHex": "7ff0000000000000",
+			"js": "Infinity",
+			"flat": "---\nv: .inf\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - .inf\n---\n\n"
+		},
+		{
+			"name": "neg-infinity",
+			"bitsHex": "fff0000000000000",
+			"js": "-Infinity",
+			"flat": "---\nv: -.inf\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -.inf\n---\n\n"
+		},
+		{
+			"name": "random-00",
+			"bitsHex": "91db578501c7bb1c",
+			"js": "-1.181874829169717e-222",
+			"flat": "---\nv: -1.181874829169717e-222\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -1.181874829169717e-222\n---\n\n"
+		},
+		{
+			"name": "random-01",
+			"bitsHex": "8cd7195e955c30d5",
+			"js": "-8.259211991335816e-247",
+			"flat": "---\nv: -8.259211991335816e-247\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -8.259211991335816e-247\n---\n\n"
+		},
+		{
+			"name": "random-02",
+			"bitsHex": "e9f160bdcd48c491",
+			"js": "-2.128307135225248e+202",
+			"flat": "---\nv: -2.128307135225248e+202\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -2.128307135225248e+202\n---\n\n"
+		},
+		{
+			"name": "random-03",
+			"bitsHex": "01ca092e9f9f9c0f",
+			"js": "4.859665614253235e-300",
+			"flat": "---\nv: 4.859665614253235e-300\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 4.859665614253235e-300\n---\n\n"
+		},
+		{
+			"name": "random-04",
+			"bitsHex": "5869ce5cddb8c99a",
+			"js": "8.134498322952664e+117",
+			"flat": "---\nv: 8.134498322952664e+117\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 8.134498322952664e+117\n---\n\n"
+		},
+		{
+			"name": "random-05",
+			"bitsHex": "5e3854ba4cd5791a",
+			"js": "7.595516319028114e+145",
+			"flat": "---\nv: 7.595516319028114e+145\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 7.595516319028114e+145\n---\n\n"
+		},
+		{
+			"name": "random-06",
+			"bitsHex": "b755bf0aa3b9538a",
+			"js": "-3.900543394940939e-42",
+			"flat": "---\nv: -3.900543394940939e-42\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -3.900543394940939e-42\n---\n\n"
+		},
+		{
+			"name": "random-07",
+			"bitsHex": "0b924dc35510e702",
+			"js": "6.241428588979358e-253",
+			"flat": "---\nv: 6.241428588979358e-253\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 6.241428588979358e-253\n---\n\n"
+		},
+		{
+			"name": "random-08",
+			"bitsHex": "7b20141ddc75fbe2",
+			"js": "1.1954560641998077e+285",
+			"flat": "---\nv: 1.1954560641998077e+285\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.1954560641998077e+285\n---\n\n"
+		},
+		{
+			"name": "random-09",
+			"bitsHex": "819a7e1ce83c244e",
+			"js": "-6.181151605011981e-301",
+			"flat": "---\nv: -6.181151605011981e-301\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -6.181151605011981e-301\n---\n\n"
+		},
+		{
+			"name": "random-10",
+			"bitsHex": "51d7ef7dbcea715d",
+			"js": "1.8599510111641202e+86",
+			"flat": "---\nv: 1.8599510111641202e+86\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.8599510111641202e+86\n---\n\n"
+		},
+		{
+			"name": "random-11",
+			"bitsHex": "d7527c22f1ac0b11",
+			"js": "-4.445449631214635e+112",
+			"flat": "---\nv: -4.445449631214635e+112\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -4.445449631214635e+112\n---\n\n"
+		},
+		{
+			"name": "random-12",
+			"bitsHex": "bb9795149bcd7a63",
+			"js": "-1.24843898699347e-21",
+			"flat": "---\nv: -1.24843898699347e-21\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -1.24843898699347e-21\n---\n\n"
+		},
+		{
+			"name": "random-13",
+			"bitsHex": "6798690df3ad5774",
+			"js": "1.0876060512583239e+191",
+			"flat": "---\nv: 1.0876060512583239e+191\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.0876060512583239e+191\n---\n\n"
+		},
+		{
+			"name": "random-14",
+			"bitsHex": "ba1ac0058709fc76",
+			"js": "-8.440838299790597e-29",
+			"flat": "---\nv: -8.440838299790597e-29\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -8.440838299790597e-29\n---\n\n"
+		},
+		{
+			"name": "random-15",
+			"bitsHex": "5d2c94271bf37967",
+			"js": "6.806608827238293e+140",
+			"flat": "---\nv: 6.806608827238293e+140\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 6.806608827238293e+140\n---\n\n"
+		},
+		{
+			"name": "random-16",
+			"bitsHex": "9926b7a41102a5aa",
+			"js": "-1.6315873358397387e-187",
+			"flat": "---\nv: -1.6315873358397387e-187\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -1.6315873358397387e-187\n---\n\n"
+		},
+		{
+			"name": "random-17",
+			"bitsHex": "69d290855b2d8fb4",
+			"js": "5.68409312276877e+201",
+			"flat": "---\nv: 5.68409312276877e+201\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 5.68409312276877e+201\n---\n\n"
+		},
+		{
+			"name": "random-18",
+			"bitsHex": "6dc03654bca296c6",
+			"js": "4.578356518242674e+220",
+			"flat": "---\nv: 4.578356518242674e+220\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 4.578356518242674e+220\n---\n\n"
+		},
+		{
+			"name": "random-19",
+			"bitsHex": "0bfc89769f2499fb",
+			"js": "6.227753677743023e-251",
+			"flat": "---\nv: 6.227753677743023e-251\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 6.227753677743023e-251\n---\n\n"
+		},
+		{
+			"name": "random-20",
+			"bitsHex": "923f49f88f996bd1",
+			"js": "-8.655938587760559e-221",
+			"flat": "---\nv: -8.655938587760559e-221\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -8.655938587760559e-221\n---\n\n"
+		},
+		{
+			"name": "random-21",
+			"bitsHex": "8ee7147069bab0c9",
+			"js": "-7.088693850650441e-237",
+			"flat": "---\nv: -7.088693850650441e-237\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -7.088693850650441e-237\n---\n\n"
+		},
+		{
+			"name": "random-22",
+			"bitsHex": "e2b4edcafd7d7ef0",
+			"js": "-3.085343810959933e+167",
+			"flat": "---\nv: -3.085343810959933e+167\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -3.085343810959933e+167\n---\n\n"
+		},
+		{
+			"name": "random-23",
+			"bitsHex": "0784fbd868400046",
+			"js": "1.9394449994198722e-272",
+			"flat": "---\nv: 1.9394449994198722e-272\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.9394449994198722e-272\n---\n\n"
+		},
+		{
+			"name": "random-24",
+			"bitsHex": "a34360f037222ee5",
+			"js": "-8.136467078597928e-139",
+			"flat": "---\nv: -8.136467078597928e-139\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -8.136467078597928e-139\n---\n\n"
+		},
+		{
+			"name": "random-25",
+			"bitsHex": "8011989056b30b73",
+			"js": "-2.4470183609311067e-308",
+			"flat": "---\nv: -2.4470183609311067e-308\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -2.4470183609311067e-308\n---\n\n"
+		},
+		{
+			"name": "random-26",
+			"bitsHex": "9c31f85cc16921fb",
+			"js": "-7.265651626220501e-173",
+			"flat": "---\nv: -7.265651626220501e-173\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -7.265651626220501e-173\n---\n\n"
+		},
+		{
+			"name": "random-27",
+			"bitsHex": "06f4dbe17388b0ee",
+			"js": "3.765438496778769e-275",
+			"flat": "---\nv: 3.765438496778769e-275\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 3.765438496778769e-275\n---\n\n"
+		},
+		{
+			"name": "random-28",
+			"bitsHex": "3d0f2fb663dee46c",
+			"js": "1.3849533432248755e-14",
+			"flat": "---\nv: 1.3849533432248755e-14\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.3849533432248755e-14\n---\n\n"
+		},
+		{
+			"name": "random-29",
+			"bitsHex": "e9ff0d80a6a10747",
+			"js": "-3.803094270875071e+202",
+			"flat": "---\nv: -3.803094270875071e+202\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -3.803094270875071e+202\n---\n\n"
+		},
+		{
+			"name": "random-30",
+			"bitsHex": "11447c9b196a0ed1",
+			"js": "1.7296018718659948e-225",
+			"flat": "---\nv: 1.7296018718659948e-225\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.7296018718659948e-225\n---\n\n"
+		},
+		{
+			"name": "random-31",
+			"bitsHex": "468619bc69e16181",
+			"js": "5.603150331582274e+31",
+			"flat": "---\nv: 5.603150331582274e+31\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 5.603150331582274e+31\n---\n\n"
+		},
+		{
+			"name": "random-32",
+			"bitsHex": "662394679109ade2",
+			"js": "1.0399525373092337e+184",
+			"flat": "---\nv: 1.0399525373092337e+184\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.0399525373092337e+184\n---\n\n"
+		},
+		{
+			"name": "random-33",
+			"bitsHex": "5458a2eb84c2574b",
+			"js": "2.1049217726295462e+98",
+			"flat": "---\nv: 2.1049217726295462e+98\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 2.1049217726295462e+98\n---\n\n"
+		},
+		{
+			"name": "random-34",
+			"bitsHex": "82a60a8fef7a1e7f",
+			"js": "-6.740477518189613e-296",
+			"flat": "---\nv: -6.740477518189613e-296\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -6.740477518189613e-296\n---\n\n"
+		},
+		{
+			"name": "random-35",
+			"bitsHex": "c52cd60fe9fce12a",
+			"js": "-1.743040146915175e+25",
+			"flat": "---\nv: -1.743040146915175e+25\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -1.743040146915175e+25\n---\n\n"
+		},
+		{
+			"name": "random-36",
+			"bitsHex": "defa8fb2dd4d421d",
+			"js": "-3.3963119241439206e+149",
+			"flat": "---\nv: -3.3963119241439206e+149\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -3.3963119241439206e+149\n---\n\n"
+		},
+		{
+			"name": "random-37",
+			"bitsHex": "6c8678a7c12d87ce",
+			"js": "6.051949725515716e+214",
+			"flat": "---\nv: 6.051949725515716e+214\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 6.051949725515716e+214\n---\n\n"
+		},
+		{
+			"name": "random-38",
+			"bitsHex": "8a13992beb6ca99c",
+			"js": "-3.983297480276525e-260",
+			"flat": "---\nv: -3.983297480276525e-260\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -3.983297480276525e-260\n---\n\n"
+		},
+		{
+			"name": "random-39",
+			"bitsHex": "a4103b949b5a4b0a",
+			"js": "-5.58333498475045e-135",
+			"flat": "---\nv: -5.58333498475045e-135\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -5.58333498475045e-135\n---\n\n"
+		},
+		{
+			"name": "random-40",
+			"bitsHex": "15b2d78008d1b9a9",
+			"js": "3.7559973584307514e-204",
+			"flat": "---\nv: 3.7559973584307514e-204\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 3.7559973584307514e-204\n---\n\n"
+		},
+		{
+			"name": "random-41",
+			"bitsHex": "1eb8831f8cdfe4a4",
+			"js": "1.0896941479061733e-160",
+			"flat": "---\nv: 1.0896941479061733e-160\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.0896941479061733e-160\n---\n\n"
+		},
+		{
+			"name": "random-42",
+			"bitsHex": "a74441c5ba8329d3",
+			"js": "-1.5689359515784494e-119",
+			"flat": "---\nv: -1.5689359515784494e-119\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -1.5689359515784494e-119\n---\n\n"
+		},
+		{
+			"name": "random-43",
+			"bitsHex": "b783d1e4d36df249",
+			"js": "-2.8440158647098284e-41",
+			"flat": "---\nv: -2.8440158647098284e-41\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -2.8440158647098284e-41\n---\n\n"
+		},
+		{
+			"name": "random-44",
+			"bitsHex": "95f0e45c17163881",
+			"js": "-5.387717055055131e-203",
+			"flat": "---\nv: -5.387717055055131e-203\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -5.387717055055131e-203\n---\n\n"
+		},
+		{
+			"name": "random-45",
+			"bitsHex": "69cdf0823e90ee11",
+			"js": "4.583439219231169e+201",
+			"flat": "---\nv: 4.583439219231169e+201\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 4.583439219231169e+201\n---\n\n"
+		},
+		{
+			"name": "random-46",
+			"bitsHex": "8f70b9e133c08c37",
+			"js": "-2.63025513982488e-234",
+			"flat": "---\nv: -2.63025513982488e-234\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -2.63025513982488e-234\n---\n\n"
+		},
+		{
+			"name": "random-47",
+			"bitsHex": "dd42aa01e9e296c0",
+			"js": "-1.7780945192155304e+141",
+			"flat": "---\nv: -1.7780945192155304e+141\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -1.7780945192155304e+141\n---\n\n"
+		},
+		{
+			"name": "random-48",
+			"bitsHex": "a962f5852c545698",
+			"js": "-2.522716568225089e-109",
+			"flat": "---\nv: -2.522716568225089e-109\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -2.522716568225089e-109\n---\n\n"
+		},
+		{
+			"name": "random-49",
+			"bitsHex": "b639c191c1f7460a",
+			"js": "-1.7623059514815892e-47",
+			"flat": "---\nv: -1.7623059514815892e-47\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -1.7623059514815892e-47\n---\n\n"
+		},
+		{
+			"name": "random-50",
+			"bitsHex": "58a825dae4025542",
+			"js": "1.217887453280143e+119",
+			"flat": "---\nv: 1.217887453280143e+119\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.217887453280143e+119\n---\n\n"
+		},
+		{
+			"name": "random-51",
+			"bitsHex": "c290c272da448a42",
+			"js": "-4606834151714.564",
+			"flat": "---\nv: -4606834151714.564\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -4606834151714.564\n---\n\n"
+		},
+		{
+			"name": "random-52",
+			"bitsHex": "cc824918b091c8d0",
+			"js": "-3.6729648267035154e+60",
+			"flat": "---\nv: -3.6729648267035154e+60\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -3.6729648267035154e+60\n---\n\n"
+		},
+		{
+			"name": "random-53",
+			"bitsHex": "aceffaea9be14b4b",
+			"js": "-3.0662794495889515e-92",
+			"flat": "---\nv: -3.0662794495889515e-92\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -3.0662794495889515e-92\n---\n\n"
+		},
+		{
+			"name": "random-54",
+			"bitsHex": "422ce3182e3233ee",
+			"js": "62034548505.101425",
+			"flat": "---\nv: 62034548505.101425\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 62034548505.101425\n---\n\n"
+		},
+		{
+			"name": "random-55",
+			"bitsHex": "33482f170690157e",
+			"js": "1.1757582796461478e-61",
+			"flat": "---\nv: 1.1757582796461478e-61\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.1757582796461478e-61\n---\n\n"
+		},
+		{
+			"name": "random-56",
+			"bitsHex": "13bffff357772129",
+			"js": "1.4852188213834554e-213",
+			"flat": "---\nv: 1.4852188213834554e-213\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 1.4852188213834554e-213\n---\n\n"
+		},
+		{
+			"name": "random-57",
+			"bitsHex": "4c2392e523828d21",
+			"js": "6.143339484204694e+58",
+			"flat": "---\nv: 6.143339484204694e+58\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 6.143339484204694e+58\n---\n\n"
+		},
+		{
+			"name": "random-58",
+			"bitsHex": "03aca2d023ae7909",
+			"js": "5.7391342018913214e-291",
+			"flat": "---\nv: 5.7391342018913214e-291\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 5.7391342018913214e-291\n---\n\n"
+		},
+		{
+			"name": "random-59",
+			"bitsHex": "0e2b7a93b8d34801",
+			"js": "2.0604946821157172e-240",
+			"flat": "---\nv: 2.0604946821157172e-240\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 2.0604946821157172e-240\n---\n\n"
+		},
+		{
+			"name": "random-60",
+			"bitsHex": "78b838ade4bf4c00",
+			"js": "3.2757849485421916e+273",
+			"flat": "---\nv: 3.2757849485421916e+273\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 3.2757849485421916e+273\n---\n\n"
+		},
+		{
+			"name": "random-61",
+			"bitsHex": "aeda772d8f6b8060",
+			"js": "-5.449315434022295e-83",
+			"flat": "---\nv: -5.449315434022295e-83\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -5.449315434022295e-83\n---\n\n"
+		},
+		{
+			"name": "random-62",
+			"bitsHex": "b0cc955e77dce048",
+			"js": "-1.2638806441196812e-73",
+			"flat": "---\nv: -1.2638806441196812e-73\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -1.2638806441196812e-73\n---\n\n"
+		},
+		{
+			"name": "random-63",
+			"bitsHex": "d9c48f52ea083e77",
+			"js": "-2.7182434913247586e+124",
+			"flat": "---\nv: -2.7182434913247586e+124\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - -2.7182434913247586e+124\n---\n\n"
+		}
+	]
+}

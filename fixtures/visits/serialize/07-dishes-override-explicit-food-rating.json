@@ -1,0 +1,27 @@
+{
+	"name": "07-dishes-override-explicit-food-rating",
+	"visit": {
+		"date": "2026-06-03",
+		"areaRatings": {
+			"vibe": 3,
+			"food": 2,
+			"quality": 3,
+			"service": 3
+		},
+		"dishes": [
+			{
+				"name": "Roast chicken",
+				"rating": 5,
+				"note": null,
+				"photoPath": null
+			},
+			{
+				"name": "Fries",
+				"rating": 4,
+				"note": null,
+				"photoPath": null
+			}
+		],
+		"imagePaths": []
+	}
+}

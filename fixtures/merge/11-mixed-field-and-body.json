@@ -1,0 +1,269 @@
+{
+	"name": "11-mixed-field-and-body",
+	"input": {
+		"loaded": {
+			"frontmatter": {
+				"t": "map",
+				"v": [
+					[
+						"id",
+						{
+							"t": "str",
+							"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+						}
+					],
+					[
+						"schema_version",
+						{
+							"t": "int",
+							"v": "1"
+						}
+					],
+					[
+						"name",
+						{
+							"t": "str",
+							"v": "Cumulus Inc"
+						}
+					],
+					[
+						"tags",
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "str",
+									"v": "wine"
+								}
+							]
+						}
+					],
+					[
+						"rating",
+						{
+							"t": "int",
+							"v": "4"
+						}
+					],
+					[
+						"custom_key",
+						{
+							"t": "str",
+							"v": "kept"
+						}
+					]
+				]
+			},
+			"body": "## Overview\n\n## Visits\n"
+		},
+		"current": {
+			"frontmatter": {
+				"t": "map",
+				"v": [
+					[
+						"id",
+						{
+							"t": "str",
+							"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+						}
+					],
+					[
+						"schema_version",
+						{
+							"t": "int",
+							"v": "1"
+						}
+					],
+					[
+						"name",
+						{
+							"t": "str",
+							"v": "Cumulus Inc"
+						}
+					],
+					[
+						"tags",
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "str",
+									"v": "wine"
+								},
+								{
+									"t": "str",
+									"v": "late-night"
+								}
+							]
+						}
+					],
+					[
+						"rating",
+						{
+							"t": "int",
+							"v": "4"
+						}
+					],
+					[
+						"custom_key",
+						{
+							"t": "str",
+							"v": "kept"
+						}
+					],
+					[
+						"suburb",
+						{
+							"t": "str",
+							"v": "Fitzroy"
+						}
+					]
+				]
+			},
+			"body": "## Overview\n\n## Visits\n\n### 2026-05-17\n\n**Rating:** 3/5  \n"
+		},
+		"pending": {
+			"frontmatter": {
+				"t": "map",
+				"v": [
+					[
+						"id",
+						{
+							"t": "str",
+							"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+						}
+					],
+					[
+						"schema_version",
+						{
+							"t": "int",
+							"v": "1"
+						}
+					],
+					[
+						"name",
+						{
+							"t": "str",
+							"v": "Cumulus Inc"
+						}
+					],
+					[
+						"tags",
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "str",
+									"v": "wine"
+								}
+							]
+						}
+					],
+					[
+						"rating",
+						{
+							"t": "float",
+							"v": "4.5",
+							"bitsHex": "4012000000000000"
+						}
+					],
+					[
+						"custom_key",
+						{
+							"t": "str",
+							"v": "kept"
+						}
+					],
+					[
+						"notes_key",
+						{
+							"t": "str",
+							"v": "added by app"
+						}
+					]
+				]
+			},
+			"body": "## Overview\n\n## Visits\n"
+		},
+		"dirtyFields": [
+			"rating",
+			"notes_key"
+		],
+		"bodyDirty": false
+	},
+	"expected": {
+		"kind": "clean",
+		"frontmatter": {
+			"t": "map",
+			"v": [
+				[
+					"id",
+					{
+						"t": "str",
+						"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+					}
+				],
+				[
+					"schema_version",
+					{
+						"t": "int",
+						"v": "1"
+					}
+				],
+				[
+					"name",
+					{
+						"t": "str",
+						"v": "Cumulus Inc"
+					}
+				],
+				[
+					"tags",
+					{
+						"t": "arr",
+						"v": [
+							{
+								"t": "str",
+								"v": "wine"
+							},
+							{
+								"t": "str",
+								"v": "late-night"
+							}
+						]
+					}
+				],
+				[
+					"rating",
+					{
+						"t": "float",
+						"v": "4.5",
+						"bitsHex": "4012000000000000"
+					}
+				],
+				[
+					"custom_key",
+					{
+						"t": "str",
+						"v": "kept"
+					}
+				],
+				[
+					"suburb",
+					{
+						"t": "str",
+						"v": "Fitzroy"
+					}
+				],
+				[
+					"notes_key",
+					{
+						"t": "str",
+						"v": "added by app"
+					}
+				]
+			]
+		},
+		"body": "## Overview\n\n## Visits\n\n### 2026-05-17\n\n**Rating:** 3/5  \n"
+	}
+}

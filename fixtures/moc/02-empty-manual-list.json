@@ -1,0 +1,7 @@
+{
+	"name": "02-empty-manual-list",
+	"list_name": "Someday",
+	"restaurant_names": [],
+	"created_manually": true,
+	"meta": null
+}

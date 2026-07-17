@@ -1,0 +1,48 @@
+{
+	"name": "09-no-trailing-double-space",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-06-06",
+			"meal": null,
+			"headline": "2026-06-06",
+			"rawMarkdown": "### 2026-06-06\n**With:** Casual Writer\n**Vibe:** fine\n**Rating:** 3/5\nnotes right after",
+			"photoPaths": [],
+			"fields": {
+				"date": "2026-06-06",
+				"meal": null,
+				"companions": "Casual Writer",
+				"vibe": "fine",
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": 3,
+				"notes": "notes right after",
+				"photoPaths": [],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		}
+	],
+	"summary": {
+		"count": 1,
+		"earliest": {
+			"date": "2026-06-06",
+			"meal": null,
+			"rating": 3,
+			"photo": null
+		},
+		"latest": {
+			"date": "2026-06-06",
+			"meal": null,
+			"rating": 3,
+			"photo": null
+		},
+		"average": 3
+	}
+}

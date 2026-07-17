@@ -1,0 +1,162 @@
+{
+	"name": "13-deep-nesting",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "3d3d3d3d-4e4e-4f4f-8a6a-7b7b7b7b7b7b"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Deep Dish"
+				}
+			],
+			[
+				"matrix",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "int",
+									"v": "1"
+								},
+								{
+									"t": "int",
+									"v": "2"
+								}
+							]
+						},
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "int",
+									"v": "3"
+								}
+							]
+						}
+					]
+				}
+			],
+			[
+				"list_of_maps",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "map",
+							"v": [
+								[
+									"a",
+									{
+										"t": "arr",
+										"v": [
+											{
+												"t": "bool",
+												"v": true
+											},
+											{
+												"t": "bool",
+												"v": false
+											}
+										]
+									}
+								]
+							]
+						},
+						{
+							"t": "map",
+							"v": [
+								[
+									"b",
+									{
+										"t": "map",
+										"v": [
+											[
+												"c",
+												{
+													"t": "arr",
+													"v": [
+														{
+															"t": "str",
+															"v": "x"
+														}
+													]
+												}
+											]
+										]
+									}
+								]
+							]
+						}
+					]
+				}
+			],
+			[
+				"nested",
+				{
+					"t": "map",
+					"v": [
+						[
+							"level1",
+							{
+								"t": "map",
+								"v": [
+									[
+										"level2",
+										{
+											"t": "map",
+											"v": [
+												[
+													"level3",
+													{
+														"t": "map",
+														"v": [
+															[
+																"deep",
+																{
+																	"t": "str",
+																	"v": "yes"
+																}
+															],
+															[
+																"list",
+																{
+																	"t": "arr",
+																	"v": [
+																		{
+																			"t": "str",
+																			"v": "no"
+																		},
+																		{
+																			"t": "str",
+																			"v": "This is a deliberately long sentence that exceeds the eighty character line width and therefore must fold."
+																		}
+																	]
+																}
+															]
+														]
+													}
+												]
+											]
+										}
+									]
+								]
+							}
+						]
+					]
+				}
+			]
+		]
+	},
+	"body": ""
+}

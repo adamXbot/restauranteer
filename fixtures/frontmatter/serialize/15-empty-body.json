@@ -1,0 +1,30 @@
+{
+	"name": "15-empty-body",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "6c6c6c6c-7d7d-4e8e-8f9f-0a0a0a0a0a0a"
+				}
+			],
+			[
+				"schema_version",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "No Body"
+				}
+			]
+		]
+	},
+	"body": ""
+}

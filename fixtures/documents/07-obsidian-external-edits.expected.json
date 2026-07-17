@@ -1,0 +1,92 @@
+{
+	"name": "07-obsidian-external-edits",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "5f5f5f5f-6a6a-4b7b-8c8c-9d9d9d9d9d9d"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Scribbled On"
+				}
+			],
+			[
+				"tags",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "quick"
+						},
+						{
+							"t": "str",
+							"v": "flow-style"
+						}
+					]
+				}
+			],
+			[
+				"rating",
+				{
+					"t": "float",
+					"v": "3.5",
+					"bitsHex": "400c000000000000"
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\nUser prose with **bold**, [links](https://example.com) and [[Wikilinks]].\n\n> [!note] An Obsidian callout\n> with a second line\n\n## Visits\n\n### 2026-02-14 — Date night\n\n**Vibe:** ★★★☆☆ — cosy  \n**Rating:** 3/5 (avg)  \n\nShared the tasting menu.\n\n## Scratchpad\n\n- [ ] try the bar seats\n- [x] book for birthday\n\t- indented with a tab\n",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-02-14",
+			"meal": "Date night",
+			"headline": "2026-02-14 — Date night",
+			"rawMarkdown": "### 2026-02-14 — Date night\n\n**Vibe:** ★★★☆☆ — cosy  \n**Rating:** 3/5 (avg)  \n\nShared the tasting menu.",
+			"photoPaths": [],
+			"fields": {
+				"date": "2026-02-14",
+				"meal": "Date night",
+				"companions": null,
+				"vibe": "cosy",
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": 3,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": null,
+				"notes": "Shared the tasting menu.",
+				"photoPaths": [],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		}
+	],
+	"summary": {
+		"count": 1,
+		"earliest": {
+			"date": "2026-02-14",
+			"meal": "Date night",
+			"rating": 3,
+			"photo": null
+		},
+		"latest": {
+			"date": "2026-02-14",
+			"meal": "Date night",
+			"rating": 3,
+			"photo": null
+		},
+		"average": 3
+	}
+}

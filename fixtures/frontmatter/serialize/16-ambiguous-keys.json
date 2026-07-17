@@ -1,0 +1,72 @@
+{
+	"name": "16-ambiguous-keys",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"123",
+				{
+					"t": "str",
+					"v": "integer-like key floats to the front (JS property order)"
+				}
+			],
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "8e8e8e8e-9f9f-4a0a-8b1b-2c2c2c2c2c2c"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Key West"
+				}
+			],
+			[
+				"y",
+				{
+					"t": "str",
+					"v": "key needs quoting"
+				}
+			],
+			[
+				"on",
+				{
+					"t": "str",
+					"v": "this one too"
+				}
+			],
+			[
+				"open hours",
+				{
+					"t": "str",
+					"v": "plain key with space"
+				}
+			],
+			[
+				"a:b",
+				{
+					"t": "str",
+					"v": "colon key"
+				}
+			],
+			[
+				"a: b",
+				{
+					"t": "str",
+					"v": "colon-space key"
+				}
+			],
+			[
+				"",
+				{
+					"t": "str",
+					"v": "empty key"
+				}
+			]
+		]
+	},
+	"body": ""
+}
