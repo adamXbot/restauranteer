@@ -19,6 +19,7 @@ import {
 	type VisitInput
 } from '$lib/server/vault/visit';
 import { attachmentsDir } from '$lib/server/config';
+import { recordVaultDeletion } from '$lib/server/sync/tombstones';
 import { log } from '$lib/server/log';
 import { slugifyLabel, type AttributeValue } from '$lib/attributes';
 
@@ -83,6 +84,9 @@ async function deletePhotoFile(photoPath: string): Promise<void> {
 	for (const candidate of [abs, thumb]) {
 		try {
 			await unlink(candidate);
+			// Attachments are synced like any other vault file, so a deleted
+			// photo needs a tombstone or clients will push it back.
+			recordVaultDeletion(candidate);
 		} catch (e) {
 			const code = (e as NodeJS.ErrnoException).code;
 			if (code !== 'ENOENT') log.warn('Photo delete failed', { path: candidate, code });

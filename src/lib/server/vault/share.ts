@@ -56,7 +56,13 @@ export function buildInfoFrontmatter(): Frontmatter {
 	};
 }
 
-export function infoMarkdown(): string {
+/**
+ * The vault-root `info.md`. When a `vaultId` is supplied it is stamped into the
+ * frontmatter — that file is the durable home of the vault's sync identity
+ * (see `server/sync/vaultId.ts`). Bundles shared with other people go through
+ * `buildInfoFrontmatter()` instead and never carry it.
+ */
+export function infoMarkdown(vaultId?: string | null): string {
 	const body = [
 		'# About this vault',
 		'',
@@ -70,7 +76,9 @@ export function infoMarkdown(): string {
 		'See https://github.com/adamXbot/restauranteer for the schema.',
 		''
 	].join('\n');
-	return stringify(buildInfoFrontmatter(), body);
+	const frontmatter = buildInfoFrontmatter();
+	if (vaultId) frontmatter.vault_id = vaultId;
+	return stringify(frontmatter, body);
 }
 
 /**

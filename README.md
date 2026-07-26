@@ -160,6 +160,8 @@ All env vars (in `.env`):
 | `APPLE_MAPKIT_KEY_ID` | MapKit JS Key ID | No |
 | `APPLE_MAPKIT_PRIVATE_KEY` | Contents of the `.p8` file. `\n` escapes accepted for single-line env values | No |
 | `APPLE_MAPKIT_TOKEN` | Pre-signed MapKit JS JWT from the Quickstart token tool. Use this **or** the three signing vars above — not both. Expires per Apple's settings (typically 7 days); rotate manually | No |
+| `RESTAURANTEER_SYNC_TOKEN` | Bearer token(s) for the sync API. Unset → `/api/sync/*` is disabled (503). Comma-separate for one token per device. See [docs/sync-api.md](docs/sync-api.md) | No |
+| `RESTAURANTEER_REQUIRE_AUTH` | `1` extends the bearer requirement to all of `/api/*`. **Locks out the browser UI** — headless deployments only. Needs `RESTAURANTEER_SYNC_TOKEN` too | No |
 | `LOG_LEVEL` | `debug`, `info`, `warn`, `error` | No (default `info`) |
 | `PORT` | Container listen port | No (default `3000`) |
 
@@ -291,6 +293,13 @@ API:
 - `POST /api/admin/reconcile` — force a full vault rescan
 - `GET  /health` — health check
 
+Sync API — **disabled unless `RESTAURANTEER_SYNC_TOKEN` is set**, then bearer-authenticated. Full reference, curl walkthrough and security notes in [docs/sync-api.md](docs/sync-api.md):
+- `GET    /api/sync/info` — pairing handshake: `vault_id`, schema/protocol version, capabilities
+- `GET    /api/sync/manifest` — every allowlisted vault file with `sha256`/`size`/`mtime`, plus deletion tombstones
+- `GET    /api/sync/file?path=` — raw bytes, `ETag: "<sha256>"`
+- `PUT    /api/sync/file?path=` — raw bytes; `If-Match` for updates, absent for create-only, `409` on conflict
+- `DELETE /api/sync/file?path=` — `If-Match` required; records a tombstone
+
 All endpoints that hit external sites accept `?refresh=1` (or `{refresh: true}` in the JSON body) to bypass the cache.
 
 ## Development
@@ -350,6 +359,13 @@ src/
 │       │       ├── parser.ts   # JSON-LD + OG extraction
 │       │       ├── broadsheet.ts, goodfood.ts, agfg.ts
 │       │       └── registry.ts
+│       ├── sync/                  # sync API internals (docs/sync-api.md)
+│       │   ├── auth.ts            # bearer guard used by hooks.server.ts
+│       │   ├── paths.ts           # allowlist + symlink-safe resolution
+│       │   ├── manifest.ts        # tree walk, byte hashes, cursor
+│       │   ├── files.ts           # If-Match rules, read/write/delete
+│       │   ├── tombstones.ts      # deletion records + prune
+│       │   └── vaultId.ts         # vault_id minting, persisted in info.md
 │       └── vault/
 │           ├── watcher.ts      # chokidar + echo suppression + burst mode
 │           ├── reader.ts, writer.ts, save.ts
@@ -371,6 +387,8 @@ The container binds `0.0.0.0:3000` so anything on your LAN can reach it. To use 
 - **Plain LAN access** — fine when you're home; the PWA caches enough that you can browse offline anywhere, but new search/discover calls need network.
 
 Do not expose Restauranteer directly to the public internet. It can modify Markdown files and write attachments in the mounted vault folder. See `SECURITY.md`.
+
+The sync API (`/api/sync/*`, for the iOS companion app) is the one bearer-authenticated surface — it stays disabled until you set `RESTAURANTEER_SYNC_TOKEN`, and it requires HTTPS because the token travels on every request. `tailscale cert` + MagicDNS, or Traefik + Let's Encrypt, both work; see [docs/sync-api.md](docs/sync-api.md).
 
 ## Data & privacy
 

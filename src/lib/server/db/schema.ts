@@ -109,6 +109,17 @@ const MIGRATIONS: string[] = [
 	// so the vault list can show review state without re-parsing every body.
 	`
 	ALTER TABLE restaurants ADD COLUMN visit_summary_json TEXT;
+	`,
+	// v6 — deletion tombstones for the sync API. Without them "absent from the
+	// manifest" is ambiguous between *deleted here* and *new on the client*.
+	// `path` is vault-root-relative and POSIX-separated (e.g. Restaurants/Etta.md).
+	`
+	CREATE TABLE IF NOT EXISTS sync_tombstones (
+		path TEXT PRIMARY KEY,
+		deleted_at INTEGER NOT NULL,
+		last_sha TEXT
+	);
+	CREATE INDEX IF NOT EXISTS idx_sync_tombstones_deleted_at ON sync_tombstones(deleted_at);
 	`
 ];
 

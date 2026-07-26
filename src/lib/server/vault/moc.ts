@@ -4,6 +4,7 @@ import { listsDir } from '../config';
 import { parse, stringify } from './frontmatter';
 import { atomicWriteText } from './writer';
 import { getDistinctLists, getRestaurantNamesForList } from '../db/queries';
+import { recordVaultDeletion } from '../sync/tombstones';
 import { log } from '../log';
 
 const SENTINEL = {
@@ -193,6 +194,7 @@ export async function writeMocForList(listName: string): Promise<void> {
 		}
 		try {
 			await unlink(filePath);
+			recordVaultDeletion(filePath);
 			log.debug('Removed empty MOC', { listName });
 		} catch {
 			// ignore missing
@@ -266,6 +268,7 @@ export async function regenerateAllMocs(): Promise<void> {
 		if (!activeLists.has(info.listName.toLowerCase()) && !info.createdManually) {
 			try {
 				await unlink(info.filePath);
+				recordVaultDeletion(info.filePath);
 				log.debug('Removed stale MOC', { listName: info.listName });
 			} catch {
 				// ignore

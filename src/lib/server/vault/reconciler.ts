@@ -5,6 +5,7 @@ import { isMocFile } from './moc';
 import { restaurantsDir } from '../config';
 import { upsertRestaurant, deleteRestaurantByPath, listKnownPaths } from '../db/queries';
 import { setMeta } from '../db/schema';
+import { recordVaultDeletion } from '../sync/tombstones';
 import { log } from '../log';
 
 export type ReconcileResult = {
@@ -52,8 +53,11 @@ export async function fullReconcile(): Promise<ReconcileResult> {
 		}
 	}
 
-	for (const orphanPath of known.keys()) {
+	// Anything still in `known` was indexed last time but is gone from disk now.
+	// Tombstone it so sync clients delete their copy instead of re-uploading it.
+	for (const [orphanPath, orphanSha] of known) {
 		deleteRestaurantByPath(orphanPath);
+		recordVaultDeletion(orphanPath, orphanSha);
 	}
 	const removed = known.size;
 
