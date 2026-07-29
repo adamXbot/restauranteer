@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import type { PageData } from './$types';
 	import PhotoCarousel from '$lib/components/PhotoCarousel.svelte';
 	import ActionRow from '$lib/components/ActionRow.svelte';
@@ -13,6 +14,15 @@
 	let error = $state<string | null>(null);
 
 	const cuisine = $derived(cuisinesFromTypes(data.place.types));
+	// When opened from the map (on /near or /discover), send Back there (with its
+	// search preserved) and carry the origin through to the vault page.
+	const fromParam = $derived(page.url.searchParams.get('from'));
+	const backHref = $derived(
+		fromParam === 'near' ? '/near' : fromParam === 'discover' ? '/discover' : '/'
+	);
+	const vaultQuery = $derived(
+		fromParam === 'near' || fromParam === 'discover' ? `?from=${fromParam}` : ''
+	);
 
 	async function addToVault() {
 		adding = true;
@@ -29,7 +39,7 @@
 				return;
 			}
 			const json = (await res.json()) as { uuid: string };
-			await goto(`/restaurant/${json.uuid}`);
+			await goto(`/restaurant/${json.uuid}${vaultQuery}`);
 		} catch (e) {
 			error = String(e);
 			adding = false;
@@ -38,7 +48,7 @@
 </script>
 
 <header class="px-5 pt-6 pb-2">
-	<BackLink href="/" />
+	<BackLink href={backHref} />
 	<h1 class="mt-2 text-2xl font-semibold text-primary">{data.place.name}</h1>
 	{#if data.place.address}
 		<p class="mt-0.5 text-sm text-secondary">{data.place.address}</p>
@@ -67,7 +77,7 @@
 <div class="px-5 pt-4">
 	{#if data.vaultUuid}
 		<a
-			href={`/restaurant/${data.vaultUuid}`}
+			href={`/restaurant/${data.vaultUuid}${vaultQuery}`}
 			class="block w-full rounded-2xl bg-panel-3 px-5 py-3 text-center text-sm font-medium text-primary"
 		>
 			★ Already in your vault — open

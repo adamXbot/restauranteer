@@ -12,7 +12,9 @@ describe('web manifest theming', () => {
 		const manifest = buildWebManifest(prefs, manifestBrightnessFromSearchParams(params, prefs));
 
 		expect(manifest.theme_color).toBe('#f7faf4');
-		expect(manifest.background_color).toBe('#f7faf4');
+		// Splash background stays the dark brand canvas even in light mode so the
+		// cream app icon reads against it (matches the static iOS splash).
+		expect(manifest.background_color).toBe('#020617');
 		expect(manifest.share_target.action).toBe('/inbox');
 	});
 
@@ -23,7 +25,7 @@ describe('web manifest theming', () => {
 
 		expect(prefs.theme_accent).toBe('#ff00aa');
 		expect(manifest.theme_color).toBe('#061014');
-		expect(manifest.background_color).toBe('#061014');
+		expect(manifest.background_color).toBe('#020617');
 	});
 
 	it('falls back to dark for system manifests without a runtime brightness query', () => {

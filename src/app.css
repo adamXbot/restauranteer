@@ -167,6 +167,18 @@ button {
 	margin-top: 0.5rem;
 	max-width: 100%;
 }
+/* Collapsed per-dish photos render as small thumbnails (they also appear in
+   "Your photos"). Dish photos are images inside list items; visit-level photos
+   are top-level and stay full-size. */
+.md-visit.dishes-collapsed li img {
+	width: 3.5rem;
+	height: 3.5rem;
+	margin-top: 0.25rem;
+	margin-right: 0.25rem;
+	object-fit: cover;
+	display: inline-block;
+	vertical-align: middle;
+}
 .md-body ul,
 .md-body ol {
 	padding-left: 1.25rem;

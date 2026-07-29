@@ -25,6 +25,7 @@
 	} from '$lib/swCache';
 	import AttributeDefinitionSheet from '$lib/components/AttributeDefinitionSheet.svelte';
 	import { uniqueAttributeId, type AttributeDefinition } from '$lib/attributes';
+	import { connectivity, OFFLINE_WRITE_MESSAGE } from '$lib/connectivity.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -32,6 +33,32 @@
 	let busyReconcile = $state(false);
 	let busyPref = $state(false);
 	let lastMsg = $state<string | null>(null);
+
+	// Vault grid/list layout — a per-device display choice (localStorage), not a
+	// synced server preference. The vault home reads the same key on load.
+	const VAULT_VIEW_STORAGE_KEY = 'restauranteer.vaultView';
+	let vaultView = $state<'grid' | 'list'>('grid');
+	function setVaultView(next: 'grid' | 'list') {
+		vaultView = next;
+		try {
+			localStorage.setItem(VAULT_VIEW_STORAGE_KEY, next);
+			lastMsg = 'Vault view saved';
+		} catch {
+			// ignore
+		}
+	}
+
+	const DETAIL_LAYOUT_STORAGE_KEY = 'restauranteer.detailLayout';
+	let detailLayout = $state<'two' | 'stacked'>('two');
+	function setDetailLayout(next: 'two' | 'stacked') {
+		detailLayout = next;
+		try {
+			localStorage.setItem(DETAIL_LAYOUT_STORAGE_KEY, next);
+			lastMsg = 'Restaurant page layout saved';
+		} catch {
+			// ignore
+		}
+	}
 
 	let offlineStats = $state<CacheStats>({
 		caches: [],
@@ -208,6 +235,18 @@
 
 	onMount(() => {
 		void refreshOffline();
+		try {
+			const v = localStorage.getItem(VAULT_VIEW_STORAGE_KEY);
+			if (v === 'grid' || v === 'list') vaultView = v;
+		} catch {
+			// ignore
+		}
+		try {
+			const dl = localStorage.getItem(DETAIL_LAYOUT_STORAGE_KEY);
+			if (dl === 'two' || dl === 'stacked') detailLayout = dl;
+		} catch {
+			// ignore
+		}
 		const media = window.matchMedia('(prefers-color-scheme: dark)');
 		const updateSystemDark = () => {
 			systemDark = media.matches;
@@ -222,6 +261,7 @@
 	});
 
 	async function setPreference(key: string, value: unknown) {
+		if (!connectivity.online) { lastMsg = OFFLINE_WRITE_MESSAGE; return; }
 		busyPref = true;
 		try {
 			const res = await fetch('/api/settings/preferences', {
@@ -463,6 +503,65 @@
 
 <section class="mt-6 px-5">
 	<h2 class="text-xs tracking-widest text-tertiary uppercase">Preferences</h2>
+
+	<div class="mt-2 rounded-xl border border-line bg-panel/60 px-3 py-2.5">
+		<p class="text-sm text-primary">Vault view</p>
+		<p class="mt-0.5 text-[11px] text-tertiary">Wide screens · saved on this device</p>
+		<div class="mt-2 grid grid-cols-2 gap-2">
+			<button
+				type="button"
+				onclick={() => setVaultView('grid')}
+				class="rounded-lg px-2.5 py-1.5 text-xs"
+				class:bg-accent={vaultView === 'grid'}
+				class:text-on-accent={vaultView === 'grid'}
+				class:bg-panel-2={vaultView !== 'grid'}
+				class:text-secondary={vaultView !== 'grid'}
+			>
+				Grid
+			</button>
+			<button
+				type="button"
+				onclick={() => setVaultView('list')}
+				class="rounded-lg px-2.5 py-1.5 text-xs"
+				class:bg-accent={vaultView === 'list'}
+				class:text-on-accent={vaultView === 'list'}
+				class:bg-panel-2={vaultView !== 'list'}
+				class:text-secondary={vaultView !== 'list'}
+			>
+				List
+			</button>
+		</div>
+	</div>
+
+	<div class="mt-3 rounded-xl border border-line bg-panel/60 px-3 py-2.5">
+		<p class="text-sm text-primary">Restaurant page</p>
+		<p class="mt-0.5 text-[11px] text-tertiary">Wide screens · saved on this device</p>
+		<div class="mt-2 grid grid-cols-2 gap-2">
+			<button
+				type="button"
+				onclick={() => setDetailLayout('two')}
+				class="rounded-lg px-2.5 py-1.5 text-xs"
+				class:bg-accent={detailLayout === 'two'}
+				class:text-on-accent={detailLayout === 'two'}
+				class:bg-panel-2={detailLayout !== 'two'}
+				class:text-secondary={detailLayout !== 'two'}
+			>
+				Two-column
+			</button>
+			<button
+				type="button"
+				onclick={() => setDetailLayout('stacked')}
+				class="rounded-lg px-2.5 py-1.5 text-xs"
+				class:bg-accent={detailLayout === 'stacked'}
+				class:text-on-accent={detailLayout === 'stacked'}
+				class:bg-panel-2={detailLayout !== 'stacked'}
+				class:text-secondary={detailLayout !== 'stacked'}
+			>
+				Stacked
+			</button>
+		</div>
+	</div>
+
 	<button
 		type="button"
 		onclick={() => setPreference('show_review_summary', !data.preferences.show_review_summary)}
@@ -533,6 +632,33 @@
 			class:text-secondary={!data.preferences.food_breakdown || !data.preferences.per_area_ratings}
 		>
 			{data.preferences.food_breakdown ? 'On' : 'Off'}
+		</span>
+	</button>
+
+	<button
+		type="button"
+		onclick={() => setPreference('collapse_dish_photos', !data.preferences.collapse_dish_photos)}
+		disabled={busyPref}
+		class="mt-3 flex w-full items-center justify-between rounded-xl border border-line bg-panel/60 px-3 py-2.5 text-left disabled:opacity-50"
+	>
+		<div>
+			<p class="text-sm text-primary">Collapse dish photos</p>
+			<p class="mt-0.5 text-[11px] text-tertiary">
+				{#if data.preferences.collapse_dish_photos}
+					Show dish photos as small thumbnails (tap to enlarge)
+				{:else}
+					Show dish photos full-size in each visit
+				{/if}
+			</p>
+		</div>
+		<span
+			class="rounded-full px-2.5 py-1 text-xs"
+			class:bg-accent={data.preferences.collapse_dish_photos}
+			class:text-on-accent={data.preferences.collapse_dish_photos}
+			class:bg-panel-2={!data.preferences.collapse_dish_photos}
+			class:text-secondary={!data.preferences.collapse_dish_photos}
+		>
+			{data.preferences.collapse_dish_photos ? 'On' : 'Off'}
 		</span>
 	</button>
 

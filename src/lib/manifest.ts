@@ -53,7 +53,10 @@ export function buildWebManifest(
 		short_name: 'Restauranteer',
 		description: 'Your pocket restaurant companion',
 		theme_color: colors.canvas,
-		background_color: colors.canvas,
+		// Splash background stays the dark brand canvas in every mode so the cream
+		// app icon reads on both light and dark — matching the static iOS splash
+		// (see scripts/gen-splash.mjs). theme_color still follows the chosen mode.
+		background_color: '#020617',
 		display: 'standalone',
 		orientation: 'portrait',
 		start_url: '/',

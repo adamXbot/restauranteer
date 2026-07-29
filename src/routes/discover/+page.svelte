@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import MergePicker from '$lib/components/MergePicker.svelte';
@@ -6,6 +7,8 @@
 	import GoogleListPreview from '$lib/components/GoogleListPreview.svelte';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import DisclosureSection from '$lib/components/DisclosureSection.svelte';
+	import NearMap from '$lib/components/NearMap.svelte';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 
 	type Listing = {
 		source: string;
@@ -106,6 +109,59 @@
 	let listError = $state<string | null>(null);
 	let lastSearchedSuburb = $state<string | null>(null);
 	let browseOpen = $state(false);
+
+	// "From the guides" — always-on source feeds fanned out across browsable
+	// adapters (city-wide today, e.g. Time Out; suburb feeds join once a suburb
+	// is known). Populated on mount so Discover isn't a blank router.
+	type Feed = {
+		source: string;
+		label: string;
+		scope: 'city' | 'suburb';
+		city: string;
+		suburb: string | null;
+		listings: Listing[];
+	};
+	let feeds = $state<Feed[]>([]);
+	let feedsLoading = $state(false);
+
+	// Rail snapshot pushed up from the embedded NearMap (pin-driven results).
+	type NearRailItem = {
+		key: string;
+		name: string;
+		subtitle: string | null;
+		rating: number | null;
+		distance: string | null;
+		source: 'vault' | 'google';
+		href: string;
+	};
+	let nearby = $state<{ hasCenter: boolean; loading: boolean; items: NearRailItem[] }>({
+		hasCenter: false,
+		loading: false,
+		items: []
+	});
+
+	function feedTitle(f: Feed): string {
+		const base = f.scope === 'suburb' ? `New on ${f.label}` : `${f.label} · Top rated`;
+		return f.suburb ? `${base} · ${f.suburb}` : base;
+	}
+
+	async function loadFeeds(refresh = false) {
+		feedsLoading = true;
+		try {
+			const params = new URLSearchParams({ city });
+			if (refresh) params.set('refresh', '1');
+			const res = await fetch(`/api/discover/feeds?${params.toString()}`);
+			if (res.ok) feeds = ((await res.json()) as { feeds: Feed[] }).feeds;
+		} catch {
+			// Feeds are best-effort; the rest of Discover still works offline.
+		} finally {
+			feedsLoading = false;
+		}
+	}
+
+	onMount(() => {
+		if (data.australianCentric) void loadFeeds();
+	});
 
 	type Suburb = { slug: string; label: string };
 	let suburbOptions = $state<Suburb[]>([]);
@@ -223,30 +279,6 @@
 			listError = String(e);
 		} finally {
 			loading = false;
-		}
-	}
-
-	let clearing = $state(false);
-	let clearMsg = $state<string | null>(null);
-	async function clearAllCache() {
-		if (!confirm('Wipe every cached page from every source? Next load re-fetches everything.')) {
-			return;
-		}
-		clearing = true;
-		clearMsg = null;
-		try {
-			const res = await fetch('/api/cache?all=1', { method: 'DELETE' });
-			if (!res.ok) {
-				clearMsg = `Failed: ${res.status}`;
-			} else {
-				const data = (await res.json()) as { cleared: number };
-				clearMsg = `Cleared ${data.cleared} entries.`;
-				listings = [];
-			}
-		} catch (e) {
-			clearMsg = String(e);
-		} finally {
-			clearing = false;
 		}
 	}
 
@@ -449,62 +481,162 @@
 <header class="px-5 pt-6 pb-2">
 	<BackLink href="/" />
 	<h1 class="mt-2 text-2xl font-semibold text-primary">Discover</h1>
-	<p class="mt-1 text-sm text-secondary">Find or import places.</p>
+	<p class="mt-1 text-sm text-secondary">Find somewhere new — then save it to your vault.</p>
 </header>
 
-<section class="grid gap-2 px-5 pt-3">
-	<a
-		href="/near"
-		class="flex items-center justify-between gap-3 rounded-2xl bg-accent px-4 py-3 text-sm font-medium text-on-accent shadow-lg shadow-accent/20"
-	>
-		<span class="flex items-center gap-2">
-			<svg
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.8"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				class="h-5 w-5"
-				aria-hidden="true"
-			>
-				<path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z" />
-				<circle cx="12" cy="10" r="3" />
-			</svg>
-			Near me
-		</span>
-		<span class="text-xs text-on-accent/80">Map search →</span>
-	</a>
+<div class="px-5 pt-3">
+	<SearchBar allowImport placeholder="Search a name, or paste a link…" />
+</div>
+
+{#if data.inboxCount > 0}
 	<a
 		href="/inbox"
-		class="flex items-center justify-between gap-3 rounded-2xl border border-line bg-panel/60 px-4 py-3 text-sm text-secondary transition-colors hover:border-line-strong hover:bg-panel"
+		class="mx-5 mt-3 flex items-center gap-3 rounded-xl border border-accent/40 bg-accent-soft px-3.5 py-2.5"
 	>
-		<span class="flex items-center gap-2">
-			<svg
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.8"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				class="h-5 w-5 text-accent"
-				aria-hidden="true"
-			>
-				<path d="M3 7h18M3 12h18M3 17h18" />
-			</svg>
-			<span>
-				<span class="block">Paste a URL</span>
-				<span class="block text-[11px] text-tertiary">Import or save</span>
-			</span>
+		<span
+			class="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-on-accent"
+			aria-hidden="true">{data.inboxCount > 9 ? '9+' : data.inboxCount}</span
+		>
+		<span class="text-sm text-secondary">
+			<span class="font-medium text-primary"
+				>{data.inboxCount} {data.inboxCount === 1 ? 'link' : 'links'} to sort</span
+			> — pasted but not filed yet
 		</span>
-		<span class="text-xs text-tertiary">Inbox →</span>
+		<span class="ml-auto text-xs font-medium text-accent">Open inbox →</span>
 	</a>
-	{#if data.australianCentric}
+{/if}
+
+<NearMap
+	preferences={data.near.preferences}
+	appleAvailable={data.near.appleAvailable}
+	googleMapsKey={data.near.googleMapsKey}
+	mapboxToken={data.near.mapboxToken}
+	googleEnabled={data.near.googleEnabled}
+	allCuisines={data.near.cuisines}
+	from="discover"
+	hideResults
+	onState={(s) => (nearby = s)}
+/>
+
+<section class="px-5 pt-4">
+	<h2 class="mb-2 text-xs font-semibold tracking-widest text-tertiary uppercase">Near your pin</h2>
+	{#if nearby.hasCenter}
+		{#if nearby.loading && nearby.items.length === 0}
+			<p class="text-sm text-tertiary">Searching nearby…</p>
+		{:else if nearby.items.length > 0}
+			<div class="flex gap-3 overflow-x-auto pb-2">
+				{#each nearby.items as it (it.key)}
+					<a
+						href={it.href}
+						class="flex w-48 flex-none flex-col rounded-2xl border border-line bg-panel/50 p-3"
+					>
+						<div class="flex items-center gap-2">
+							<span
+								class="text-[10px] tracking-widest uppercase"
+								class:text-accent={it.source === 'vault'}
+								class:text-tertiary={it.source === 'google'}
+								>{it.source === 'vault' ? '★ Vault' : 'Google'}</span
+							>
+							{#if it.distance}<span class="text-[10px] text-tertiary">{it.distance}</span>{/if}
+						</div>
+						<h3 class="mt-1 line-clamp-1 text-sm font-medium text-primary">{it.name}</h3>
+						{#if it.subtitle}<p class="truncate text-xs text-secondary">{it.subtitle}</p>{/if}
+						{#if it.rating != null}<span class="mt-1 text-xs text-rating">★ {it.rating}</span>{/if}
+					</a>
+				{/each}
+			</div>
+		{:else}
+			<p class="text-sm text-tertiary">Nothing nearby within range — widen the radius above.</p>
+		{/if}
+	{:else}
+		<div
+			class="rounded-2xl border border-dashed border-line-strong bg-panel/30 p-4 text-sm text-tertiary"
+		>
+			See what's around you — use the map (📍 Use my location, or tap a spot) and nearby places show up
+			here.
+		</div>
+	{/if}
+</section>
+
+{#if data.australianCentric && (feedsLoading || feeds.length > 0)}
+	<section class="px-5 pt-5">
+		<div class="border-t border-line pt-4">
+			<p class="text-[11px] font-semibold tracking-[0.16em] text-accent uppercase">
+				From the guides · {city}
+			</p>
+			<h2 class="mt-1 text-lg font-semibold text-primary">Editors' picks &amp; fresh reviews</h2>
+			<p class="mt-0.5 text-xs text-tertiary">
+				Curated from the publications — already in your vault is marked.
+			</p>
+		</div>
+		{#if feedsLoading && feeds.length === 0}
+			<p class="mt-4 text-sm text-tertiary">Loading feeds…</p>
+		{/if}
+		{#each feeds as f (f.source + f.scope)}
+			<div class="mt-5">
+				<h3 class="mb-2 text-xs font-semibold tracking-widest text-tertiary uppercase">
+					{feedTitle(f)}
+				</h3>
+				<div class="flex gap-3 overflow-x-auto pb-2">
+					{#each f.listings as l (l.url)}
+						<article
+							class="flex w-52 flex-none flex-col overflow-hidden rounded-2xl border border-line bg-panel/50"
+						>
+							<div class="h-24 w-full bg-panel-2">
+								{#if l.image_url}
+									<img
+										src={l.image_url}
+										alt=""
+										loading="lazy"
+										class="h-full w-full object-cover"
+										referrerpolicy="no-referrer"
+									/>
+								{/if}
+							</div>
+							<div class="flex flex-1 flex-col p-3">
+								<h4 class="line-clamp-2 text-sm font-medium text-primary">{l.title}</h4>
+								{#if l.suburb}<p class="mt-0.5 text-[11px] text-tertiary">{l.suburb}</p>{/if}
+								<div class="mt-auto flex items-center justify-between gap-2 pt-2">
+									<a
+										href={l.url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-[11px] text-tertiary underline decoration-line-strong underline-offset-2"
+									>
+										Read ↗
+									</a>
+									{#if l.vault_uuid}
+										<a
+											href={`/restaurant/${l.vault_uuid}`}
+											class="text-[11px] font-medium text-success">★ In vault</a
+										>
+									{:else}
+										<button
+											type="button"
+											onclick={() => importListing(l)}
+											disabled={importingUrl === l.url}
+											class="rounded-lg bg-accent px-2.5 py-1 text-[11px] font-medium text-on-accent disabled:opacity-50"
+										>
+											{importingUrl === l.url ? '…' : '+ Add'}
+										</button>
+									{/if}
+								</div>
+							</div>
+						</article>
+					{/each}
+				</div>
+			</div>
+		{/each}
+	</section>
+{/if}
+
+{#if data.australianCentric}
+	<section class="px-5 pt-4">
 		<button
 			type="button"
 			onclick={() => (browseOpen = !browseOpen)}
 			aria-expanded={browseOpen}
-			class="flex items-center justify-between gap-3 rounded-2xl border border-line bg-panel/60 px-4 py-3 text-left text-sm text-secondary transition-colors hover:border-line-strong hover:bg-panel"
+			class="flex w-full items-center justify-between gap-3 rounded-2xl border border-line bg-panel/60 px-4 py-3 text-left text-sm text-secondary transition-colors hover:border-line-strong hover:bg-panel"
 		>
 			<span class="flex items-center gap-2">
 				<svg
@@ -521,17 +653,17 @@
 					<path d="M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z" />
 				</svg>
 				<span>
-					<span class="block">Browse</span>
-					<span class="block text-[11px] text-tertiary">Reviews by city</span>
+					<span class="block">Browse all guides</span>
+					<span class="block text-[11px] text-tertiary">Pick a source and suburb</span>
 				</span>
 			</span>
 			<span class="text-xs text-tertiary">{browseOpen ? 'Hide' : 'Open'} →</span>
 		</button>
-	{/if}
-</section>
+	</section>
+{/if}
 
 {#if browseOpen && data.australianCentric}
-<section class="px-5 pt-5 pb-2">
+<section class="px-5 pt-3 pb-2">
 	<h2 class="text-xs tracking-widest text-tertiary uppercase">Browse publications</h2>
 	{#if browsableSources.length === 0}
 		<p class="mt-2 text-xs text-tertiary">No browsable sources right now.</p>
@@ -640,18 +772,6 @@
 				No entries in {lastSearchedSuburb}. Try another suburb.
 			</p>
 		{/if}
-		<div class="mt-3">
-			<DisclosureSection title="Cache" meta={clearMsg ?? 'Source pages'}>
-				<button
-					type="button"
-					onclick={clearAllCache}
-					disabled={clearing}
-					class="rounded-xl border border-line-strong bg-panel px-3 py-2 text-xs text-secondary disabled:opacity-50"
-				>
-					{clearing ? 'Clearing…' : 'Clear cached pages'}
-				</button>
-			</DisclosureSection>
-		</div>
 	{/if}
 </section>
 {/if}
@@ -899,7 +1019,7 @@
 							rel="noopener noreferrer"
 							class="text-xs text-tertiary underline decoration-line-strong underline-offset-2"
 						>
-							Read on {l.source === 'broadsheet' ? 'Broadsheet' : 'Good Food'} ↗
+							Read on {SOURCE_LABEL[l.source] ?? l.source} ↗
 						</a>
 						{#if l.vault_uuid}
 							<a

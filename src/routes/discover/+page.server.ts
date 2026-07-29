@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { adapters } from '$lib/server/providers/scraper/registry';
 import { getPreferences } from '$lib/server/preferences';
+import { nearMapData } from '$lib/server/nearData';
 
 export const load: PageServerLoad = () => {
 	const prefs = getPreferences();
@@ -12,6 +13,8 @@ export const load: PageServerLoad = () => {
 			suburbBrowsable: a.suburbBrowsable,
 			cityBrowsable: a.cityBrowsable
 		})),
-		australianCentric: prefs.australian_centric
+		australianCentric: prefs.australian_centric,
+		// Map keys/preferences/cuisines for the shared NearMap component.
+		near: nearMapData()
 	};
 };

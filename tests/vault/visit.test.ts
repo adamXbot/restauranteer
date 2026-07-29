@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	appendVisitToBody,
 	extractImagePaths,
+	extractVisitsForIndex,
 	formatVisitForShare,
 	parseVisitFields,
 	parseVisits,
@@ -259,6 +260,35 @@ describe('parseVisitFields', () => {
 		const fields = parseVisitFields(v[0]);
 		expect(fields.vibeRating).toBe(3);
 		expect(fields.vibe).toBeNull();
+	});
+});
+
+describe('extractVisitsForIndex', () => {
+	it('flattens each visit with derived ratings and a first photo', () => {
+		const rows = extractVisitsForIndex(SAMPLE_BODY);
+		expect(rows).toHaveLength(2);
+
+		// Plain visit: explicit single rating, no per-area stars.
+		expect(rows[0].index).toBe(0);
+		expect(rows[0].date).toBe('2026-05-15');
+		expect(rows[0].meal).toBe('Lunch');
+		expect(rows[0].overallRating).toBe(4);
+		expect(rows[0].vibeRating).toBeNull();
+		expect(rows[0].foodRating).toBeNull();
+		expect(rows[0].photo).toBe('_attachments/cumulus-inc/2026-05-15-001.jpg');
+		expect(rows[0].notesExcerpt).toContain('Loved it.');
+
+		// Area-rated visit: overall is the average of the area ratings.
+		expect(rows[1].date).toBe('2026-05-18');
+		expect(rows[1].vibeRating).toBe(4);
+		expect(rows[1].foodRating).toBe(5);
+		expect(rows[1].qualityRating).toBeNull();
+		expect(rows[1].overallRating).toBe(4.5);
+		expect(rows[1].photo).toBeNull();
+	});
+
+	it('returns an empty array when there are no visits', () => {
+		expect(extractVisitsForIndex('## Overview\n\nJust prose.')).toEqual([]);
 	});
 });
 

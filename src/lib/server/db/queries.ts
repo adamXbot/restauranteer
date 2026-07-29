@@ -1,6 +1,6 @@
 import path from 'node:path';
 import type { RestaurantFile } from '../vault/types';
-import { summarizeBody, type VisitSummary } from '../vault/visit';
+import { extractVisitsForIndex, summarizeBody, type VisitSummary } from '../vault/visit';
 import { getDb } from './schema';
 
 export type IndexedRestaurant = {
@@ -101,6 +101,13 @@ export function upsertRestaurant(rf: RestaurantFile): void {
 	const insertTag = db.prepare('INSERT INTO tags (restaurant_uuid, tag) VALUES (?, ?)');
 	const deleteLists = db.prepare('DELETE FROM lists WHERE restaurant_uuid = ?');
 	const insertList = db.prepare('INSERT INTO lists (restaurant_uuid, list_name) VALUES (?, ?)');
+	const deleteVisits = db.prepare('DELETE FROM visits WHERE restaurant_uuid = ?');
+	const insertVisit = db.prepare(`
+		INSERT INTO visits (
+			restaurant_uuid, visit_index, date, meal, overall_rating,
+			vibe_rating, food_rating, quality_rating, service_rating, notes_excerpt, photo_path
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`);
 	const deleteFts = db.prepare('DELETE FROM restaurants_fts WHERE uuid = ?');
 	const insertFts = db.prepare(`
 		INSERT INTO restaurants_fts (uuid, name, aliases, address, tags, body)
@@ -141,6 +148,23 @@ export function upsertRestaurant(rf: RestaurantFile): void {
 		deleteLists.run(uuid);
 		if (Array.isArray(fm.lists)) {
 			for (const listName of fm.lists) insertList.run(uuid, String(listName));
+		}
+
+		deleteVisits.run(uuid);
+		for (const v of extractVisitsForIndex(rf.body)) {
+			insertVisit.run(
+				uuid,
+				v.index,
+				v.date,
+				v.meal,
+				v.overallRating,
+				v.vibeRating,
+				v.foodRating,
+				v.qualityRating,
+				v.serviceRating,
+				v.notesExcerpt,
+				v.photo
+			);
 		}
 
 		deleteFts.run(uuid);
@@ -203,6 +227,81 @@ export function getAllRestaurants(): IndexedRestaurant[] {
 		.prepare('SELECT * FROM restaurants ORDER BY name COLLATE NOCASE')
 		.all() as RestaurantRow[];
 	return rows.map((r) => hydrate(r));
+}
+
+export type IndexedVisit = {
+	restaurantUuid: string;
+	restaurantName: string;
+	suburb: string | null;
+	index: number;
+	date: string;
+	meal: string | null;
+	overallRating: number | null;
+	vibeRating: number | null;
+	foodRating: number | null;
+	qualityRating: number | null;
+	serviceRating: number | null;
+	notesExcerpt: string | null;
+	photo: string | null;
+};
+
+type VisitRow = {
+	restaurant_uuid: string;
+	restaurant_name: string;
+	suburb: string | null;
+	visit_index: number;
+	date: string;
+	meal: string | null;
+	overall_rating: number | null;
+	vibe_rating: number | null;
+	food_rating: number | null;
+	quality_rating: number | null;
+	service_rating: number | null;
+	notes_excerpt: string | null;
+	photo_path: string | null;
+};
+
+/**
+ * Every visit across every restaurant, newest first. Powers the home "Visits"
+ * feed; callers re-sort client-side by the chosen mode.
+ */
+export function getAllVisits(): IndexedVisit[] {
+	const db = getDb();
+	const rows = db
+		.prepare(
+			`SELECT v.restaurant_uuid,
+			        r.name AS restaurant_name,
+			        json_extract(r.frontmatter_json, '$.suburb') AS suburb,
+			        v.visit_index,
+			        v.date,
+			        v.meal,
+			        v.overall_rating,
+			        v.vibe_rating,
+			        v.food_rating,
+			        v.quality_rating,
+			        v.service_rating,
+			        v.notes_excerpt,
+			        v.photo_path
+			 FROM visits v
+			 JOIN restaurants r ON r.uuid = v.restaurant_uuid
+			 ORDER BY v.date DESC, r.name COLLATE NOCASE`
+		)
+		.all() as VisitRow[];
+	return rows.map((r) => ({
+		restaurantUuid: r.restaurant_uuid,
+		restaurantName: r.restaurant_name,
+		suburb: typeof r.suburb === 'string' && r.suburb.length > 0 ? r.suburb : null,
+		index: r.visit_index,
+		date: r.date,
+		meal: r.meal,
+		overallRating: r.overall_rating,
+		vibeRating: r.vibe_rating,
+		foodRating: r.food_rating,
+		qualityRating: r.quality_rating,
+		serviceRating: r.service_rating,
+		notesExcerpt: r.notes_excerpt,
+		photo: r.photo_path
+	}));
 }
 
 export function getRestaurantByUuid(uuid: string): IndexedRestaurant | null {

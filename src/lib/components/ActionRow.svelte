@@ -14,8 +14,10 @@
 		navigationApp: NavigationApp;
 		inVault: boolean;
 		onEnrich?: (field: EnrichField) => void;
+		/** Drop the page-level padding when embedded in a card/rail. */
+		bare?: boolean;
 	};
-	let { phone, website, address, lat, lng, name, navigationApp, inVault, onEnrich }: Props = $props();
+	let { phone, website, address, lat, lng, name, navigationApp, inVault, onEnrich, bare = false }: Props = $props();
 
 	const telHref = $derived(phone ? `tel:${phone.replace(/[^+\d]/g, '')}` : null);
 	const navHref = $derived(
@@ -28,7 +30,7 @@
 	const canEnrich = $derived(inVault && !!onEnrich);
 </script>
 
-<nav class="grid grid-cols-3 gap-2 px-5 pt-4 text-xs text-secondary">
+<nav class="grid grid-cols-3 gap-2 text-xs text-secondary {bare ? '' : 'px-5 pt-4'}">
 	{#if telHref}
 		<a
 			href={telHref}
