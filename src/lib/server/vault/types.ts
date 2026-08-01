@@ -37,6 +37,12 @@ export type Frontmatter = {
 	rating?: number;
 	attributes?: Record<string, AttributeValue>;
 	last_synced?: string;
+	/**
+	 * The chosen cover photo: a vault attachment path
+	 * (`_attachments/etta/x.jpg`) or a Google photo (`google:places/…`).
+	 * Absent means derive one — see `$lib/featuredImage`.
+	 */
+	featured_image?: string;
 	// MOC-only fields
 	generated_by?: string;
 	do_not_edit?: boolean;

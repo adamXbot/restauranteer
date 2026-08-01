@@ -297,7 +297,7 @@
 			{#each restaurants as r (r.uuid)}
 				{@const showUser = data.preferences.show_review_summary && r.visitSummary.count > 0}
 				{@const userRating = showUser ? (r.visitSummary.latest?.rating ?? null) : null}
-				{@const userPhoto = showUser ? (r.visitSummary.latest?.photo ?? null) : null}
+				{@const userPhoto = showUser ? r.coverPhoto : null}
 				<RestaurantCard
 					href={`/restaurant/${r.uuid}`}
 					name={r.name}
