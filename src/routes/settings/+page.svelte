@@ -346,6 +346,37 @@
 		}
 	}
 
+	// Pairing code. `pairing` holds the sync token, so it is fetched only when
+	// the operator asks and is dropped again by Hide — it never comes down with
+	// the page load.
+	type Pairing = { url: string; token: string; svg: string; localOnly: boolean };
+	let pairing = $state<Pairing | null>(null);
+	let pairingBusy = $state(false);
+	let pairingError = $state<string | null>(null);
+	let pairingUrl = $state('');
+	let pairingIndex = $state(0);
+
+	async function showPairingCode() {
+		pairingBusy = true;
+		pairingError = null;
+		try {
+			const res = await fetch('/api/settings/pairing', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ url: pairingUrl.trim() || undefined, index: pairingIndex })
+			});
+			if (!res.ok) {
+				pairingError = (await res.text()) || `Couldn't build a pairing code (${res.status}).`;
+				return;
+			}
+			pairing = (await res.json()) as Pairing;
+		} catch (e) {
+			pairingError = e instanceof Error ? e.message : 'Network error.';
+		} finally {
+			pairingBusy = false;
+		}
+	}
+
 	async function runReconcile() {
 		busyReconcile = true;
 		try {
@@ -859,6 +890,104 @@
 						</div>
 					{/each}
 				</dl>
+			</section>
+
+			<section class="border-b border-line pb-5">
+				<div class="mb-3 flex items-baseline justify-between gap-3">
+					<h3 class="text-sm font-medium text-primary">Pair a device</h3>
+					<span class="truncate text-[11px] text-tertiary">
+						{data.sync.enabled
+							? `sync on · ${data.sync.tokenCount} ${data.sync.tokenCount === 1 ? 'token' : 'tokens'}`
+							: 'sync off'}
+					</span>
+				</div>
+
+				{#if !data.sync.enabled}
+					<p class="text-[11px] text-tertiary">
+						Set <code class="font-mono">RESTAURANTEER_SYNC_TOKEN</code> in
+						<code class="font-mono">.env</code> and restart to let the iOS app sync with this server.
+					</p>
+				{:else}
+					<p class="text-[11px] text-tertiary">
+						Scan this in the app — Settings → Sync → Connect, or during first-run setup. The code
+						carries the address and the token, so there's nothing to type.
+					</p>
+
+					{@const originUsable = data.sync.suggestedUrl.startsWith('https://')}
+					<label class="mt-3 block">
+						<span class="text-[11px] text-tertiary">Address your phone should use</span>
+						<input
+							type="url"
+							bind:value={pairingUrl}
+							placeholder={originUsable ? data.sync.suggestedUrl : 'https://vault.tail1234.ts.net'}
+							class="mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 font-mono text-xs text-primary"
+						/>
+					</label>
+					{#if !originUsable}
+						<p class="mt-1 text-[11px] text-warning">
+							You're viewing this over <code class="font-mono">{data.sync.suggestedUrl}</code>, and
+							the app only connects over HTTPS — so enter the https address your phone should use.
+						</p>
+					{/if}
+
+					{#if data.sync.tokenCount > 1}
+						<label class="mt-2 block">
+							<span class="text-[11px] text-tertiary">Which token</span>
+							<select
+								bind:value={pairingIndex}
+								class="mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-xs text-primary"
+							>
+								{#each Array(data.sync.tokenCount) as _, i (i)}
+									<option value={i}>Token {i + 1}</option>
+								{/each}
+							</select>
+						</label>
+					{/if}
+
+					{#if pairing}
+						{#if pairing.localOnly}
+							<p class="mt-3 text-[11px] text-warning">
+								<code class="font-mono">{pairing.url}</code> is a local address. If your phone can't
+								reach it, enter the address it should use above and generate the code again.
+							</p>
+						{/if}
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- SVG built server-side by $lib/server/sync/pairing, never user input -->
+						<div class="mt-3 w-fit rounded-lg bg-white p-3">{@html pairing.svg}</div>
+						<dl class="mt-3 space-y-1 text-xs">
+							<div>
+								<dt class="text-tertiary">Address</dt>
+								<dd class="font-mono break-all text-secondary">{pairing.url}</dd>
+							</div>
+							<div>
+								<dt class="text-tertiary">Token</dt>
+								<dd class="font-mono break-all text-secondary">{pairing.token}</dd>
+							</div>
+						</dl>
+						<button
+							type="button"
+							onclick={() => (pairing = null)}
+							class="mt-3 rounded-lg border border-line px-3 py-2 text-xs text-primary"
+						>
+							Hide
+						</button>
+					{:else}
+						<button
+							type="button"
+							onclick={showPairingCode}
+							disabled={pairingBusy}
+							class="mt-3 rounded-lg border border-line px-3 py-2 text-xs text-primary disabled:opacity-50"
+						>
+							{pairingBusy ? 'Generating…' : 'Show pairing code'}
+						</button>
+						<p class="mt-2 text-[11px] text-tertiary">
+							The code contains your sync token — anyone who can see it can pair a device.
+						</p>
+					{/if}
+
+					{#if pairingError}
+						<p class="mt-2 text-[11px] text-danger">{pairingError}</p>
+					{/if}
+				{/if}
 			</section>
 
 			<section class="border-b border-line pb-5">
