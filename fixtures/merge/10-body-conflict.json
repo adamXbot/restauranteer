@@ -1,0 +1,231 @@
+{
+	"name": "10-body-conflict",
+	"input": {
+		"loaded": {
+			"frontmatter": {
+				"t": "map",
+				"v": [
+					[
+						"id",
+						{
+							"t": "str",
+							"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+						}
+					],
+					[
+						"schema_version",
+						{
+							"t": "int",
+							"v": "1"
+						}
+					],
+					[
+						"name",
+						{
+							"t": "str",
+							"v": "Cumulus Inc"
+						}
+					],
+					[
+						"tags",
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "str",
+									"v": "wine"
+								}
+							]
+						}
+					],
+					[
+						"rating",
+						{
+							"t": "int",
+							"v": "4"
+						}
+					],
+					[
+						"custom_key",
+						{
+							"t": "str",
+							"v": "kept"
+						}
+					]
+				]
+			},
+			"body": "## Overview\n\n## Visits\n"
+		},
+		"current": {
+			"frontmatter": {
+				"t": "map",
+				"v": [
+					[
+						"id",
+						{
+							"t": "str",
+							"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+						}
+					],
+					[
+						"schema_version",
+						{
+							"t": "int",
+							"v": "1"
+						}
+					],
+					[
+						"name",
+						{
+							"t": "str",
+							"v": "Cumulus Inc"
+						}
+					],
+					[
+						"tags",
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "str",
+									"v": "wine"
+								}
+							]
+						}
+					],
+					[
+						"rating",
+						{
+							"t": "int",
+							"v": "5"
+						}
+					],
+					[
+						"custom_key",
+						{
+							"t": "str",
+							"v": "kept"
+						}
+					]
+				]
+			},
+			"body": "## Overview\n\n## Visits\n\ndisk edit\n"
+		},
+		"pending": {
+			"frontmatter": {
+				"t": "map",
+				"v": [
+					[
+						"id",
+						{
+							"t": "str",
+							"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+						}
+					],
+					[
+						"schema_version",
+						{
+							"t": "int",
+							"v": "1"
+						}
+					],
+					[
+						"name",
+						{
+							"t": "str",
+							"v": "Cumulus Inc"
+						}
+					],
+					[
+						"tags",
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "str",
+									"v": "wine"
+								}
+							]
+						}
+					],
+					[
+						"rating",
+						{
+							"t": "int",
+							"v": "4"
+						}
+					],
+					[
+						"custom_key",
+						{
+							"t": "str",
+							"v": "kept"
+						}
+					]
+				]
+			},
+			"body": "## Overview\n\n## Visits\n\napp edit\n"
+		},
+		"dirtyFields": [],
+		"bodyDirty": true
+	},
+	"expected": {
+		"kind": "conflict",
+		"reason": "body",
+		"current": {
+			"frontmatter": {
+				"t": "map",
+				"v": [
+					[
+						"id",
+						{
+							"t": "str",
+							"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+						}
+					],
+					[
+						"schema_version",
+						{
+							"t": "int",
+							"v": "1"
+						}
+					],
+					[
+						"name",
+						{
+							"t": "str",
+							"v": "Cumulus Inc"
+						}
+					],
+					[
+						"tags",
+						{
+							"t": "arr",
+							"v": [
+								{
+									"t": "str",
+									"v": "wine"
+								}
+							]
+						}
+					],
+					[
+						"rating",
+						{
+							"t": "int",
+							"v": "5"
+						}
+					],
+					[
+						"custom_key",
+						{
+							"t": "str",
+							"v": "kept"
+						}
+					]
+				]
+			},
+			"body": "## Overview\n\n## Visits\n\ndisk edit\n"
+		}
+	}
+}

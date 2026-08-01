@@ -1,0 +1,8 @@
+{
+	"name": "12-comment-only-frontmatter",
+	"frontmatter": {
+		"t": "map",
+		"v": []
+	},
+	"body": "body\n"
+}

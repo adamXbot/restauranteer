@@ -1,0 +1,44 @@
+{
+	"name": "06-quoted-scalars",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"single",
+				{
+					"t": "str",
+					"v": "it's doubled"
+				}
+			],
+			[
+				"double",
+				{
+					"t": "str",
+					"v": "line\nbreak and tab\t"
+				}
+			],
+			[
+				"unicode_escape",
+				{
+					"t": "str",
+					"v": "star ★ astral 🍜"
+				}
+			],
+			[
+				"plain_inner_colon",
+				{
+					"t": "str",
+					"v": "a:b"
+				}
+			],
+			[
+				"single_keeps_backslash",
+				{
+					"t": "str",
+					"v": "no\\escape"
+				}
+			]
+		]
+	},
+	"body": ""
+}

@@ -1,0 +1,75 @@
+{
+	"name": "03-em-dash-vs-hyphen-headers",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-05-15",
+			"meal": "Lunch",
+			"headline": "2026-05-15 — Lunch",
+			"rawMarkdown": "### 2026-05-15 — Lunch\n\n**Rating:** 4/5",
+			"photoPaths": [],
+			"fields": {
+				"date": "2026-05-15",
+				"meal": "Lunch",
+				"companions": null,
+				"vibe": null,
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": 4,
+				"notes": null,
+				"photoPaths": [],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		},
+		{
+			"id": "visit-1",
+			"index": 1,
+			"date": "2026-05-16",
+			"meal": "Dinner",
+			"headline": "2026-05-16 - Dinner",
+			"rawMarkdown": "### 2026-05-16 - Dinner\n\n**Rating:** 3/5",
+			"photoPaths": [],
+			"fields": {
+				"date": "2026-05-16",
+				"meal": "Dinner",
+				"companions": null,
+				"vibe": null,
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": 3,
+				"notes": null,
+				"photoPaths": [],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		}
+	],
+	"summary": {
+		"count": 2,
+		"earliest": {
+			"date": "2026-05-15",
+			"meal": "Lunch",
+			"rating": 4,
+			"photo": null
+		},
+		"latest": {
+			"date": "2026-05-16",
+			"meal": "Dinner",
+			"rating": 3,
+			"photo": null
+		},
+		"average": 3.5
+	}
+}

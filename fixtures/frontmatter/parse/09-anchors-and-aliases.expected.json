@@ -1,0 +1,35 @@
+{
+	"name": "09-anchors-and-aliases",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"base",
+				{
+					"t": "str",
+					"v": "Shared Text"
+				}
+			],
+			[
+				"copy",
+				{
+					"t": "str",
+					"v": "Shared Text"
+				}
+			],
+			[
+				"list",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "Shared Text"
+						}
+					]
+				}
+			]
+		]
+	},
+	"body": ""
+}

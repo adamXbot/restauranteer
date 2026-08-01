@@ -1,0 +1,14 @@
+{
+	"name": "08-attribute-overrides",
+	"visit": {
+		"date": "2026-06-04",
+		"rating": 3,
+		"attributeOverrides": {
+			"dog_friendly": "yes",
+			"sunday_lunch": "no",
+			"Needs Slugify": "yes",
+			"ignored_null": null
+		},
+		"imagePaths": []
+	}
+}

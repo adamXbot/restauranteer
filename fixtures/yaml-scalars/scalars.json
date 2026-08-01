@@ -1,0 +1,1013 @@
+{
+	"description": "String quoting/folding torture set. Each case is emitted through the production frontmatter serializer in two contexts: flat = stringify({v: <value>}, \"\") and nested = stringify({nest: {list: [<value>]}}, \"\"). Expected fields hold the full emitted document bytes.",
+	"cases": [
+		{
+			"name": "empty",
+			"value": {
+				"t": "str",
+				"v": ""
+			},
+			"flat": "---\nv: ''\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - ''\n---\n\n"
+		},
+		{
+			"name": "single-space",
+			"value": {
+				"t": "str",
+				"v": " "
+			},
+			"flat": "---\nv: ' '\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - ' '\n---\n\n"
+		},
+		{
+			"name": "double-space",
+			"value": {
+				"t": "str",
+				"v": "  "
+			},
+			"flat": "---\nv: '  '\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '  '\n---\n\n"
+		},
+		{
+			"name": "single-char",
+			"value": {
+				"t": "str",
+				"v": "a"
+			},
+			"flat": "---\nv: a\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - a\n---\n\n"
+		},
+		{
+			"name": "ambiguous-yes-yes",
+			"value": {
+				"t": "str",
+				"v": "yes"
+			},
+			"flat": "---\nv: 'yes'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'yes'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-no-no",
+			"value": {
+				"t": "str",
+				"v": "no"
+			},
+			"flat": "---\nv: 'no'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'no'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-yes-Yes",
+			"value": {
+				"t": "str",
+				"v": "Yes"
+			},
+			"flat": "---\nv: 'Yes'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'Yes'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-no-No",
+			"value": {
+				"t": "str",
+				"v": "No"
+			},
+			"flat": "---\nv: 'No'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'No'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-yes-YES",
+			"value": {
+				"t": "str",
+				"v": "YES"
+			},
+			"flat": "---\nv: 'YES'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'YES'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-no-NO",
+			"value": {
+				"t": "str",
+				"v": "NO"
+			},
+			"flat": "---\nv: 'NO'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'NO'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-y-y",
+			"value": {
+				"t": "str",
+				"v": "y"
+			},
+			"flat": "---\nv: 'y'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'y'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-y-Y",
+			"value": {
+				"t": "str",
+				"v": "Y"
+			},
+			"flat": "---\nv: 'Y'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'Y'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-n-n",
+			"value": {
+				"t": "str",
+				"v": "n"
+			},
+			"flat": "---\nv: 'n'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'n'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-n-N",
+			"value": {
+				"t": "str",
+				"v": "N"
+			},
+			"flat": "---\nv: 'N'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'N'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-on-on",
+			"value": {
+				"t": "str",
+				"v": "on"
+			},
+			"flat": "---\nv: 'on'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'on'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-on-On",
+			"value": {
+				"t": "str",
+				"v": "On"
+			},
+			"flat": "---\nv: 'On'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'On'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-on-ON",
+			"value": {
+				"t": "str",
+				"v": "ON"
+			},
+			"flat": "---\nv: 'ON'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'ON'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-off-off",
+			"value": {
+				"t": "str",
+				"v": "off"
+			},
+			"flat": "---\nv: 'off'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'off'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-off-Off",
+			"value": {
+				"t": "str",
+				"v": "Off"
+			},
+			"flat": "---\nv: 'Off'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'Off'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-off-OFF",
+			"value": {
+				"t": "str",
+				"v": "OFF"
+			},
+			"flat": "---\nv: 'OFF'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'OFF'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-true-true",
+			"value": {
+				"t": "str",
+				"v": "true"
+			},
+			"flat": "---\nv: 'true'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'true'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-true-True",
+			"value": {
+				"t": "str",
+				"v": "True"
+			},
+			"flat": "---\nv: 'True'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'True'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-true-TRUE",
+			"value": {
+				"t": "str",
+				"v": "TRUE"
+			},
+			"flat": "---\nv: 'TRUE'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'TRUE'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-false-false",
+			"value": {
+				"t": "str",
+				"v": "false"
+			},
+			"flat": "---\nv: 'false'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'false'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-false-False",
+			"value": {
+				"t": "str",
+				"v": "False"
+			},
+			"flat": "---\nv: 'False'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'False'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-false-FALSE",
+			"value": {
+				"t": "str",
+				"v": "FALSE"
+			},
+			"flat": "---\nv: 'FALSE'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'FALSE'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-null-null",
+			"value": {
+				"t": "str",
+				"v": "null"
+			},
+			"flat": "---\nv: 'null'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'null'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-null-Null",
+			"value": {
+				"t": "str",
+				"v": "Null"
+			},
+			"flat": "---\nv: 'Null'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'Null'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-null-NULL",
+			"value": {
+				"t": "str",
+				"v": "NULL"
+			},
+			"flat": "---\nv: 'NULL'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'NULL'\n---\n\n"
+		},
+		{
+			"name": "ambiguous-~-~",
+			"value": {
+				"t": "str",
+				"v": "~"
+			},
+			"flat": "---\nv: '~'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '~'\n---\n\n"
+		},
+		{
+			"name": "not-quite-bool",
+			"value": {
+				"t": "str",
+				"v": "y e s"
+			},
+			"flat": "---\nv: y e s\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - y e s\n---\n\n"
+		},
+		{
+			"name": "iso-zulu-millis",
+			"value": {
+				"t": "str",
+				"v": "2026-07-17T09:30:00.000Z"
+			},
+			"flat": "---\nv: '2026-07-17T09:30:00.000Z'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '2026-07-17T09:30:00.000Z'\n---\n\n"
+		},
+		{
+			"name": "iso-zulu",
+			"value": {
+				"t": "str",
+				"v": "2026-07-17T09:30:00Z"
+			},
+			"flat": "---\nv: '2026-07-17T09:30:00Z'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '2026-07-17T09:30:00Z'\n---\n\n"
+		},
+		{
+			"name": "iso-offset",
+			"value": {
+				"t": "str",
+				"v": "2026-07-17T09:30:00+10:00"
+			},
+			"flat": "---\nv: '2026-07-17T09:30:00+10:00'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '2026-07-17T09:30:00+10:00'\n---\n\n"
+		},
+		{
+			"name": "date-only",
+			"value": {
+				"t": "str",
+				"v": "2026-07-17"
+			},
+			"flat": "---\nv: '2026-07-17'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '2026-07-17'\n---\n\n"
+		},
+		{
+			"name": "datetime-spaced",
+			"value": {
+				"t": "str",
+				"v": "2026-07-17 09:30:00"
+			},
+			"flat": "---\nv: '2026-07-17 09:30:00'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '2026-07-17 09:30:00'\n---\n\n"
+		},
+		{
+			"name": "clock-time",
+			"value": {
+				"t": "str",
+				"v": "12:30"
+			},
+			"flat": "---\nv: '12:30'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '12:30'\n---\n\n"
+		},
+		{
+			"name": "sexagesimal",
+			"value": {
+				"t": "str",
+				"v": "190:20:30"
+			},
+			"flat": "---\nv: '190:20:30'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '190:20:30'\n---\n\n"
+		},
+		{
+			"name": "leading-space",
+			"value": {
+				"t": "str",
+				"v": " leading"
+			},
+			"flat": "---\nv: ' leading'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - ' leading'\n---\n\n"
+		},
+		{
+			"name": "trailing-space",
+			"value": {
+				"t": "str",
+				"v": "trailing "
+			},
+			"flat": "---\nv: 'trailing '\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'trailing '\n---\n\n"
+		},
+		{
+			"name": "both-spaces",
+			"value": {
+				"t": "str",
+				"v": " both "
+			},
+			"flat": "---\nv: ' both '\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - ' both '\n---\n\n"
+		},
+		{
+			"name": "inner-runs",
+			"value": {
+				"t": "str",
+				"v": "inner  double  spaces"
+			},
+			"flat": "---\nv: inner  double  spaces\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - inner  double  spaces\n---\n\n"
+		},
+		{
+			"name": "apostrophe",
+			"value": {
+				"t": "str",
+				"v": "it's"
+			},
+			"flat": "---\nv: it's\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - it's\n---\n\n"
+		},
+		{
+			"name": "only-quotes",
+			"value": {
+				"t": "str",
+				"v": "''"
+			},
+			"flat": "---\nv: ''''''\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - ''''''\n---\n\n"
+		},
+		{
+			"name": "many-apostrophes",
+			"value": {
+				"t": "str",
+				"v": "won't stop, won't quit, won't fold"
+			},
+			"flat": "---\nv: 'won''t stop, won''t quit, won''t fold'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'won''t stop, won''t quit, won''t fold'\n---\n\n"
+		},
+		{
+			"name": "looks-int",
+			"value": {
+				"t": "str",
+				"v": "4"
+			},
+			"flat": "---\nv: '4'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '4'\n---\n\n"
+		},
+		{
+			"name": "looks-float",
+			"value": {
+				"t": "str",
+				"v": "4.5"
+			},
+			"flat": "---\nv: '4.5'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '4.5'\n---\n\n"
+		},
+		{
+			"name": "looks-neg-zero",
+			"value": {
+				"t": "str",
+				"v": "-0"
+			},
+			"flat": "---\nv: '-0'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '-0'\n---\n\n"
+		},
+		{
+			"name": "looks-plus-int",
+			"value": {
+				"t": "str",
+				"v": "+7"
+			},
+			"flat": "---\nv: '+7'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '+7'\n---\n\n"
+		},
+		{
+			"name": "looks-exp",
+			"value": {
+				"t": "str",
+				"v": "1e3"
+			},
+			"flat": "---\nv: '1e3'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '1e3'\n---\n\n"
+		},
+		{
+			"name": "looks-hex",
+			"value": {
+				"t": "str",
+				"v": "0x1F"
+			},
+			"flat": "---\nv: '0x1F'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '0x1F'\n---\n\n"
+		},
+		{
+			"name": "looks-octal",
+			"value": {
+				"t": "str",
+				"v": "0o17"
+			},
+			"flat": "---\nv: 0o17\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0o17\n---\n\n"
+		},
+		{
+			"name": "looks-old-octal",
+			"value": {
+				"t": "str",
+				"v": "010"
+			},
+			"flat": "---\nv: '010'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '010'\n---\n\n"
+		},
+		{
+			"name": "looks-binary",
+			"value": {
+				"t": "str",
+				"v": "0b101"
+			},
+			"flat": "---\nv: '0b101'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '0b101'\n---\n\n"
+		},
+		{
+			"name": "looks-underscore",
+			"value": {
+				"t": "str",
+				"v": "1_000"
+			},
+			"flat": "---\nv: '1_000'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '1_000'\n---\n\n"
+		},
+		{
+			"name": "looks-inf",
+			"value": {
+				"t": "str",
+				"v": ".inf"
+			},
+			"flat": "---\nv: '.inf'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '.inf'\n---\n\n"
+		},
+		{
+			"name": "looks-neg-inf",
+			"value": {
+				"t": "str",
+				"v": "-.inf"
+			},
+			"flat": "---\nv: '-.inf'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '-.inf'\n---\n\n"
+		},
+		{
+			"name": "looks-nan",
+			"value": {
+				"t": "str",
+				"v": ".nan"
+			},
+			"flat": "---\nv: '.nan'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '.nan'\n---\n\n"
+		},
+		{
+			"name": "version-like",
+			"value": {
+				"t": "str",
+				"v": "0.1.2"
+			},
+			"flat": "---\nv: 0.1.2\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 0.1.2\n---\n\n"
+		},
+		{
+			"name": "dot-trailing",
+			"value": {
+				"t": "str",
+				"v": "1."
+			},
+			"flat": "---\nv: '1.'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '1.'\n---\n\n"
+		},
+		{
+			"name": "long-fold",
+			"value": {
+				"t": "str",
+				"v": "This is a deliberately long sentence that exceeds the eighty character line width and therefore must fold."
+			},
+			"flat": "---\nv: >-\n  This is a deliberately long sentence that exceeds the eighty character line\n  width and therefore must fold.\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - >-\n      This is a deliberately long sentence that exceeds the eighty character\n      line width and therefore must fold.\n---\n\n"
+		},
+		{
+			"name": "long-url",
+			"value": {
+				"t": "str",
+				"v": "https://example.com/a/very/long/path/that/exceeds/eighty/characters/without/any/spaces-so-it-cannot-break"
+			},
+			"flat": "---\nv: >-\n  https://example.com/a/very/long/path/that/exceeds/eighty/characters/without/any/spaces-so-it-cannot-break\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - >-\n      https://example.com/a/very/long/path/that/exceeds/eighty/characters/without/any/spaces-so-it-cannot-break\n---\n\n"
+		},
+		{
+			"name": "len79-with-break",
+			"value": {
+				"t": "str",
+				"v": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+			},
+			"flat": "---\nv: >-\n  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n  bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - >-\n      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n---\n\n"
+		},
+		{
+			"name": "len80-with-break",
+			"value": {
+				"t": "str",
+				"v": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+			},
+			"flat": "---\nv: >-\n  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n  bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - >-\n      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n---\n\n"
+		},
+		{
+			"name": "len81-with-break",
+			"value": {
+				"t": "str",
+				"v": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+			},
+			"flat": "---\nv: >-\n  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n  bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - >-\n      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n---\n\n"
+		},
+		{
+			"name": "long-word-then-tail",
+			"value": {
+				"t": "str",
+				"v": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx tail"
+			},
+			"flat": "---\nv: >-\n  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n  tail\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - >-\n      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n      tail\n---\n\n"
+		},
+		{
+			"name": "head-then-long-word",
+			"value": {
+				"t": "str",
+				"v": "head yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+			},
+			"flat": "---\nv: >-\n  head\n  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - >-\n      head\n      yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n---\n\n"
+		},
+		{
+			"name": "many-words",
+			"value": {
+				"t": "str",
+				"v": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word"
+			},
+			"flat": "---\nv: >-\n  word word word word word word word word word word word word word word word\n  word word word word word word word word word word word word word word word\n  word word word word word word word word word word\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - >-\n      word word word word word word word word word word word word word word word\n      word word word word word word word word word word word word word word word\n      word word word word word word word word word word\n---\n\n"
+		},
+		{
+			"name": "stars",
+			"value": {
+				"t": "str",
+				"v": "★★★★☆"
+			},
+			"flat": "---\nv: ★★★★☆\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - ★★★★☆\n---\n\n"
+		},
+		{
+			"name": "stars-mixed",
+			"value": {
+				"t": "str",
+				"v": "Stars ★ and ☆ here"
+			},
+			"flat": "---\nv: Stars ★ and ☆ here\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - Stars ★ and ☆ here\n---\n\n"
+		},
+		{
+			"name": "em-dash",
+			"value": {
+				"t": "str",
+				"v": "before — after"
+			},
+			"flat": "---\nv: before — after\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - before — after\n---\n\n"
+		},
+		{
+			"name": "accented",
+			"value": {
+				"t": "str",
+				"v": "café crème brûlée"
+			},
+			"flat": "---\nv: café crème brûlée\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - café crème brûlée\n---\n\n"
+		},
+		{
+			"name": "cjk",
+			"value": {
+				"t": "str",
+				"v": "日本語テキスト"
+			},
+			"flat": "---\nv: 日本語テキスト\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 日本語テキスト\n---\n\n"
+		},
+		{
+			"name": "emoji-astral",
+			"value": {
+				"t": "str",
+				"v": "🍜 ramen"
+			},
+			"flat": "---\nv: \"\\U0001F35C ramen\"\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - \"\\U0001F35C ramen\"\n---\n\n"
+		},
+		{
+			"name": "mixed-unicode",
+			"value": {
+				"t": "str",
+				"v": "mixed 🍜 ★ — café"
+			},
+			"flat": "---\nv: \"mixed \\U0001F35C ★ — café\"\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - \"mixed \\U0001F35C ★ — café\"\n---\n\n"
+		},
+		{
+			"name": "multiline-basic",
+			"value": {
+				"t": "str",
+				"v": "a\nb"
+			},
+			"flat": "---\nv: |-\n  a\n  b\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - |-\n      a\n      b\n---\n\n"
+		},
+		{
+			"name": "multiline-clip",
+			"value": {
+				"t": "str",
+				"v": "a\nb\n"
+			},
+			"flat": "---\nv: |\n  a\n  b\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - |\n      a\n      b\n---\n\n"
+		},
+		{
+			"name": "multiline-keep",
+			"value": {
+				"t": "str",
+				"v": "a\nb\n\n"
+			},
+			"flat": "---\nv: |+\n  a\n  b\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - |+\n      a\n      b\n---\n\n"
+		},
+		{
+			"name": "multiline-leading-newline",
+			"value": {
+				"t": "str",
+				"v": "\na"
+			},
+			"flat": "---\nv: |-\n\n  a\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - |-\n\n      a\n---\n\n"
+		},
+		{
+			"name": "multiline-inner-blank",
+			"value": {
+				"t": "str",
+				"v": "a\n\nb"
+			},
+			"flat": "---\nv: |-\n  a\n\n  b\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - |-\n      a\n\n      b\n---\n\n"
+		},
+		{
+			"name": "multiline-trailing-space-line",
+			"value": {
+				"t": "str",
+				"v": "a \nb"
+			},
+			"flat": "---\nv: |-\n  a \n  b\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - |-\n      a \n      b\n---\n\n"
+		},
+		{
+			"name": "multiline-leading-space-line",
+			"value": {
+				"t": "str",
+				"v": "a\n b"
+			},
+			"flat": "---\nv: |-\n  a\n   b\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - |-\n      a\n       b\n---\n\n"
+		},
+		{
+			"name": "multiline-long-line",
+			"value": {
+				"t": "str",
+				"v": "first line\nThis is a deliberately long sentence that exceeds the eighty character line width and therefore must fold.\nlast line"
+			},
+			"flat": "---\nv: >-\n  first line\n\n  This is a deliberately long sentence that exceeds the eighty character line\n  width and therefore must fold.\n\n  last line\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - >-\n      first line\n\n      This is a deliberately long sentence that exceeds the eighty character\n      line width and therefore must fold.\n\n      last line\n---\n\n"
+		},
+		{
+			"name": "starts-dash",
+			"value": {
+				"t": "str",
+				"v": "- item"
+			},
+			"flat": "---\nv: '- item'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '- item'\n---\n\n"
+		},
+		{
+			"name": "starts-question",
+			"value": {
+				"t": "str",
+				"v": "? maybe"
+			},
+			"flat": "---\nv: '? maybe'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '? maybe'\n---\n\n"
+		},
+		{
+			"name": "starts-colon",
+			"value": {
+				"t": "str",
+				"v": ": colon"
+			},
+			"flat": "---\nv: ': colon'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - ': colon'\n---\n\n"
+		},
+		{
+			"name": "starts-hash",
+			"value": {
+				"t": "str",
+				"v": "# hash"
+			},
+			"flat": "---\nv: '# hash'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '# hash'\n---\n\n"
+		},
+		{
+			"name": "starts-at",
+			"value": {
+				"t": "str",
+				"v": "@at"
+			},
+			"flat": "---\nv: '@at'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '@at'\n---\n\n"
+		},
+		{
+			"name": "starts-backtick",
+			"value": {
+				"t": "str",
+				"v": "`tick"
+			},
+			"flat": "---\nv: '`tick'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '`tick'\n---\n\n"
+		},
+		{
+			"name": "starts-bang",
+			"value": {
+				"t": "str",
+				"v": "!bang"
+			},
+			"flat": "---\nv: '!bang'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '!bang'\n---\n\n"
+		},
+		{
+			"name": "starts-amp",
+			"value": {
+				"t": "str",
+				"v": "&amp"
+			},
+			"flat": "---\nv: '&amp'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '&amp'\n---\n\n"
+		},
+		{
+			"name": "starts-star",
+			"value": {
+				"t": "str",
+				"v": "*star"
+			},
+			"flat": "---\nv: '*star'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '*star'\n---\n\n"
+		},
+		{
+			"name": "starts-pct",
+			"value": {
+				"t": "str",
+				"v": "%pct"
+			},
+			"flat": "---\nv: '%pct'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '%pct'\n---\n\n"
+		},
+		{
+			"name": "starts-bracket",
+			"value": {
+				"t": "str",
+				"v": "[a, b]"
+			},
+			"flat": "---\nv: '[a, b]'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '[a, b]'\n---\n\n"
+		},
+		{
+			"name": "starts-brace",
+			"value": {
+				"t": "str",
+				"v": "{a: b}"
+			},
+			"flat": "---\nv: '{a: b}'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '{a: b}'\n---\n\n"
+		},
+		{
+			"name": "starts-dq",
+			"value": {
+				"t": "str",
+				"v": "\"dq\""
+			},
+			"flat": "---\nv: '\"dq\"'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '\"dq\"'\n---\n\n"
+		},
+		{
+			"name": "starts-sq",
+			"value": {
+				"t": "str",
+				"v": "'sq'"
+			},
+			"flat": "---\nv: '''sq'''\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '''sq'''\n---\n\n"
+		},
+		{
+			"name": "starts-pipe",
+			"value": {
+				"t": "str",
+				"v": "| pipe"
+			},
+			"flat": "---\nv: '| pipe'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '| pipe'\n---\n\n"
+		},
+		{
+			"name": "starts-gt",
+			"value": {
+				"t": "str",
+				"v": "> gt"
+			},
+			"flat": "---\nv: '> gt'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '> gt'\n---\n\n"
+		},
+		{
+			"name": "starts-eq",
+			"value": {
+				"t": "str",
+				"v": "="
+			},
+			"flat": "---\nv: '='\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - '='\n---\n\n"
+		},
+		{
+			"name": "inner-colon-space",
+			"value": {
+				"t": "str",
+				"v": "key: value"
+			},
+			"flat": "---\nv: 'key: value'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'key: value'\n---\n\n"
+		},
+		{
+			"name": "inner-hash-space",
+			"value": {
+				"t": "str",
+				"v": "a # b"
+			},
+			"flat": "---\nv: 'a # b'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'a # b'\n---\n\n"
+		},
+		{
+			"name": "ends-colon",
+			"value": {
+				"t": "str",
+				"v": "ends:"
+			},
+			"flat": "---\nv: 'ends:'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'ends:'\n---\n\n"
+		},
+		{
+			"name": "comma-separated",
+			"value": {
+				"t": "str",
+				"v": "a,b"
+			},
+			"flat": "---\nv: 'a,b'\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - 'a,b'\n---\n\n"
+		},
+		{
+			"name": "tab-inside",
+			"value": {
+				"t": "str",
+				"v": "a\tb"
+			},
+			"flat": "---\nv: \"a\\tb\"\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - \"a\\tb\"\n---\n\n"
+		},
+		{
+			"name": "tab-only",
+			"value": {
+				"t": "str",
+				"v": "\t"
+			},
+			"flat": "---\nv: \"\\t\"\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - \"\\t\"\n---\n\n"
+		},
+		{
+			"name": "control-bell",
+			"value": {
+				"t": "str",
+				"v": "a\u0007b"
+			},
+			"flat": "---\nv: \"a\\ab\"\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - \"a\\ab\"\n---\n\n"
+		},
+		{
+			"name": "control-nul",
+			"value": {
+				"t": "str",
+				"v": "a\u0000b"
+			},
+			"flat": "---\nv: \"a\\0b\"\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - \"a\\0b\"\n---\n\n"
+		},
+		{
+			"name": "control-del",
+			"value": {
+				"t": "str",
+				"v": "ab"
+			},
+			"flat": "---\nv: \"a\\x7Fb\"\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - \"a\\x7Fb\"\n---\n\n"
+		},
+		{
+			"name": "nel",
+			"value": {
+				"t": "str",
+				"v": "ab"
+			},
+			"flat": "---\nv: \"a\\Nb\"\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - \"a\\Nb\"\n---\n\n"
+		},
+		{
+			"name": "line-separator",
+			"value": {
+				"t": "str",
+				"v": "a b"
+			},
+			"flat": "---\nv: \"a\\Lb\"\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - \"a\\Lb\"\n---\n\n"
+		},
+		{
+			"name": "nbsp",
+			"value": {
+				"t": "str",
+				"v": "a b"
+			},
+			"flat": "---\nv: \"a\\_b\"\n---\n\n",
+			"nested": "---\nnest:\n  list:\n    - \"a\\_b\"\n---\n\n"
+		}
+	]
+}

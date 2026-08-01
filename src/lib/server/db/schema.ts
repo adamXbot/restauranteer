@@ -130,6 +130,21 @@ const MIGRATIONS: string[] = [
 		PRIMARY KEY (restaurant_uuid, visit_index)
 	);
 	CREATE INDEX IF NOT EXISTS idx_visits_date ON visits(date);
+	`,
+	// v7 — deletion tombstones for the sync API. Without them "absent from the
+	// manifest" is ambiguous between *deleted here* and *new on the client*.
+	// `path` is vault-root-relative and POSIX-separated (e.g. Restaurants/Etta.md).
+	//
+	// Numbered *after* the visits table deliberately: this array's index is the
+	// migration version, and any server that has already run v6 would skip
+	// whatever sat at that slot. Appending is the only safe way to add one.
+	`
+	CREATE TABLE IF NOT EXISTS sync_tombstones (
+		path TEXT PRIMARY KEY,
+		deleted_at INTEGER NOT NULL,
+		last_sha TEXT
+	);
+	CREATE INDEX IF NOT EXISTS idx_sync_tombstones_deleted_at ON sync_tombstones(deleted_at);
 	`
 ];
 

@@ -1,0 +1,8 @@
+{
+	"name": "18-scalar-root-frontmatter",
+	"frontmatter": {
+		"t": "str",
+		"v": "just a plain string where a map should be"
+	},
+	"body": "body\n"
+}

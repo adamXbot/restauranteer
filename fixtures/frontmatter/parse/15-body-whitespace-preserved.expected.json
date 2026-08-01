@@ -1,0 +1,16 @@
+{
+	"name": "15-body-whitespace-preserved",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Spacey"
+				}
+			]
+		]
+	},
+	"body": "\n\nbody starts after two blank lines\n\ttab-indented line\ntrailing blank lines follow\n\n\n"
+}

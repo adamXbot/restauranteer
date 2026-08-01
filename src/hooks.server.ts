@@ -1,5 +1,6 @@
-import type { Handle, ServerInit } from '@sveltejs/kit';
+import type { ServerInit } from '@sveltejs/kit';
 import { bootVault, shutdownVault } from '$lib/server/vault';
+import { authGuard } from '$lib/server/sync/auth';
 import { log } from '$lib/server/log';
 
 declare global {
@@ -28,6 +29,9 @@ export const init: ServerInit = async () => {
 	}
 };
 
-export const handle: Handle = async ({ event, resolve }) => {
-	return resolve(event);
-};
+/**
+ * Bearer-token guard for `/api/sync/*` (and, with RESTAURANTEER_REQUIRE_AUTH=1,
+ * for all of `/api/*`). Everything else passes straight through. See
+ * `$lib/server/sync/auth` for the rules.
+ */
+export const handle = authGuard;

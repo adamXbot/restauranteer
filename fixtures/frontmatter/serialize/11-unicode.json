@@ -1,0 +1,72 @@
+{
+	"name": "11-unicode",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "7e7e7e7e-8f8f-4a9a-8b0b-1c1c1c1c1c1c"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Café Höhe"
+				}
+			],
+			[
+				"stars_plain",
+				{
+					"t": "str",
+					"v": "Stars ★★★☆☆ and more"
+				}
+			],
+			[
+				"em_dash",
+				{
+					"t": "str",
+					"v": "before — after"
+				}
+			],
+			[
+				"cjk",
+				{
+					"t": "str",
+					"v": "日本語のテキストです"
+				}
+			],
+			[
+				"emoji_astral",
+				{
+					"t": "str",
+					"v": "ramen 🍜 time"
+				}
+			],
+			[
+				"mixed",
+				{
+					"t": "str",
+					"v": "café ★ — 🍷 fin"
+				}
+			],
+			[
+				"nbsp",
+				{
+					"t": "str",
+					"v": "non breaking"
+				}
+			],
+			[
+				"accents",
+				{
+					"t": "str",
+					"v": "crème brûlée à la François"
+				}
+			]
+		]
+	},
+	"body": ""
+}

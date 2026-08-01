@@ -1,0 +1,16 @@
+{
+	"name": "16-close-delimiter-quirks",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Quirky"
+				}
+			]
+		]
+	},
+	"body": " \nbody after a close delimiter with a trailing space\n"
+}

@@ -1,0 +1,279 @@
+{
+	"name": "01-web-written-full",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "4b3a2c1d-0e9f-4a51-8e0f-aa4a3b2c1d0e"
+				}
+			],
+			[
+				"schema_version",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Cumulus Inc"
+				}
+			],
+			[
+				"address",
+				{
+					"t": "str",
+					"v": "45 Flinders Ln, Melbourne VIC 3000, Australia"
+				}
+			],
+			[
+				"suburb",
+				{
+					"t": "str",
+					"v": "Melbourne"
+				}
+			],
+			[
+				"lat",
+				{
+					"t": "float",
+					"v": "-37.8148096",
+					"bitsHex": "c042e84bae543bc1"
+				}
+			],
+			[
+				"lng",
+				{
+					"t": "float",
+					"v": "144.9704353",
+					"bitsHex": "40621f0dce548c49"
+				}
+			],
+			[
+				"phone",
+				{
+					"t": "str",
+					"v": "+61 3 9650 1445"
+				}
+			],
+			[
+				"website",
+				{
+					"t": "str",
+					"v": "https://cumulusinc.com.au/"
+				}
+			],
+			[
+				"hours",
+				{
+					"t": "map",
+					"v": [
+						[
+							"mon",
+							{
+								"t": "str",
+								"v": "7:00 am – 11:00 pm"
+							}
+						],
+						[
+							"sun",
+							{
+								"t": "str",
+								"v": "Closed"
+							}
+						]
+					]
+				}
+			],
+			[
+				"cuisine",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "Modern Australian"
+						}
+					]
+				}
+			],
+			[
+				"price_level",
+				{
+					"t": "int",
+					"v": "3"
+				}
+			],
+			[
+				"place_ids",
+				{
+					"t": "map",
+					"v": [
+						[
+							"google",
+							{
+								"t": "str",
+								"v": "ChIJwYCC5spC1moRZ3TV4zNAfDo"
+							}
+						]
+					]
+				}
+			],
+			[
+				"lists",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "Date Night"
+						}
+					]
+				}
+			],
+			[
+				"tags",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "wine"
+						}
+					]
+				}
+			],
+			[
+				"rating",
+				{
+					"t": "float",
+					"v": "4.5",
+					"bitsHex": "4012000000000000"
+				}
+			],
+			[
+				"attributes",
+				{
+					"t": "map",
+					"v": [
+						[
+							"dog_friendly",
+							{
+								"t": "str",
+								"v": "yes"
+							}
+						]
+					]
+				}
+			],
+			[
+				"last_synced",
+				{
+					"t": "str",
+					"v": "2026-07-01T10:30:00.000Z"
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\nGoogle: ★ 4.6 (2,113 reviews)\n\n## Menu\n\n- [Online menu](https://cumulusinc.com.au/menus/)\n\n## Visits\n\n### 2026-05-15 — Lunch\n\n**With:** Sarah, Tom  \n**Vibe:** Bright and busy  \n**Food:** Lamb shoulder  \n**Rating:** 4/5  \n\nLoved it. Would bring [[Friend]] next time.\n\n![](_attachments/cumulus-inc/20260515-133000-1.jpg)\n\n### 2026-05-18 — Dinner\n\n**Vibe:** ★★★★☆ — Loud, fun  \n**Food:** ★★★★★ — Pasta  \n- **Wood-grilled octopus** ★★★★★ — get two  \n  ![](_attachments/cumulus-inc/20260518-193000-d0.jpg)\n- **Cavatelli** ★★★★☆\n**Quality:** ★★★★★  \n**Service:** ★★★★☆  \n**Rating:** 4.4/5 (avg)  \n**Attributes:** dog_friendly=yes  \n\nEven better the second time.\n",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-05-15",
+			"meal": "Lunch",
+			"headline": "2026-05-15 — Lunch",
+			"rawMarkdown": "### 2026-05-15 — Lunch\n\n**With:** Sarah, Tom  \n**Vibe:** Bright and busy  \n**Food:** Lamb shoulder  \n**Rating:** 4/5  \n\nLoved it. Would bring [[Friend]] next time.\n\n![](_attachments/cumulus-inc/20260515-133000-1.jpg)",
+			"photoPaths": [
+				"_attachments/cumulus-inc/20260515-133000-1.jpg"
+			],
+			"fields": {
+				"date": "2026-05-15",
+				"meal": "Lunch",
+				"companions": "Sarah, Tom",
+				"vibe": "Bright and busy",
+				"food": "Lamb shoulder",
+				"quality": null,
+				"service": null,
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": 4,
+				"notes": "Loved it. Would bring [[Friend]] next time.",
+				"photoPaths": [
+					"_attachments/cumulus-inc/20260515-133000-1.jpg"
+				],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		},
+		{
+			"id": "visit-1",
+			"index": 1,
+			"date": "2026-05-18",
+			"meal": "Dinner",
+			"headline": "2026-05-18 — Dinner",
+			"rawMarkdown": "### 2026-05-18 — Dinner\n\n**Vibe:** ★★★★☆ — Loud, fun  \n**Food:** ★★★★★ — Pasta  \n- **Wood-grilled octopus** ★★★★★ — get two  \n  ![](_attachments/cumulus-inc/20260518-193000-d0.jpg)\n- **Cavatelli** ★★★★☆\n**Quality:** ★★★★★  \n**Service:** ★★★★☆  \n**Rating:** 4.4/5 (avg)  \n**Attributes:** dog_friendly=yes  \n\nEven better the second time.",
+			"photoPaths": [
+				"_attachments/cumulus-inc/20260518-193000-d0.jpg"
+			],
+			"fields": {
+				"date": "2026-05-18",
+				"meal": "Dinner",
+				"companions": null,
+				"vibe": "Loud, fun",
+				"food": "Pasta",
+				"quality": null,
+				"service": null,
+				"vibeRating": 4,
+				"foodRating": 4.5,
+				"qualityRating": 5,
+				"serviceRating": 4,
+				"rating": null,
+				"notes": "Even better the second time.",
+				"photoPaths": [
+					"_attachments/cumulus-inc/20260518-193000-d0.jpg"
+				],
+				"attributeOverrides": {
+					"dog_friendly": "yes"
+				},
+				"dishes": [
+					{
+						"name": "Wood-grilled octopus",
+						"rating": 5,
+						"note": "get two",
+						"photoPath": "_attachments/cumulus-inc/20260518-193000-d0.jpg"
+					},
+					{
+						"name": "Cavatelli",
+						"rating": 4,
+						"note": null,
+						"photoPath": null
+					}
+				]
+			}
+		}
+	],
+	"summary": {
+		"count": 2,
+		"earliest": {
+			"date": "2026-05-15",
+			"meal": "Lunch",
+			"rating": 4,
+			"photo": "_attachments/cumulus-inc/20260515-133000-1.jpg"
+		},
+		"latest": {
+			"date": "2026-05-18",
+			"meal": "Dinner",
+			"rating": 4.4,
+			"photo": "_attachments/cumulus-inc/20260518-193000-d0.jpg"
+		},
+		"average": 4.2
+	}
+}

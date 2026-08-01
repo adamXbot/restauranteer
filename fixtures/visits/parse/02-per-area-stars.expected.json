@@ -1,0 +1,48 @@
+{
+	"name": "02-per-area-stars",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-05-18",
+			"meal": "Dinner",
+			"headline": "2026-05-18 — Dinner",
+			"rawMarkdown": "### 2026-05-18 — Dinner\n\n**Vibe:** ★★★★☆ — Loud, fun  \n**Food:** ★★★★★ — Pasta  \n**Quality:** ★★★★★  \n**Service:** ★★★★☆ — Attentive  \n**Rating:** 4.5/5 (avg)  \n\nEven better the second time.",
+			"photoPaths": [],
+			"fields": {
+				"date": "2026-05-18",
+				"meal": "Dinner",
+				"companions": null,
+				"vibe": "Loud, fun",
+				"food": "Pasta",
+				"quality": null,
+				"service": "Attentive",
+				"vibeRating": 4,
+				"foodRating": 5,
+				"qualityRating": 5,
+				"serviceRating": 4,
+				"rating": null,
+				"notes": "Even better the second time.",
+				"photoPaths": [],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		}
+	],
+	"summary": {
+		"count": 1,
+		"earliest": {
+			"date": "2026-05-18",
+			"meal": "Dinner",
+			"rating": 4.5,
+			"photo": null
+		},
+		"latest": {
+			"date": "2026-05-18",
+			"meal": "Dinner",
+			"rating": 4.5,
+			"photo": null
+		},
+		"average": 4.5
+	}
+}

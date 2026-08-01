@@ -1,0 +1,11 @@
+{
+	"name": "16-unicode-fields",
+	"visit": {
+		"date": "2026-06-12",
+		"meal": "Déjeuner",
+		"vibe": "Très ★ chic — vraiment",
+		"companions": "François, 東京より",
+		"notes": "ラーメン 🍜 was great.",
+		"imagePaths": []
+	}
+}

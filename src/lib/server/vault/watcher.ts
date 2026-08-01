@@ -6,6 +6,7 @@ import { fullReconcile, indexSingleFile, removeSingleFile } from './reconciler';
 import { isMocFile, regenerateAllMocs, writeMocForList } from './moc';
 import { isSelfWrite } from './writer';
 import { hashContent } from './frontmatter';
+import { recordVaultDeletion } from '../sync/tombstones';
 import { log } from '../log';
 
 let watcher: FSWatcher | null = null;
@@ -102,6 +103,10 @@ async function handleAddOrChange(filePath: string) {
 }
 
 function handleUnlink(filePath: string) {
+	// Record before the MOC early-return: a file deleted out from under us
+	// (Obsidian, Finder, another sync client) still has to reach sync clients as
+	// a deletion. Re-creating the path clears the tombstone on write.
+	recordVaultDeletion(filePath);
 	if (isMocFile(filePath)) return;
 	noteEvent();
 	if (burstMode) return;

@@ -1,0 +1,130 @@
+{
+	"name": "03-unknown-keys-and-articles",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "11112222-3333-4444-8555-666677778888"
+				}
+			],
+			[
+				"schema_version",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Etta"
+				}
+			],
+			[
+				"articles",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "map",
+							"v": [
+								[
+									"title",
+									{
+										"t": "str",
+										"v": "The 38 essential restaurants you absolutely must visit in Melbourne before the end of the decade"
+									}
+								],
+								[
+									"url",
+									{
+										"t": "str",
+										"v": "https://www.broadsheet.com.au/melbourne/food-and-drink/article/38-essential"
+									}
+								],
+								[
+									"source",
+									{
+										"t": "str",
+										"v": "broadsheet"
+									}
+								],
+								[
+									"published",
+									{
+										"t": "str",
+										"v": "2024-11-02T00:00:00.000Z"
+									}
+								]
+							]
+						}
+					]
+				}
+			],
+			[
+				"my_custom_rank",
+				{
+					"t": "int",
+					"v": "2"
+				}
+			],
+			[
+				"favourite_dish",
+				{
+					"t": "str",
+					"v": "hand-rolled cavatelli"
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\n## Press\n\nUnknown body sections must survive round-trips untouched.\n\n## Visits\n\n### 2026-03-01 — Dinner\n\n**Rating:** 4/5  \n",
+	"visits": [
+		{
+			"id": "visit-0",
+			"index": 0,
+			"date": "2026-03-01",
+			"meal": "Dinner",
+			"headline": "2026-03-01 — Dinner",
+			"rawMarkdown": "### 2026-03-01 — Dinner\n\n**Rating:** 4/5",
+			"photoPaths": [],
+			"fields": {
+				"date": "2026-03-01",
+				"meal": "Dinner",
+				"companions": null,
+				"vibe": null,
+				"food": null,
+				"quality": null,
+				"service": null,
+				"vibeRating": null,
+				"foodRating": null,
+				"qualityRating": null,
+				"serviceRating": null,
+				"rating": 4,
+				"notes": null,
+				"photoPaths": [],
+				"attributeOverrides": {},
+				"dishes": []
+			}
+		}
+	],
+	"summary": {
+		"count": 1,
+		"earliest": {
+			"date": "2026-03-01",
+			"meal": "Dinner",
+			"rating": 4,
+			"photo": null
+		},
+		"latest": {
+			"date": "2026-03-01",
+			"meal": "Dinner",
+			"rating": 4,
+			"photo": null
+		},
+		"average": 4
+	}
+}

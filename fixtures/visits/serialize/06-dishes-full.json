@@ -1,0 +1,38 @@
+{
+	"name": "06-dishes-full",
+	"visit": {
+		"date": "2026-06-02",
+		"meal": "Dinner",
+		"companions": "[[Alex]]",
+		"areaRatings": {
+			"vibe": 4,
+			"food": null,
+			"quality": null,
+			"service": 3
+		},
+		"dishes": [
+			{
+				"name": "Wood-grilled octopus",
+				"rating": 5,
+				"note": "best dish of the year",
+				"photoPath": "_attachments/etta/20260602-193000-d0.jpg"
+			},
+			{
+				"name": "Cavatelli",
+				"rating": 4,
+				"note": null,
+				"photoPath": null
+			},
+			{
+				"name": "Basque cheesecake",
+				"rating": 4,
+				"note": "em-dash — inside note",
+				"photoPath": "_attachments/etta/20260602-193000-d2.jpg"
+			}
+		],
+		"notes": "Dish average should drive the Food rating.",
+		"imagePaths": [
+			"_attachments/etta/20260602-193000-1.jpg"
+		]
+	}
+}

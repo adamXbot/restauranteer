@@ -1,0 +1,44 @@
+{
+	"name": "07-block-scalars",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"literal",
+				{
+					"t": "str",
+					"v": "line one\nline two\n"
+				}
+			],
+			[
+				"literal_strip",
+				{
+					"t": "str",
+					"v": "line one\nline two"
+				}
+			],
+			[
+				"literal_keep",
+				{
+					"t": "str",
+					"v": "line one\nline two\n\n"
+				}
+			],
+			[
+				"folded",
+				{
+					"t": "str",
+					"v": "folded across lines\n"
+				}
+			],
+			[
+				"folded_strip",
+				{
+					"t": "str",
+					"v": "folded across lines"
+				}
+			]
+		]
+	},
+	"body": "body\n"
+}

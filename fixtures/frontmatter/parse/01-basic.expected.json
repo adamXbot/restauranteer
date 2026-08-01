@@ -1,0 +1,46 @@
+{
+	"name": "01-basic",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "0d9f6f5a-3c9b-4a51-8e0f-6a4a3b2c1d0e"
+				}
+			],
+			[
+				"schema_version",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Cumulus Inc"
+				}
+			],
+			[
+				"tags",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "wine"
+						},
+						{
+							"t": "str",
+							"v": "brunch"
+						}
+					]
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\n## Visits\n"
+}

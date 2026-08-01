@@ -1,0 +1,65 @@
+{
+	"name": "02-blank-created",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "99998888-7777-4666-8555-444433332222"
+				}
+			],
+			[
+				"schema_version",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Corner Noodles"
+				}
+			],
+			[
+				"suburb",
+				{
+					"t": "str",
+					"v": "Brunswick"
+				}
+			],
+			[
+				"lists",
+				{
+					"t": "arr",
+					"v": []
+				}
+			],
+			[
+				"tags",
+				{
+					"t": "arr",
+					"v": []
+				}
+			],
+			[
+				"last_synced",
+				{
+					"t": "str",
+					"v": "2026-07-10T02:15:00.000Z"
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\n## Visits\n",
+	"visits": [],
+	"summary": {
+		"count": 0,
+		"latest": null,
+		"earliest": null,
+		"average": null
+	}
+}

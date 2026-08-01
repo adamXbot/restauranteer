@@ -1,0 +1,39 @@
+{
+	"name": "05-null-variants",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"tilde",
+				{
+					"t": "null"
+				}
+			],
+			[
+				"word",
+				{
+					"t": "null"
+				}
+			],
+			[
+				"title_case",
+				{
+					"t": "null"
+				}
+			],
+			[
+				"upper",
+				{
+					"t": "null"
+				}
+			],
+			[
+				"empty_value",
+				{
+					"t": "null"
+				}
+			]
+		]
+	},
+	"body": "body\n"
+}

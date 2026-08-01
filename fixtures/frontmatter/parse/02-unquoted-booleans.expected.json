@@ -1,0 +1,72 @@
+{
+	"name": "02-unquoted-booleans",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"a",
+				{
+					"t": "str",
+					"v": "yes"
+				}
+			],
+			[
+				"b",
+				{
+					"t": "str",
+					"v": "No"
+				}
+			],
+			[
+				"c",
+				{
+					"t": "bool",
+					"v": true
+				}
+			],
+			[
+				"d",
+				{
+					"t": "bool",
+					"v": false
+				}
+			],
+			[
+				"e",
+				{
+					"t": "str",
+					"v": "on"
+				}
+			],
+			[
+				"f",
+				{
+					"t": "str",
+					"v": "Off"
+				}
+			],
+			[
+				"g",
+				{
+					"t": "str",
+					"v": "y"
+				}
+			],
+			[
+				"h",
+				{
+					"t": "str",
+					"v": "N"
+				}
+			],
+			[
+				"quoted",
+				{
+					"t": "str",
+					"v": "yes"
+				}
+			]
+		]
+	},
+	"body": "body\n"
+}

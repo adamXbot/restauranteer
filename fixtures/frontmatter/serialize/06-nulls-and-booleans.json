@@ -1,0 +1,49 @@
+{
+	"name": "06-nulls-and-booleans",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "aaaa1111-bbbb-4222-8ccc-dddd3333eeee"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Null & Void"
+				}
+			],
+			[
+				"phone",
+				{
+					"t": "null"
+				}
+			],
+			[
+				"website",
+				{
+					"t": "null"
+				}
+			],
+			[
+				"verified",
+				{
+					"t": "bool",
+					"v": true
+				}
+			],
+			[
+				"closed_permanently",
+				{
+					"t": "bool",
+					"v": false
+				}
+			]
+		]
+	},
+	"body": ""
+}

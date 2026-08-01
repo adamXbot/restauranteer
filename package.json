@@ -13,7 +13,8 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "export-fixtures": "node --import ./scripts/fixtures-loader.mjs scripts/export-fixtures.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.5.4",

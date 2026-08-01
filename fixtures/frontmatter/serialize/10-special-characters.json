@@ -1,0 +1,163 @@
+{
+	"name": "10-special-characters",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "5f5f5f5f-6a6a-4b7b-8c8c-9d9d9d9d9d9d"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "L'Hôtel: The \"Best\" Bar"
+				}
+			],
+			[
+				"starts_dash",
+				{
+					"t": "str",
+					"v": "- not a list item"
+				}
+			],
+			[
+				"starts_question",
+				{
+					"t": "str",
+					"v": "? not a key"
+				}
+			],
+			[
+				"starts_colon",
+				{
+					"t": "str",
+					"v": ": not a mapping"
+				}
+			],
+			[
+				"starts_hash",
+				{
+					"t": "str",
+					"v": "# not a comment"
+				}
+			],
+			[
+				"starts_amp",
+				{
+					"t": "str",
+					"v": "&not-an-anchor"
+				}
+			],
+			[
+				"starts_star",
+				{
+					"t": "str",
+					"v": "*not-an-alias"
+				}
+			],
+			[
+				"starts_bracket",
+				{
+					"t": "str",
+					"v": "[not, a, list]"
+				}
+			],
+			[
+				"starts_brace",
+				{
+					"t": "str",
+					"v": "{not: a, map: here}"
+				}
+			],
+			[
+				"starts_pipe",
+				{
+					"t": "str",
+					"v": "| not a block"
+				}
+			],
+			[
+				"starts_gt",
+				{
+					"t": "str",
+					"v": "> not folded"
+				}
+			],
+			[
+				"starts_pct",
+				{
+					"t": "str",
+					"v": "%not-a-directive"
+				}
+			],
+			[
+				"starts_tick",
+				{
+					"t": "str",
+					"v": "`not-code"
+				}
+			],
+			[
+				"starts_at",
+				{
+					"t": "str",
+					"v": "@handle"
+				}
+			],
+			[
+				"starts_dq",
+				{
+					"t": "str",
+					"v": "\"quoted\""
+				}
+			],
+			[
+				"starts_sq",
+				{
+					"t": "str",
+					"v": "'quoted'"
+				}
+			],
+			[
+				"inner_colon_space",
+				{
+					"t": "str",
+					"v": "note: remember this"
+				}
+			],
+			[
+				"inner_hash",
+				{
+					"t": "str",
+					"v": "rating 4 # not a comment"
+				}
+			],
+			[
+				"ends_colon",
+				{
+					"t": "str",
+					"v": "trailing:"
+				}
+			],
+			[
+				"equals",
+				{
+					"t": "str",
+					"v": "="
+				}
+			],
+			[
+				"quote_doubling",
+				{
+					"t": "str",
+					"v": "it's got 'quotes' in it"
+				}
+			]
+		]
+	},
+	"body": ""
+}

@@ -14,6 +14,8 @@ import { regenerateAllMocs } from './moc';
 import { startWatcher, stopWatcher } from './watcher';
 import { cleanupOldTmpFiles } from './writer';
 import { appVersion, infoMarkdown, vaultRoot } from './share';
+import { ensureVaultId } from '../sync/vaultId';
+import { pruneTombstones } from '../sync/tombstones';
 import { log } from '../log';
 
 let booted = false;
@@ -38,6 +40,9 @@ export async function bootVault(): Promise<void> {
 	const cleaned = await cleanupOldTmpFiles();
 	if (cleaned > 0) log.info('Cleaned old tempfiles', { count: cleaned });
 
+	const prunedTombstones = pruneTombstones();
+	if (prunedTombstones > 0) log.info('Pruned expired sync tombstones', { count: prunedTombstones });
+
 	await fullReconcile();
 	await regenerateAllMocs();
 	await syncInfoMarkdown();
@@ -55,10 +60,14 @@ export async function bootVault(): Promise<void> {
  * installs can check schema compatibility before importing a bundle. We only
  * rewrite when the version has actually changed to avoid touching mtime on
  * every boot.
+ *
+ * `info.md` is also where the sync `vault_id` lives — deliberately, so the
+ * vault's identity survives an index rebuild.
  */
 async function syncInfoMarkdown(): Promise<void> {
 	const infoPath = path.join(vaultRoot(), 'info.md');
-	const next = infoMarkdown();
+	const vaultId = await ensureVaultId();
+	const next = infoMarkdown(vaultId);
 	try {
 		const existing = await readFile(infoPath, 'utf8');
 		const stripDate = (s: string) => s.replace(/generated_at:.*\n/, '');

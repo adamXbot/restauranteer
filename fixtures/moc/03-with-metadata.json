@@ -1,0 +1,15 @@
+{
+	"name": "03-with-metadata",
+	"list_name": "Broadsheet Hit List",
+	"restaurant_names": [
+		"Bar Liberty",
+		"Étta Unicode"
+	],
+	"created_manually": false,
+	"meta": {
+		"notes": "Imported picks — check seasonal closures.",
+		"icon": "🍷",
+		"source_url": "https://www.broadsheet.com.au/melbourne/food-and-drink/article/hit-list-very-long-url-that-will-exceed-eighty-characters-for-sure",
+		"imported_at": "2026-07-01T10:30:00.000Z"
+	}
+}

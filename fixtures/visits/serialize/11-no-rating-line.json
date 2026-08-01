@@ -1,0 +1,15 @@
+{
+	"name": "11-no-rating-line",
+	"visit": {
+		"date": "2026-06-07",
+		"vibe": "Fine",
+		"rating": null,
+		"areaRatings": {
+			"vibe": null,
+			"food": null,
+			"quality": null,
+			"service": null
+		},
+		"imagePaths": []
+	}
+}

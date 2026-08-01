@@ -1,0 +1,101 @@
+{
+	"name": "03-yaml-11-ambiguous-scalars",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "f0e1d2c3-b4a5-4968-8776-655443322110"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Yes Please"
+				}
+			],
+			[
+				"suburb",
+				{
+					"t": "str",
+					"v": "ON"
+				}
+			],
+			[
+				"motto",
+				{
+					"t": "str",
+					"v": "no"
+				}
+			],
+			[
+				"answer",
+				{
+					"t": "str",
+					"v": "Y"
+				}
+			],
+			[
+				"maybe",
+				{
+					"t": "str",
+					"v": "n"
+				}
+			],
+			[
+				"switch",
+				{
+					"t": "str",
+					"v": "off"
+				}
+			],
+			[
+				"verdict",
+				{
+					"t": "str",
+					"v": "True"
+				}
+			],
+			[
+				"attributes",
+				{
+					"t": "map",
+					"v": [
+						[
+							"y",
+							{
+								"t": "str",
+								"v": "yes"
+							}
+						],
+						[
+							"n",
+							{
+								"t": "str",
+								"v": "no"
+							}
+						],
+						[
+							"on",
+							{
+								"t": "str",
+								"v": "yes"
+							}
+						],
+						[
+							"off",
+							{
+								"t": "str",
+								"v": "no"
+							}
+						]
+					]
+				}
+			]
+		]
+	},
+	"body": ""
+}

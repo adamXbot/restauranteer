@@ -1,9 +1,10 @@
 import { mkdir, open, readdir, rename, stat, unlink } from 'node:fs/promises';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { hashContent, stringify } from './frontmatter';
 import type { Frontmatter } from './types';
 import { tmpDir } from '../config';
+import { clearVaultTombstone } from '../sync/tombstones';
 
 const SELF_WRITE_TTL_MS = 10_000;
 type SelfWriteEntry = { hash: string; expiresAt: number };
@@ -68,6 +69,7 @@ export async function atomicWriteText(
 	await writeTempThenRename(filePath, async (fh) => {
 		await fh.writeFile(content, 'utf8');
 	});
+	clearVaultTombstone(filePath);
 	const stats = await stat(filePath);
 	return { sha, mtime: stats.mtimeMs };
 }
@@ -76,6 +78,29 @@ export async function atomicWriteBinary(filePath: string, data: Uint8Array): Pro
 	await writeTempThenRename(filePath, async (fh) => {
 		await fh.writeFile(data);
 	});
+	clearVaultTombstone(filePath);
+}
+
+/**
+ * Atomic write of raw bytes, hashing the *bytes* (not a decoded string) so the
+ * returned sha matches what a sync client computes over the same payload.
+ *
+ * For UTF-8 text the byte hash equals `hashContent()`'s string hash, so
+ * registering it in the self-write table still suppresses the watcher's echo.
+ * For genuine binaries (attachments) the watcher ignores the path anyway.
+ */
+export async function atomicWriteBytes(
+	filePath: string,
+	data: Uint8Array
+): Promise<{ sha: string; mtime: number }> {
+	const sha = createHash('sha256').update(data).digest('hex');
+	recordSelfWrite(filePath, sha);
+	await writeTempThenRename(filePath, async (fh) => {
+		await fh.writeFile(data);
+	});
+	clearVaultTombstone(filePath);
+	const stats = await stat(filePath);
+	return { sha, mtime: stats.mtimeMs };
 }
 
 export async function writeMarkdownFile(

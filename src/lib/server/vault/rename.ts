@@ -5,6 +5,7 @@ import { getRestaurantByUuid } from '../db/queries';
 import { readRestaurant } from './reader';
 import { saveRestaurant } from './save';
 import { resolveCollisionFreePath, sanitizeFilename } from './filename';
+import { recordVaultDeletion } from '../sync/tombstones';
 import type { Frontmatter } from './types';
 
 export type RenameResult = {
@@ -50,6 +51,9 @@ export async function renameRestaurant(uuid: string, newName: string): Promise<R
 	// arrives (deleteRestaurantByPath then finds no row at oldPath and no-ops).
 	await saveRestaurant(newPath, newFm, rf.body, { affectedLists: lists });
 	await unlink(oldPath);
+	// Sync clients see the rename as delete-old + create-new; without the
+	// tombstone they would re-upload the old file on the next pass.
+	recordVaultDeletion(oldPath, rf.sha256);
 
 	return { uuid, name: cleaned, filePath: newPath, renamed: true };
 }

@@ -1,0 +1,9 @@
+{
+	"name": "14-multiparagraph-notes",
+	"visit": {
+		"date": "2026-06-10",
+		"rating": 4,
+		"notes": "First paragraph.\n\nSecond paragraph — with a dash.\n\n- a list item\n- another",
+		"imagePaths": []
+	}
+}

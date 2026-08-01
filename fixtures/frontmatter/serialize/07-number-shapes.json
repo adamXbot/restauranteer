@@ -1,0 +1,93 @@
+{
+	"name": "07-number-shapes",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "cafe0000-1111-4222-8333-deadbeef4444"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Number Station"
+				}
+			],
+			[
+				"lat",
+				{
+					"t": "float",
+					"v": "-37.81627499999999",
+					"bitsHex": "c042e87bb2fec56c"
+				}
+			],
+			[
+				"lng",
+				{
+					"t": "float",
+					"v": "144.96315733242034",
+					"bitsHex": "40621ed22f5374bc"
+				}
+			],
+			[
+				"rating",
+				{
+					"t": "int",
+					"v": "4"
+				}
+			],
+			[
+				"price_level",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"popularity",
+				{
+					"t": "float",
+					"v": "1e+21",
+					"bitsHex": "444b1ae4d6e2ef50"
+				}
+			],
+			[
+				"tiny_number",
+				{
+					"t": "float",
+					"v": "1e-7",
+					"bitsHex": "3e7ad7f29abcaf48"
+				}
+			],
+			[
+				"neg_zero",
+				{
+					"t": "float",
+					"v": "0",
+					"bitsHex": "8000000000000000"
+				}
+			],
+			[
+				"big_plain",
+				{
+					"t": "float",
+					"v": "100000000000000000000",
+					"bitsHex": "4415af1d78b58c40"
+				}
+			],
+			[
+				"sixth",
+				{
+					"t": "float",
+					"v": "0.16666666666666666",
+					"bitsHex": "3fc5555555555555"
+				}
+			]
+		]
+	},
+	"body": ""
+}

@@ -1,0 +1,9 @@
+{
+	"name": "05-ambiguous-list-name",
+	"list_name": "Yes",
+	"restaurant_names": [
+		"Affirmative Diner"
+	],
+	"created_manually": false,
+	"meta": null
+}

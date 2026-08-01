@@ -1,0 +1,13 @@
+{
+	"name": "04-per-area-partial-stars-only",
+	"visit": {
+		"date": "2026-05-19",
+		"areaRatings": {
+			"vibe": 3,
+			"food": null,
+			"quality": null,
+			"service": null
+		},
+		"imagePaths": []
+	}
+}

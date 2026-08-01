@@ -1,0 +1,35 @@
+{
+	"description": "conflictCopyPath(filePath, now) cases. nowIso is parsed as a JS Date; the stamp is the UTC date (toISOString().slice(0, 10)).",
+	"cases": [
+		{
+			"filePath": "Restaurants/Cumulus Inc.md",
+			"nowIso": "2026-07-17T09:30:00.000Z",
+			"expected": "Restaurants/Cumulus Inc (conflict 2026-07-17).md"
+		},
+		{
+			"filePath": "Restaurants/Vue de Monde (2).md",
+			"nowIso": "2026-12-31T23:59:59.999Z",
+			"expected": "Restaurants/Vue de Monde (2) (conflict 2026-12-31).md"
+		},
+		{
+			"filePath": "Restaurants/Late Night.md",
+			"nowIso": "2026-07-17T20:30:00+10:00",
+			"expected": "Restaurants/Late Night (conflict 2026-07-17).md"
+		},
+		{
+			"filePath": "Restaurants/notes.txt",
+			"nowIso": "2026-07-17T09:30:00.000Z",
+			"expected": "Restaurants/notes.txt (conflict 2026-07-17)"
+		},
+		{
+			"filePath": "Restaurants/Dot.Named.Place.md",
+			"nowIso": "2026-01-02T00:00:00.000Z",
+			"expected": "Restaurants/Dot.Named.Place (conflict 2026-01-02).md"
+		},
+		{
+			"filePath": "Restaurants/Cumulus Inc (conflict 2026-01-01).md",
+			"nowIso": "2026-07-17T09:30:00.000Z",
+			"expected": "Restaurants/Cumulus Inc (conflict 2026-01-01) (conflict 2026-07-17).md"
+		}
+	]
+}

@@ -1,0 +1,279 @@
+{
+	"name": "20-schema-shaped-realistic",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "4b3a2c1d-0e9f-4a51-8e0f-aa4a3b2c1d0e"
+				}
+			],
+			[
+				"schema_version",
+				{
+					"t": "int",
+					"v": "1"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Marion"
+				}
+			],
+			[
+				"aliases",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "Marion Wine Bar"
+						}
+					]
+				}
+			],
+			[
+				"address",
+				{
+					"t": "str",
+					"v": "53 Gertrude St, Fitzroy VIC 3065, Australia"
+				}
+			],
+			[
+				"suburb",
+				{
+					"t": "str",
+					"v": "Fitzroy"
+				}
+			],
+			[
+				"lat",
+				{
+					"t": "float",
+					"v": "-37.8078126",
+					"bitsHex": "c042e766673d25fb"
+				}
+			],
+			[
+				"lng",
+				{
+					"t": "float",
+					"v": "144.9830968",
+					"bitsHex": "40621f75876b99ac"
+				}
+			],
+			[
+				"phone",
+				{
+					"t": "str",
+					"v": "+61 3 9419 6262"
+				}
+			],
+			[
+				"website",
+				{
+					"t": "str",
+					"v": "https://marionwine.com.au/"
+				}
+			],
+			[
+				"socials",
+				{
+					"t": "map",
+					"v": [
+						[
+							"instagram",
+							{
+								"t": "str",
+								"v": "https://www.instagram.com/marionwinebar/"
+							}
+						]
+					]
+				}
+			],
+			[
+				"hours",
+				{
+					"t": "map",
+					"v": [
+						[
+							"mon",
+							{
+								"t": "str",
+								"v": "Closed"
+							}
+						],
+						[
+							"tue",
+							{
+								"t": "str",
+								"v": "5:00 – 11:00 pm"
+							}
+						]
+					]
+				}
+			],
+			[
+				"cuisine",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "Wine Bar"
+						}
+					]
+				}
+			],
+			[
+				"price_level",
+				{
+					"t": "int",
+					"v": "2"
+				}
+			],
+			[
+				"place_ids",
+				{
+					"t": "map",
+					"v": [
+						[
+							"google",
+							{
+								"t": "str",
+								"v": "ChIJd0uW-cRC1moRVJPHRXO7lRs"
+							}
+						]
+					]
+				}
+			],
+			[
+				"lists",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "Date Night"
+						}
+					]
+				}
+			],
+			[
+				"list_memberships",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "map",
+							"v": [
+								[
+									"list",
+									{
+										"t": "str",
+										"v": "Date Night"
+									}
+								],
+								[
+									"notes",
+									{
+										"t": "str",
+										"v": "window seats"
+									}
+								]
+							]
+						}
+					]
+				}
+			],
+			[
+				"tags",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "str",
+							"v": "wine"
+						}
+					]
+				}
+			],
+			[
+				"rating",
+				{
+					"t": "float",
+					"v": "4.5",
+					"bitsHex": "4012000000000000"
+				}
+			],
+			[
+				"attributes",
+				{
+					"t": "map",
+					"v": [
+						[
+							"dog_friendly",
+							{
+								"t": "str",
+								"v": "yes"
+							}
+						],
+						[
+							"sunday_lunch",
+							{
+								"t": "str",
+								"v": "no"
+							}
+						]
+					]
+				}
+			],
+			[
+				"unquoted_attr",
+				{
+					"t": "str",
+					"v": "yes"
+				}
+			],
+			[
+				"last_synced",
+				{
+					"t": "str",
+					"v": "2026-07-01T10:30:00.000Z"
+				}
+			],
+			[
+				"articles",
+				{
+					"t": "arr",
+					"v": [
+						{
+							"t": "map",
+							"v": [
+								[
+									"title",
+									{
+										"t": "str",
+										"v": "A long piece"
+									}
+								],
+								[
+									"url",
+									{
+										"t": "str",
+										"v": "https://example.com/read"
+									}
+								]
+							]
+						}
+					]
+				}
+			]
+		]
+	},
+	"body": "## Overview\n\nGoogle: ★ 4.6 (1,234 reviews)\n\n## Visits\n"
+}

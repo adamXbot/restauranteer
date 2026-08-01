@@ -1,0 +1,30 @@
+{
+	"name": "06-frontmatter-only",
+	"frontmatter": {
+		"t": "map",
+		"v": [
+			[
+				"id",
+				{
+					"t": "str",
+					"v": "6c6c6c6c-7d7d-4e8e-8f9f-0a0a0a0a0a0a"
+				}
+			],
+			[
+				"name",
+				{
+					"t": "str",
+					"v": "Header Only"
+				}
+			]
+		]
+	},
+	"body": "",
+	"visits": [],
+	"summary": {
+		"count": 0,
+		"latest": null,
+		"earliest": null,
+		"average": null
+	}
+}

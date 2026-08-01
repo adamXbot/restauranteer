@@ -1,0 +1,27 @@
+{
+	"name": "15-dish-average-rounding",
+	"visit": {
+		"date": "2026-06-11",
+		"dishes": [
+			{
+				"name": "A",
+				"rating": 4,
+				"note": null,
+				"photoPath": null
+			},
+			{
+				"name": "B",
+				"rating": 4,
+				"note": null,
+				"photoPath": null
+			},
+			{
+				"name": "C",
+				"rating": 5,
+				"note": null,
+				"photoPath": null
+			}
+		],
+		"imagePaths": []
+	}
+}

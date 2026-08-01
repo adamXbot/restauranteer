@@ -1,0 +1,8 @@
+{
+	"name": "11-empty-frontmatter-block",
+	"frontmatter": {
+		"t": "map",
+		"v": []
+	},
+	"body": "body after empty block\n"
+}
