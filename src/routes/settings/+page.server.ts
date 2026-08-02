@@ -6,6 +6,7 @@ import { config, attachmentsDir } from '$lib/server/config';
 import { cacheStats } from '$lib/server/providers/cache';
 import { getDb, getMeta } from '$lib/server/db/schema';
 import { getPreferences } from '$lib/server/preferences';
+import { syncTokens } from '$lib/server/sync/auth';
 import { getDistinctLists, getDistinctCuisines } from '$lib/server/db/queries';
 
 type AttachmentGroup = { slug: string; bytes: number; files: number };
@@ -69,7 +70,7 @@ async function attachmentStats(): Promise<{
 	return { total_bytes, total_files, by_restaurant: groups };
 }
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ url }) => {
 	const db = getDb();
 	const restaurantCount = (
 		db.prepare('SELECT COUNT(*) AS c FROM restaurants').get() as { c: number }
@@ -111,6 +112,14 @@ export const load: PageServerLoad = async () => {
 			lists: listCount,
 			tags: tagCount,
 			articles: articleCount
+		},
+		// Presence and count only — never the token itself, the same rule
+		// `apiKeys` above follows. The value comes from POST /api/settings/pairing
+		// when the operator explicitly asks to see the code.
+		sync: {
+			enabled: syncTokens().length > 0,
+			tokenCount: syncTokens().length,
+			suggestedUrl: url.origin
 		},
 		cache: cacheStats(),
 		attachments: await attachmentStats(),
