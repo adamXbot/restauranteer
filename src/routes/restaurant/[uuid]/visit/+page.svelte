@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { localISODate } from '$lib/dates';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { resizeForUpload } from '$lib/imageResize';
@@ -23,7 +24,7 @@
 		attributeOverrides = copy;
 	}
 
-	const today = new Date().toISOString().slice(0, 10);
+	const today = localISODate();
 	let date = $state(today);
 	let meal = $state('');
 	let companions = $state('');

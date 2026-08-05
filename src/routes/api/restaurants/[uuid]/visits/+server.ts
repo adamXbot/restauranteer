@@ -1,3 +1,4 @@
+import { localISODate } from '$lib/dates';
 import { error, json } from '@sveltejs/kit';
 import path from 'node:path';
 import { mkdir } from 'node:fs/promises';
@@ -69,7 +70,10 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		throw error(400, 'could not read upload — the request may be too large or malformed');
 	}
 
-	const date = readField(form, 'date') ?? new Date().toISOString().slice(0, 10);
+	// Fallback for direct API callers only — the visit form always submits
+	// its date. Server-local beats UTC here for the same reason as the form:
+	// a self-hosted box lives in its owner's timezone.
+	const date = readField(form, 'date') ?? localISODate();
 	const meal = readField(form, 'meal');
 	const companions = readField(form, 'companions');
 	const vibe = readField(form, 'vibe');
