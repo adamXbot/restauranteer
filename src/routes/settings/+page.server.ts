@@ -5,7 +5,7 @@ import { env } from '$env/dynamic/private';
 import { config, attachmentsDir } from '$lib/server/config';
 import { cacheStats } from '$lib/server/providers/cache';
 import { getDb, getMeta } from '$lib/server/db/schema';
-import { getPreferences } from '$lib/server/preferences';
+import { getPreferences, adoptSettingsFileIfMissing } from '$lib/server/preferences';
 import { syncTokens } from '$lib/server/sync/auth';
 import { getDistinctLists, getDistinctCuisines } from '$lib/server/db/queries';
 
@@ -71,6 +71,10 @@ async function attachmentStats(): Promise<{
 }
 
 export const load: PageServerLoad = async ({ url }) => {
+	// A pre-adoption deployment writes its meta-stored preferences out to
+	// the shared vault file the first time Settings opens, so a phone joined
+	// later starts from the same choices. No-op once the file exists.
+	adoptSettingsFileIfMissing();
 	const db = getDb();
 	const restaurantCount = (
 		db.prepare('SELECT COUNT(*) AS c FROM restaurants').get() as { c: number }
