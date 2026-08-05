@@ -4,6 +4,7 @@ import { extractGenericLinkPreview } from './providers/scraper/genericLink';
 import { linkRefToRestaurant } from './vault/createFromArticle';
 import type { ArticleRef } from './providers/scraper/types';
 import { log } from './log';
+import { reconcileInboxFiles, consumeInboxFile } from './vault/inboxFiles';
 
 export type InboxItem = {
 	id: number;
@@ -14,6 +15,8 @@ export type InboxItem = {
 	image_url: string | null;
 	suggested_uuid: string | null;
 	created_at: number;
+	/** Basename of the `{vault}/Inbox/*.md` file this row mirrors, if any. */
+	vault_file: string | null;
 };
 
 export type InboxSuggestion = {
@@ -25,6 +28,9 @@ export type InboxSuggestion = {
 type Row = InboxItem;
 
 export function listInbox(): InboxItem[] {
+	// Adopt whatever a phone has shared since the last look, and drop rows
+	// whose file the phone already triaged (see vault/inboxFiles.ts).
+	reconcileInboxFiles();
 	return getDb()
 		.prepare('SELECT * FROM link_inbox ORDER BY created_at DESC')
 		.all() as Row[];
@@ -114,6 +120,7 @@ export async function addToInbox(rawUrl: string): Promise<AddToInboxResult> {
 		excerpt: preview.ref.excerpt,
 		image_url: preview.image_url,
 		suggested_uuid: suggested,
+		vault_file: null,
 		created_at
 	};
 	return { status: 'added', item, suggestions };
@@ -134,10 +141,14 @@ export async function attachInboxToRestaurant(
 	};
 	await linkRefToRestaurant(uuid, ref);
 	getDb().prepare('DELETE FROM link_inbox WHERE id = ?').run(id);
+	// Triage consumes the phone-shared file too — same semantic as the app.
+	consumeInboxFile(item.vault_file);
 	return { ok: true, uuid };
 }
 
 export function dismissInbox(id: number): boolean {
+	const item = getInboxItem(id);
 	const info = getDb().prepare('DELETE FROM link_inbox WHERE id = ?').run(id);
+	if (info.changes > 0) consumeInboxFile(item?.vault_file);
 	return info.changes > 0;
 }

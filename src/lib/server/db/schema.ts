@@ -145,6 +145,15 @@ const MIGRATIONS: string[] = [
 		last_sha TEXT
 	);
 	CREATE INDEX IF NOT EXISTS idx_sync_tombstones_deleted_at ON sync_tombstones(deleted_at);
+	`,
+	// v8 — adopt the iOS app's synced inbox files ({vault}/Inbox/*.md).
+	// `vault_file` maps a link_inbox row to the md file it was adopted from
+	// (basename only), so triaging on the web consumes the file too and the
+	// reconciler can drop rows whose file the phone already triaged.
+	// Appended, never inserted: this array's index is the migration version.
+	`
+	ALTER TABLE link_inbox ADD COLUMN vault_file TEXT;
+	CREATE INDEX IF NOT EXISTS idx_link_inbox_vault_file ON link_inbox(vault_file);
 	`
 ];
 

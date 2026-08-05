@@ -1,4 +1,6 @@
+import { readFileSync, writeFileSync, renameSync, existsSync } from 'node:fs';
 import { getMeta, setMeta } from './db/schema';
+import { preferencesFilePath } from './config';
 import {
 	DEFAULT_THEME_PREFERENCES,
 	coerceThemeMode,
@@ -105,8 +107,23 @@ export function parsePreferences(raw: string | null): Preferences {
 	}
 }
 
+/**
+ * Raw bytes of the shared settings file, or null. The file
+ * (`{vault}/.restauranteer-settings.json`) is the canonical store since the
+ * iOS app began writing it — SQLite meta remains as the pre-adoption
+ * fallback and is kept in step on every write, so a rollback of this code
+ * loses nothing.
+ */
+function rawSettingsFile(): string | null {
+	try {
+		return readFileSync(preferencesFilePath(), 'utf8');
+	} catch {
+		return null;
+	}
+}
+
 export function getPreferences(): Preferences {
-	return parsePreferences(getMeta(KEY));
+	return parsePreferences(rawSettingsFile() ?? getMeta(KEY));
 }
 
 export function setPreferences(updates: Partial<Preferences>): Preferences {
@@ -159,6 +176,54 @@ export function setPreferences(updates: Partial<Preferences>): Preferences {
 				? coerceAttributeDefinitions(updates.attributes)
 				: current.attributes
 	};
+	writeSettingsFile(merged);
 	setMeta(KEY, JSON.stringify(merged));
 	return merged;
+}
+
+/**
+ * Write the shared settings file, carrying through any top-level keys this
+ * server does not know — the iOS store does the same in reverse, so a newer
+ * peer's keys survive a round-trip through an older one. Atomic via
+ * temp-file + rename; the temp name is dot-prefixed, which every scanner in
+ * both apps already ignores.
+ */
+function writeSettingsFile(merged: Preferences): void {
+	let unknown: Record<string, unknown> = {};
+	const raw = rawSettingsFile();
+	if (raw) {
+		try {
+			const existing = JSON.parse(raw) as Record<string, unknown>;
+			const known = new Set(Object.keys(merged));
+			for (const [key, value] of Object.entries(existing)) {
+				if (!known.has(key)) unknown[key] = value;
+			}
+		} catch {
+			// Corrupt file: overwrite with known-good content, dropping nothing
+			// parseable — there was nothing parseable.
+			unknown = {};
+		}
+	}
+	const target = preferencesFilePath();
+	const temp = `${target}.tmp-${process.pid}`;
+	try {
+		writeFileSync(temp, JSON.stringify({ ...merged, ...unknown }, null, 2) + '\n', 'utf8');
+		renameSync(temp, target);
+	} catch {
+		// Vault not writable (read-only mount, missing dir): meta still has
+		// the truth, and the next successful write catches the file up.
+	}
+}
+
+/**
+ * One-time adoption: a deployment that predates the shared file gets its
+ * meta-stored preferences written out, so the iOS app sees them the moment
+ * the folders are shared. Called at inbox/settings load; cheap no-op once
+ * the file exists.
+ */
+export function adoptSettingsFileIfMissing(): void {
+	if (existsSync(preferencesFilePath())) return;
+	const meta = getMeta(KEY);
+	if (!meta) return;
+	writeSettingsFile(parsePreferences(meta));
 }
