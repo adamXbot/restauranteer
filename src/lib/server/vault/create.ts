@@ -1,7 +1,8 @@
 import path from 'node:path';
 import { newId } from '../uuid';
 import { cuisinesFromTypes, placeDetails, type PlaceDetails } from '../providers/google';
-import { findByGooglePlaceId, getRestaurantByUuid } from '../db/queries';
+import { findByApplePlaceId, findByGooglePlaceId, getRestaurantByUuid } from '../db/queries';
+import { suburbFromAppleAddress } from '../providers/scraper/applemaps';
 import { readRestaurant } from './reader';
 import { resolveCollisionFreePath } from './filename';
 import { saveRestaurant } from './save';
@@ -116,6 +117,55 @@ export async function createBlankRestaurant(input: {
 	const body = '## Overview\n\n## Visits\n';
 	await saveRestaurant(filePath, frontmatter, body);
 	return { uuid, filePath };
+}
+
+/**
+ * Create from an Apple Maps search result.
+ *
+ * Separate from `createBlankRestaurant` only because it carries coordinates
+ * and `place_ids.apple` — the id that keeps the entry cross-peer with the
+ * iOS app, which writes the same key from `MKMapItem.identifier`. Apple
+ * exposes no price level or rating, which is exactly why an Apple-sourced
+ * entry is a candidate for the one-tap Google enrich afterwards.
+ */
+export async function createRestaurantFromApplePlace(input: {
+	name: string;
+	address?: string | null;
+	suburb?: string | null;
+	lat?: number | null;
+	lng?: number | null;
+	place_id?: string | null;
+}): Promise<{ uuid: string; filePath: string; alreadyExisted: boolean }> {
+	const name = input.name.trim();
+	if (!name) throw new Error('Restaurant name required');
+
+	// Known Apple id → return the incumbent rather than making a duplicate,
+	// mirroring the Google create path's place-id short-circuit.
+	if (input.place_id) {
+		const existing = findByApplePlaceId(input.place_id);
+		if (existing) {
+			return { uuid: existing.uuid, filePath: existing.file_path, alreadyExisted: true };
+		}
+	}
+
+	const suburb = input.suburb?.trim() || suburbFromAppleAddress(input.address ?? null);
+	const filePath = await resolveCollisionFreePath(name, suburb ?? null);
+	const uuid = newId();
+	const frontmatter: Frontmatter = {
+		id: uuid,
+		schema_version: CURRENT_SCHEMA_VERSION,
+		name,
+		address: input.address?.trim() || undefined,
+		suburb: suburb || undefined,
+		lat: typeof input.lat === 'number' ? input.lat : undefined,
+		lng: typeof input.lng === 'number' ? input.lng : undefined,
+		place_ids: input.place_id ? { apple: input.place_id } : undefined,
+		lists: [],
+		tags: [],
+		last_synced: new Date().toISOString()
+	};
+	await saveRestaurant(filePath, frontmatter, '## Overview\n\n## Visits\n');
+	return { uuid, filePath, alreadyExisted: false };
 }
 
 /** Sanity check: ensure a file path is inside the configured vault root. */

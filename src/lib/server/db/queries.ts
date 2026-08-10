@@ -510,6 +510,25 @@ export function findByGooglePlaceId(placeId: string): IndexedRestaurant | null {
 	return row ? hydrate(row) : null;
 }
 
+/**
+ * Apple ids live in `place_ids.apple` inside the frontmatter JSON — there is
+ * no dedicated column the way there is for Google (which earned one because
+ * every search dedups against it). Scanning is fine at vault scale and keeps
+ * the schema unchanged.
+ */
+export function findByApplePlaceId(placeId: string): IndexedRestaurant | null {
+	if (!placeId) return null;
+	const db = getDb();
+	const rows = db
+		.prepare(
+			`SELECT * FROM restaurants
+			 WHERE json_extract(frontmatter_json, '$.place_ids.apple') = ?
+			 LIMIT 1`
+		)
+		.all(placeId) as RestaurantRow[];
+	return rows.length > 0 ? hydrate(rows[0]) : null;
+}
+
 export type NearFilter = {
 	minLat: number;
 	maxLat: number;
