@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { autocomplete, hasGoogleKey } from '$lib/server/providers/google';
-import { searchVaultFts } from '$lib/server/db/queries';
+import { searchVaultFtsHits } from '$lib/server/db/queries';
 import { log } from '$lib/server/log';
 
 export const GET: RequestHandler = async ({ url }) => {
@@ -14,12 +14,16 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	if (!q) return json({ vault: [], google: [], google_enabled: hasGoogleKey() });
 
-	const vault = searchVaultFts(q, 10).map((r) => ({
-		uuid: r.uuid,
-		name: r.name,
-		address: (r.frontmatter.address as string | undefined) ?? null,
-		suburb: (r.frontmatter.suburb as string | undefined) ?? null,
-		google_place_id: r.google_place_id
+	// Hits, not bare rows: a cuisine or dish-note match whose reason isn't
+	// shown reads as a wrong answer (the whole "search doesn't work" report).
+	const vault = searchVaultFtsHits(q, 10).map((hit) => ({
+		uuid: hit.restaurant.uuid,
+		name: hit.restaurant.name,
+		address: (hit.restaurant.frontmatter.address as string | undefined) ?? null,
+		suburb: (hit.restaurant.frontmatter.suburb as string | undefined) ?? null,
+		google_place_id: hit.restaurant.google_place_id,
+		match_field: hit.field,
+		match_snippet: hit.snippet
 	}));
 	const knownIds = new Set(vault.map((v) => v.google_place_id).filter(Boolean));
 

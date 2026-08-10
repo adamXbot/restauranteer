@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
+	import SearchMatchLine from './SearchMatchLine.svelte';
 
 	// `allowImport` turns this into a universal input: a pasted URL is offered for
 	// import (into the inbox) instead of searched.
@@ -14,6 +15,10 @@
 		address: string | null;
 		suburb: string | null;
 		google_place_id: string | null;
+		/** Which FTS column matched, for the "why this matched" line. */
+		match_field: string | null;
+		/** Marker-wrapped excerpt; null for name/alias matches. */
+		match_snippet: string | null;
 	};
 	type GoogleHit = {
 		place_id: string;
@@ -214,6 +219,7 @@
 								{#if r.suburb || r.address}
 									<p class="text-xs text-tertiary">{r.suburb ?? r.address}</p>
 								{/if}
+								<SearchMatchLine field={r.match_field} snippet={r.match_snippet} />
 							</button>
 						</li>
 					{/each}
