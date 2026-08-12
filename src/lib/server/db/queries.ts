@@ -1,3 +1,4 @@
+import { searchableText, HIGHLIGHT_BEGIN, HIGHLIGHT_END } from '$lib/searchText';
 import path from 'node:path';
 import type { RestaurantFile } from '../vault/types';
 import { extractVisitsForIndex, summarizeBody, type VisitSummary } from '../vault/visit';
@@ -168,9 +169,12 @@ export function upsertRestaurant(rf: RestaurantFile): void {
 		}
 
 		deleteFts.run(uuid);
+		// Tags, cuisine AND list names — all "labels the user put on this
+		// place", so one column explains them all in a search hit.
 		const ftsTags = [
 			...(Array.isArray(fm.tags) ? (fm.tags as unknown[]).map(String) : []),
-			...(Array.isArray(fm.cuisine) ? (fm.cuisine as unknown[]).map(String) : [])
+			...(Array.isArray(fm.cuisine) ? (fm.cuisine as unknown[]).map(String) : []),
+			...(Array.isArray(fm.lists) ? (fm.lists as unknown[]).map(String) : [])
 		].join(' ');
 		insertFts.run(
 			uuid,
@@ -178,7 +182,12 @@ export function upsertRestaurant(rf: RestaurantFile): void {
 			Array.isArray(fm.aliases) ? fm.aliases.join(' ') : '',
 			fm.address ? String(fm.address) : '',
 			ftsTags,
-			bodyExcerpt
+			// The FULL body, unlike the 1000-char `body_excerpt` column (which
+			// feeds list rendering). The cap here meant everything below it —
+			// the Visits section in every file — was unsearchable. Stripped to
+			// plain text so snippets quote sentences rather than Markdown, and
+			// photo-path lines stop minting junk tokens.
+			searchableText(rf.body)
 		);
 
 		db.prepare('DELETE FROM article_urls WHERE restaurant_uuid = ?').run(uuid);
@@ -380,13 +389,29 @@ function hydrate(r: RestaurantRow): IndexedRestaurant {
 	};
 }
 
+/**
+ * Sanitize → prefix tokens, or null when nothing survives.
+ *
+ * **Deliberately wider than ASCII `\w`**: the original regex dropped every
+ * non-ASCII scalar, so "寿司" and "Хачапури" sanitized to pure whitespace and
+ * searching for a restaurant *by its own name* returned nothing. The FTS5
+ * table is `unicode61`, which tokenizes those scripts correctly, so the
+ * sanitizer was the only thing in the way. Punctuation and the FTS5 operator
+ * characters still become spaces — that is the part worth having. (The iOS
+ * index fixed this first; this is the same rule.)
+ */
+export function ftsMatchQuery(query: string): string | null {
+	const cleaned = query.replace(/[^\p{L}\p{N}\p{M}_\s-]/gu, ' ').trim();
+	if (!cleaned) return null;
+	const tokens = cleaned.split(/\s+/).filter((t) => t.length > 0);
+	if (tokens.length === 0) return null;
+	return tokens.map((t) => `${t}*`).join(' ');
+}
+
 export function searchVaultFts(query: string, limit = 10): IndexedRestaurant[] {
 	const db = getDb();
-	const cleaned = query.replace(/[^\w\s-]/g, ' ').trim();
-	if (!cleaned) return [];
-	const tokens = cleaned.split(/\s+/).filter((t) => t.length > 0);
-	if (tokens.length === 0) return [];
-	const ftsQuery = tokens.map((t) => `${t}*`).join(' ');
+	const ftsQuery = ftsMatchQuery(query);
+	if (!ftsQuery) return [];
 	let rows: RestaurantRow[];
 	try {
 		rows = db
@@ -404,12 +429,104 @@ export function searchVaultFts(query: string, limit = 10): IndexedRestaurant[] {
 	return rows.map((r) => hydrate(r));
 }
 
+/** FTS columns, in the order a person would want a match explained. */
+export type SearchField = 'name' | 'aliases' | 'tags' | 'body' | 'address';
+
+export type VaultSearchHit = {
+	restaurant: IndexedRestaurant;
+	/** null when FTS matched but no column snippet carried a marker. */
+	field: SearchField | null;
+	/**
+	 * Marker-wrapped excerpt (see `HIGHLIGHT_BEGIN`). null for name/alias
+	 * matches — the row's own title is the answer, so repeating it as a
+	 * snippet would be noise.
+	 */
+	snippet: string | null;
+};
+
+/** `snippet()` column indexes, matching the FTS5 table's column order. */
+const SNIPPET_ORDER: { field: SearchField; column: string; index: number; tokens: number }[] = [
+	{ field: 'name', column: 'snip_name', index: 1, tokens: 10 },
+	{ field: 'aliases', column: 'snip_aliases', index: 2, tokens: 10 },
+	{ field: 'tags', column: 'snip_tags', index: 4, tokens: 10 },
+	{ field: 'body', column: 'snip_body', index: 5, tokens: 14 },
+	{ field: 'address', column: 'snip_address', index: 3, tokens: 10 }
+];
+
+/**
+ * `searchVaultFts` plus *why* each row matched: an FTS5 `snippet()` per
+ * column, the winner picked in explanation order. A column's snippet only
+ * carries markers when that column matched; otherwise it is just the
+ * column's leading text.
+ *
+ * Mirrors `IndexReader.searchFTSHits` in the iOS repo.
+ */
+export function searchVaultFtsHits(query: string, limit = 10): VaultSearchHit[] {
+	const db = getDb();
+	const ftsQuery = ftsMatchQuery(query);
+	if (!ftsQuery) return [];
+
+	const snippetSelects = SNIPPET_ORDER.map(
+		(s) => `snippet(restaurants_fts, ${s.index}, ?, ?, '…', ${s.tokens}) AS ${s.column}`
+	).join(',\n\t\t\t\t\t');
+	const markers = SNIPPET_ORDER.flatMap(() => [HIGHLIGHT_BEGIN, HIGHLIGHT_END]);
+
+	let rows: (RestaurantRow & Record<string, string | null>)[];
+	try {
+		rows = db
+			.prepare(
+				`SELECT r.*,
+					${snippetSelects}
+				 FROM restaurants_fts fts
+				 JOIN restaurants r ON r.uuid = fts.uuid
+				 WHERE restaurants_fts MATCH ?
+				 ORDER BY rank
+				 LIMIT ?`
+			)
+			.all(...markers, ftsQuery, limit) as (RestaurantRow & Record<string, string | null>)[];
+	} catch {
+		// FTS5 syntax errors — same tolerance as `searchVaultFts`.
+		return [];
+	}
+
+	return rows.map((row) => {
+		const matched = SNIPPET_ORDER.find(
+			(s) => typeof row[s.column] === 'string' && row[s.column]!.includes(HIGHLIGHT_BEGIN)
+		);
+		const isTitleMatch = matched?.field === 'name' || matched?.field === 'aliases';
+		return {
+			restaurant: hydrate(row),
+			field: matched?.field ?? null,
+			snippet: matched && !isTitleMatch ? (row[matched.column] ?? null) : null
+		};
+	});
+}
+
 export function findByGooglePlaceId(placeId: string): IndexedRestaurant | null {
 	const db = getDb();
 	const row = db
 		.prepare('SELECT * FROM restaurants WHERE google_place_id = ?')
 		.get(placeId) as RestaurantRow | undefined;
 	return row ? hydrate(row) : null;
+}
+
+/**
+ * Apple ids live in `place_ids.apple` inside the frontmatter JSON — there is
+ * no dedicated column the way there is for Google (which earned one because
+ * every search dedups against it). Scanning is fine at vault scale and keeps
+ * the schema unchanged.
+ */
+export function findByApplePlaceId(placeId: string): IndexedRestaurant | null {
+	if (!placeId) return null;
+	const db = getDb();
+	const rows = db
+		.prepare(
+			`SELECT * FROM restaurants
+			 WHERE json_extract(frontmatter_json, '$.place_ids.apple') = ?
+			 LIMIT 1`
+		)
+		.all(placeId) as RestaurantRow[];
+	return rows.length > 0 ? hydrate(rows[0]) : null;
 }
 
 export type NearFilter = {

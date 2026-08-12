@@ -154,6 +154,31 @@ const MIGRATIONS: string[] = [
 	`
 	ALTER TABLE link_inbox ADD COLUMN vault_file TEXT;
 	CREATE INDEX IF NOT EXISTS idx_link_inbox_vault_file ON link_inbox(vault_file);
+	`,
+	// v9 — full-body search. The FTS `body` column held only the first 1000
+	// characters of each file, which made everything below the fold — the
+	// Visits section in every file — unsearchable: a dish note saying "the
+	// pasta was perfect" found nothing. The column now holds the full body as
+	// plain text, and `tags` gains list names.
+	//
+	// Dropping the table empties the index, which is safe here *only* because
+	// `bootVault` runs `fullReconcile()` on every start and that re-upserts
+	// every file unconditionally (no mtime/sha prefilter on this side — cf.
+	// the iOS index, which needs `mtime = -1` to force the same thing). The
+	// window is one boot, and migrations run inside it, before the reconcile.
+	//
+	// Appended, never inserted — this array's index is the version.
+	`
+	DROP TABLE IF EXISTS restaurants_fts;
+	CREATE VIRTUAL TABLE restaurants_fts USING fts5(
+		uuid UNINDEXED,
+		name,
+		aliases,
+		address,
+		tags,
+		body,
+		tokenize='unicode61'
+	);
 	`
 ];
 

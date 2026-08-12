@@ -53,7 +53,7 @@ async function extract(rawUrl: string): Promise<ExtractedRestaurant> {
 		name,
 		excerpt,
 		address,
-		suburb: suburbFromAddress(address),
+		suburb: suburbFromAppleAddress(address),
 		lat,
 		lng,
 		phone: entity.phone,
@@ -145,7 +145,12 @@ function dedupe(xs: string[]): string[] {
 	return Array.from(new Set(xs));
 }
 
-function suburbFromAddress(address: string | null): string | null {
+/**
+ * Apple's address format is "<street>, <suburb> <STATE> <postcode>, <country>".
+ * Exported because the Apple *search* lane needs the same parse — Apple
+ * returns address lines but no separate locality field.
+ */
+export function suburbFromAppleAddress(address: string | null): string | null {
 	if (!address) return null;
 	// Apple's address format is "<street>, <suburb> <STATE> <postcode>, <country>"
 	const parts = address.split(',').map((s) => s.trim());

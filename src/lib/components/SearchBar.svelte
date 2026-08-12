@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
+	import SearchMatchLine from './SearchMatchLine.svelte';
 
 	// `allowImport` turns this into a universal input: a pasted URL is offered for
 	// import (into the inbox) instead of searched.
@@ -14,6 +15,18 @@
 		address: string | null;
 		suburb: string | null;
 		google_place_id: string | null;
+		/** Which FTS column matched, for the "why this matched" line. */
+		match_field: string | null;
+		/** Marker-wrapped excerpt; null for name/alias matches. */
+		match_snippet: string | null;
+	};
+	type AppleHit = {
+		name: string;
+		address: string | null;
+		lat: number | null;
+		lng: number | null;
+		place_id: string | null;
+		category: string | null;
 	};
 	type GoogleHit = {
 		place_id: string;
@@ -25,6 +38,8 @@
 	let query = $state('');
 	let vault = $state<VaultHit[]>([]);
 	let google = $state<GoogleHit[]>([]);
+	let apple = $state<AppleHit[]>([]);
+	let addingApple = $state<string | null>(null);
 	let googleEnabled = $state(true);
 	let loading = $state(false);
 	let lastError = $state<string | null>(null);
@@ -79,12 +94,14 @@
 		if (looksLikeUrl(q) && allowImport) {
 			vault = [];
 			google = [];
+			apple = [];
 			loading = false;
 			return;
 		}
 		if (q.trim().length < 2) {
 			vault = [];
 			google = [];
+			apple = [];
 			loading = false;
 			return;
 		}
@@ -102,6 +119,7 @@
 			.then((data) => {
 				vault = data.vault;
 				google = data.google;
+				apple = data.apple ?? [];
 				googleEnabled = data.google_enabled;
 				lastError = null;
 				loading = false;
@@ -141,6 +159,33 @@
 	function openGoogle(placeId: string) {
 		query = '';
 		goto(`/place/${placeId}`);
+	}
+
+	/**
+	 * Apple has no `/place/[id]` preview to open — the Server API gives us the
+	 * place inline rather than an id we can re-fetch — so the row creates the
+	 * entry and lands on it. An already-known Apple id returns the incumbent
+	 * instead of a duplicate.
+	 */
+	async function addApple(hit: AppleHit) {
+		if (addingApple) return;
+		addingApple = hit.place_id ?? hit.name;
+		try {
+			const res = await fetch('/api/restaurants', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ source: 'apple', ...hit })
+			});
+			if (!res.ok) throw new Error(`Create failed: ${res.status}`);
+			const created = (await res.json()) as { uuid: string };
+			query = '';
+			await invalidateAll();
+			goto(`/restaurant/${created.uuid}`);
+		} catch (e) {
+			lastError = String(e);
+		} finally {
+			addingApple = null;
+		}
 	}
 </script>
 
@@ -214,6 +259,7 @@
 								{#if r.suburb || r.address}
 									<p class="text-xs text-tertiary">{r.suburb ?? r.address}</p>
 								{/if}
+								<SearchMatchLine field={r.match_field} snippet={r.match_snippet} />
 							</button>
 						</li>
 					{/each}
@@ -237,7 +283,26 @@
 					{/each}
 				</ul>
 			{/if}
-			{#if !loading && vault.length === 0 && google.length === 0}
+			{#if apple.length > 0}
+				<h3 class="mt-3 mb-1 text-[10px] tracking-widest text-tertiary uppercase">Apple Maps</h3>
+				<ul class="space-y-2">
+					{#each apple as a (a.place_id ?? a.name + a.address)}
+						<li>
+							<button
+								onclick={() => addApple(a)}
+								disabled={addingApple !== null}
+								class="block w-full rounded-xl border border-line bg-panel/40 px-3 py-2.5 text-left disabled:opacity-50"
+							>
+								<p class="text-sm font-medium text-primary">{a.name}</p>
+								{#if a.address}
+									<p class="text-xs text-tertiary">{a.address}</p>
+								{/if}
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+			{#if !loading && vault.length === 0 && google.length === 0 && apple.length === 0}
 				<p class="px-1 py-3 text-sm text-tertiary">No matches.</p>
 			{/if}
 		</section>
