@@ -5,6 +5,7 @@ import { parse, stringify } from './frontmatter';
 import { atomicWriteText } from './writer';
 import { getDistinctLists, getRestaurantNamesForList } from '../db/queries';
 import { recordVaultDeletion } from '../sync/tombstones';
+import { isSafeListName, validateListName } from './listName';
 import { log } from '../log';
 
 const SENTINEL = {
@@ -40,8 +41,29 @@ type MocInfo = {
 	meta: ListMeta;
 };
 
+/**
+ * The one place a list name becomes a path, so the guarantee lives here
+ * rather than at each call site: an unsafe name cannot produce a path at all.
+ * Callers handling untrusted names check `isSafeListName` first and skip —
+ * reaching this throw means a name got past every earlier filter.
+ *
+ * The containment assertion is deliberate belt-and-braces: `validateListName`
+ * already rejects separators, so it can only fire if these rules are ever
+ * loosened, which is exactly when a silent escape would be reintroduced.
+ */
 function mocPath(listName: string): string {
-	return path.join(listsDir(), `${listName}.md`);
+	const verdict = validateListName(listName);
+	if (!verdict.ok) {
+		throw new Error(`unsafe list name (${verdict.reason})`);
+	}
+	const dir = listsDir();
+	const filePath = path.join(dir, `${verdict.name}.md`);
+	const resolved = path.resolve(filePath);
+	if (resolved !== path.resolve(dir, `${verdict.name}.md`) ||
+		!resolved.startsWith(path.resolve(dir) + path.sep)) {
+		throw new Error('list path escapes the lists directory');
+	}
+	return filePath;
 }
 
 export function isMocFile(filePath: string): boolean {
@@ -89,6 +111,7 @@ async function readMocFrontmatter(filePath: string): Promise<Record<string, unkn
 }
 
 async function readMocInfoForList(listName: string): Promise<MocInfo | null> {
+	if (!isSafeListName(listName)) return null;
 	return readMocInfo(mocPath(listName));
 }
 
@@ -184,6 +207,15 @@ export async function getAllListSummaries(): Promise<ListSummary[]> {
 }
 
 export async function writeMocForList(listName: string): Promise<void> {
+	// Every regeneration path funnels through here — boot, the file watcher,
+	// save, import, admin reconcile — and all of them can carry a name that
+	// came off disk. Skip rather than throw: one poisoned `lists:` entry in
+	// somebody's frontmatter must not take down startup.
+	const verdict = validateListName(listName);
+	if (!verdict.ok) {
+		log.warn('Skipping unsafe list name', { listName, reason: verdict.reason });
+		return;
+	}
 	const names = getRestaurantNamesForList(listName);
 	const filePath = mocPath(listName);
 	const existing = await readMocInfoForList(listName);
