@@ -1,23 +1,16 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createEmptyListMoc, getAllListSummaries } from '$lib/server/vault/moc';
-
-const MAX_LIST_NAME_LEN = 60;
+import { LIST_NAME_REJECTION_MESSAGE, validateListName } from '$lib/server/vault/listName';
 
 function normalizeListName(input: unknown): string {
 	if (typeof input !== 'string') throw error(400, 'name required');
-	const name = input.trim();
-	if (!name) throw error(400, 'name required');
-	if (name.length > MAX_LIST_NAME_LEN) {
-		throw error(400, `list name too long (max ${MAX_LIST_NAME_LEN})`);
+	const verdict = validateListName(input);
+	if (!verdict.ok) {
+		throw error(400, verdict.reason === 'empty' ? 'name required'
+			: LIST_NAME_REJECTION_MESSAGE[verdict.reason]);
 	}
-	if (name === '.' || name === '..' || name.startsWith('.')) {
-		throw error(400, 'list name cannot start with "."');
-	}
-	if (/[/\\\0\r\n]/.test(name)) {
-		throw error(400, 'list name cannot include slashes or line breaks');
-	}
-	return name;
+	return verdict.name;
 }
 
 export const GET: RequestHandler = async () => {

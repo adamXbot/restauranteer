@@ -4,8 +4,8 @@ import { getRestaurantByUuid } from '$lib/server/db/queries';
 import { readRestaurant } from '$lib/server/vault/reader';
 import { saveRestaurant } from '$lib/server/vault/save';
 import type { Frontmatter, ListMembership } from '$lib/server/vault/types';
+import { LIST_NAME_REJECTION_MESSAGE, validateListName } from '$lib/server/vault/listName';
 
-const MAX_LIST_NAME_LEN = 60;
 const MAX_LISTS_PER_RESTAURANT = 50;
 const MAX_LIST_NOTE_LEN = 1000;
 
@@ -15,11 +15,12 @@ function normalizeLists(input: unknown): string[] {
 	const seen = new Set<string>();
 	for (const raw of input) {
 		if (typeof raw !== 'string') throw error(400, 'lists entries must be strings');
-		const trimmed = raw.trim();
-		if (trimmed.length === 0) continue;
-		if (trimmed.length > MAX_LIST_NAME_LEN) {
-			throw error(400, `list name too long (max ${MAX_LIST_NAME_LEN})`);
-		}
+		if (raw.trim().length === 0) continue;
+		// Same rules as the list-create route: these names become filenames,
+		// and this route reaches that sink too.
+		const verdict = validateListName(raw);
+		if (!verdict.ok) throw error(400, LIST_NAME_REJECTION_MESSAGE[verdict.reason]);
+		const trimmed = verdict.name;
 		const key = trimmed.toLowerCase();
 		if (seen.has(key)) continue;
 		seen.add(key);
