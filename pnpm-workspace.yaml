@@ -7,3 +7,6 @@ minimumReleaseAgeExclude:
   - '@types/node@25.9.0'
   - mapbox-gl@3.24.0
   - marked@18.0.4
+
+overrides:
+  cookie@<0.7.0: ^0.7.2

@@ -2,7 +2,7 @@
 
 Cross-language golden fixtures for the Restauranteer vault file format. They pin
 the exact behavior of the production web modules (gray-matter 4.0.3 /
-js-yaml 3.14.2 emission included) so a Swift port (`VaultFormat`) can be
+js-yaml 3.15.2 emission included) so a Swift port (`VaultFormat`) can be
 tested against the very same bytes. **Do not edit anything in this tree by
 hand** — it is generated.
 
@@ -67,7 +67,7 @@ trees (visit inputs/fields, merge metadata, filenames, MOC inputs).
 
 ## Format conventions worth knowing (captured by these fixtures)
 
-- Emission is js-yaml 3.14.2 defaults: 2-space indent, 80-column line
+- Emission is js-yaml 3.15.2 defaults: 2-space indent, 80-column line
   width with `>-` folding, single quotes for YAML-1.1-ambiguous scalars
   (`'yes'`, `'no'`, `'y'`, ISO timestamps, number-looking strings), `|-`/`|`/`|+`
   literal blocks for multiline strings, double quotes only when escapes are
