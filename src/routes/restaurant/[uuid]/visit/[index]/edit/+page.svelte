@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { resizeForUpload } from '$lib/imageResize';
+	import { photoUrl } from '$lib/photoRef';
 	import StarPicker from '$lib/components/StarPicker.svelte';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import AttributeToggle from '$lib/components/AttributeToggle.svelte';
@@ -108,10 +109,7 @@
 		return URL.createObjectURL(file);
 	}
 
-	function thumbUrl(path: string): string {
-		const rel = path.replace(/^_attachments\//, '');
-		return `/api/attachments/${rel}`;
-	}
+	const thumbUrl = photoUrl;
 
 	function removePickedPhoto(idx: number) {
 		pickedFiles = pickedFiles.filter((_, i) => i !== idx);

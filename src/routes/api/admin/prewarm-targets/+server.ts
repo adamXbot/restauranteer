@@ -5,6 +5,7 @@ import { readRestaurant } from '$lib/server/vault/reader';
 import { extractImagePaths } from '$lib/server/vault/visit';
 import { hasGoogleKey, placeDetails } from '$lib/server/providers/google';
 import { log } from '$lib/server/log';
+import { isVisitPhoto, photoUrl } from '$lib/photoRef';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const includePhotos = url.searchParams.get('photos') !== '0';
@@ -21,9 +22,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		const file = await readRestaurant(r.file_path).catch(() => null);
 		if (file) {
 			for (const p of extractImagePaths(file.body)) {
-				if (p.startsWith('_attachments/')) {
-					attachments.push(`/api/attachments/${p.slice('_attachments/'.length)}`);
-				}
+				if (isVisitPhoto(p)) attachments.push(photoUrl(p));
 			}
 		}
 

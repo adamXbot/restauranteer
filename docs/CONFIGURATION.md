@@ -16,6 +16,7 @@ Start from `.env.example`, which carries the same list with inline comments.
 | `RESTAURANTEER_INDEX_PATH` | Move the SQLite index off the vault. Useful when the vault lives in iCloud Drive, where WAL churn turns into endless sync traffic | No (default `{vault}/.restauranteer/index.db`) |
 | `OBSIDIAN_VAULT_NAME` | Vault display name for `obsidian://open?vault=…` deep links | No |
 | `GOOGLE_PLACES_API_KEY` | Google Places API (New) — search, details, nearby, photos. Server-side only | No (recommended) |
+| `IMMICH_URL`, `IMMICH_API_KEY` | An Immich server and an API key with `asset.view`. Visits can then hold `immich:<asset id>` photos, shown through `/api/immich/<id>` without copying them into the vault. Server-side only | No |
 | `MAPBOX_PUBLIC_TOKEN` | Mapbox GL token for the Mapbox map provider | No |
 | `GOOGLE_MAPS_PUBLIC_KEY` | Google Maps JS key for the Google map provider. **Browser-exposed** — restrict it by HTTP referrer in Cloud Console | No |
 | `APPLE_MAPKIT_TEAM_ID` | Apple Developer Team ID for MapKit JS (signing path) | No |

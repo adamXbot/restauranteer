@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { immichAssetId, photoUrl } from '$lib/photoRef';
+
 	type Visit = {
 		id: string;
 		date: string;
@@ -80,11 +82,11 @@
 		const files: File[] = [];
 		for (const p of visit.photoPaths) {
 			try {
-				const rel = p.replace(/^_attachments\//, '');
-				const res = await fetch(`/api/attachments/${encodeURI(rel)}`);
+				const res = await fetch(photoUrl(p));
 				if (!res.ok) continue;
 				const blob = await res.blob();
-				const name = p.split('/').pop() ?? 'photo.jpg';
+				const assetId = immichAssetId(p);
+				const name = assetId ? `${assetId}.jpg` : (p.split('/').pop() ?? 'photo.jpg');
 				files.push(new File([blob], name, { type: blob.type || 'image/jpeg' }));
 			} catch {
 				/* skip individual failures */

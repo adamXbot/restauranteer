@@ -51,6 +51,14 @@ export default defineConfig({
 						}
 					},
 					{
+						urlPattern: /^\/api\/immich\//i,
+						handler: 'CacheFirst',
+						options: {
+							cacheName: 'immich',
+							expiration: { maxEntries: 1000, maxAgeSeconds: 60 * 60 * 24 * 30 }
+						}
+					},
+					{
 						urlPattern: /^\/api\/attachments\//i,
 						handler: 'CacheFirst',
 						options: {

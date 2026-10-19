@@ -18,6 +18,7 @@ import {
 import { attachmentsDir } from '$lib/server/config';
 import { log } from '$lib/server/log';
 import { slugifyLabel, type AttributeValue } from '$lib/attributes';
+import { immichAssetId } from '$lib/photoRef';
 
 function readAttributeOverrides(form: FormData): Record<string, AttributeValue> {
 	const out: Record<string, AttributeValue> = {};
@@ -94,7 +95,15 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	}
 
 	const photos = form.getAll('photo').filter((v): v is File => v instanceof File && v.size > 0);
-	if (photos.length > MAX_PHOTOS_PER_VISIT) {
+	// Photos that stay where they are: `immich:<asset id>` refs, written as-is.
+	const photoRefs = [
+		...new Set(
+			form
+				.getAll('photo_ref')
+				.filter((v): v is string => typeof v === 'string' && immichAssetId(v) !== null)
+		)
+	];
+	if (photos.length + photoRefs.length > MAX_PHOTOS_PER_VISIT) {
 		throw error(400, `too many photos (max ${MAX_PHOTOS_PER_VISIT})`);
 	}
 
@@ -165,7 +174,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		rating,
 		areaRatings,
 		notes,
-		imagePaths: savedPaths,
+		imagePaths: [...savedPaths, ...photoRefs],
 		attributeOverrides: Object.keys(attributeOverrides).length > 0 ? attributeOverrides : null,
 		dishes: dishes.length > 0 ? dishes : null
 	};
@@ -177,8 +186,8 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	return json(
 		{
 			date,
-			photo_count: savedPaths.length,
-			photo_paths: savedPaths
+			photo_count: savedPaths.length + photoRefs.length,
+			photo_paths: [...savedPaths, ...photoRefs]
 		},
 		{ status: 201 }
 	);

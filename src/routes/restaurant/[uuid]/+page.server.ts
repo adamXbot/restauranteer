@@ -21,6 +21,7 @@ import { log } from '$lib/server/log';
 import { getAllListSummaries } from '$lib/server/vault/moc';
 import { extractRestaurantNotes, removeRestaurantNotesSection } from '$lib/server/vault/notes';
 import type { ListMembership } from '$lib/server/vault/types';
+import { immichAssetId, isVisitPhoto, photoUrl } from '$lib/photoRef';
 import {
 	attributeAppliesTo,
 	cleanAnswers,
@@ -35,6 +36,9 @@ function preprocessMarkdown(body: string): string {
 			const rel = p.slice('_attachments/'.length);
 			return `![${alt}](/api/attachments/${rel})`;
 		})
+		.replace(/!\[([^\]]*)\]\((immich:[^)\s]+)\)/g, (whole, alt, p: string) =>
+			immichAssetId(p) ? `![${alt}](${photoUrl(p)})` : whole
+		)
 		.replace(/\[\[([^\]]+)\]\]/g, (_, name: string) => `*${name}*`);
 }
 
@@ -68,7 +72,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		}
 	}
 
-	const userPhotos = extractImagePaths(body).filter((p) => p.startsWith('_attachments/'));
+	const userPhotos = extractImagePaths(body).filter(isVisitPhoto);
 	const bodyHtml = renderMarkdown(body);
 	const rawMarkdown = file?.rawContent ?? null;
 

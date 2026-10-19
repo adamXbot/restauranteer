@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { lightboxGallery } from '$lib/photoswipe';
+	import { photoThumbUrl, photoUrl } from '$lib/photoRef';
 
 	let { paths }: { paths: string[] } = $props();
 
@@ -7,14 +8,8 @@
 	const FALLBACK_DIMS = { w: FULL_MAX, h: FULL_MAX };
 	let dims = $state<Record<string, { w: number; h: number }>>({});
 
-	function url(relativePath: string): string {
-		const rel = relativePath.replace(/^_attachments\//, '');
-		return `/api/attachments/${encodeURI(rel)}`;
-	}
-	function thumbUrl(relativePath: string): string {
-		const stem = relativePath.replace(/\.(jpg|jpeg|png|webp)$/i, '');
-		return url(`${stem}.thumb.jpg`);
-	}
+	const url = photoUrl;
+	const thumbUrl = photoThumbUrl;
 	function recordDims(path: string, naturalWidth: number, naturalHeight: number) {
 		if (!naturalWidth || !naturalHeight) return;
 		const aspect = naturalWidth / naturalHeight;
