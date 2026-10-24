@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { error } from '@sveltejs/kit';
 import { marked } from 'marked';
+import { italicWikilinks } from '$lib/wikilink';
 import type { PageServerLoad } from './$types';
 import { getRestaurantByUuid } from '$lib/server/db/queries';
 import { readRestaurant } from '$lib/server/vault/reader';
@@ -30,12 +31,12 @@ import {
 marked.setOptions({ breaks: false, gfm: true });
 
 function preprocessMarkdown(body: string): string {
-	return body
-		.replace(/!\[([^\]]*)\]\((_attachments\/[^)]+)\)/g, (_, alt, p: string) => {
+	return italicWikilinks(
+		body.replace(/!\[([^\]]*)\]\((_attachments\/[^)]+)\)/g, (_, alt, p: string) => {
 			const rel = p.slice('_attachments/'.length);
 			return `![${alt}](/api/attachments/${rel})`;
 		})
-		.replace(/\[\[([^\]]+)\]\]/g, (_, name: string) => `*${name}*`);
+	);
 }
 
 function renderMarkdown(body: string): string {

@@ -115,8 +115,13 @@
 		const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 		return `${months[Number(match[2]) - 1]} ${Number(match[3])} ${match[1]}`;
 	}
-	function noteClass(s: { strong?: boolean; em?: boolean; code?: boolean }): string {
-		return [s.strong && 'font-medium text-primary', s.em && 'italic', s.code && 'font-mono']
+	function noteClass(s: { href?: string; strong?: boolean; em?: boolean; code?: boolean }): string {
+		// A bold link keeps the link colour.
+		return [
+			s.strong && (s.href ? 'font-medium' : 'font-medium text-primary'),
+			s.em && 'italic',
+			s.code && 'font-mono'
+		]
 			.filter(Boolean)
 			.join(' ');
 	}

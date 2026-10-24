@@ -1,4 +1,5 @@
 import { marked, type Token, type Tokens } from 'marked';
+import { italicWikilinks } from './wikilink';
 
 /** A run of visit-note text, styled as its Markdown had it. */
 export type NoteSegment = {
@@ -16,13 +17,13 @@ const SAFE_HREF = /^(https?:|mailto:)/i;
 /**
  * A visit note's Markdown as styled runs for the Visits feed preview: links,
  * bold, italic and code survive, blocks run together, raw HTML stays text.
- * `[[wikilinks]]` turn italic, as on the restaurant page.
+ * `[[wikilinks]]` show their display text in italics, as on the restaurant page.
  * The page renders the runs as Svelte text, so no note reaches it as HTML.
  */
 export function noteSegments(markdown: string | null): NoteSegment[] | null {
 	if (!markdown) return null;
 	const out: NoteSegment[] = [];
-	walk(marked.lexer(markdown.replace(/\[\[([^\]]+)\]\]/g, '*$1*')), {}, out, true);
+	walk(marked.lexer(italicWikilinks(markdown)), {}, out, true);
 	if (out.length > 0) {
 		out[0].text = out[0].text.trimStart();
 		out[out.length - 1].text = out[out.length - 1].text.trimEnd();
