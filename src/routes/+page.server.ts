@@ -3,15 +3,13 @@ import { getAllRestaurants, getAllVisits } from '$lib/server/db/queries';
 import { getPreferences } from '$lib/server/preferences';
 import type { VisitFeedItem } from '$lib/visitSort';
 import { coverPhotoPath } from '$lib/featuredImage';
-import { cityFromAddress } from '$lib/address';
 
 export const load: PageServerLoad = () => {
 	const restaurants = getAllRestaurants().map((r) => ({
 		uuid: r.uuid,
 		name: r.name,
-		location:
-			(r.frontmatter.suburb as string | undefined) ||
-			cityFromAddress(r.frontmatter.address as string | undefined),
+		address: (r.frontmatter.address as string | undefined) ?? null,
+		suburb: (r.frontmatter.suburb as string | undefined) ?? null,
 		cuisine: (r.frontmatter.cuisine as string[] | undefined) ?? [],
 		tags: r.tags,
 		lists: r.lists,

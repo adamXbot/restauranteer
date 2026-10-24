@@ -2,7 +2,7 @@
 	type Props = {
 		href: string;
 		name: string;
-		/** Suburb or city, on the name line. */
+		/** Suburb, on the name line. */
 		location?: string | null;
 		rating?: number | null;
 		photoThumb?: string | null;
