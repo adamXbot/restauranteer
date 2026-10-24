@@ -217,7 +217,8 @@
 		</div>
 		<section class="grid gap-3 px-5 pb-10">
 			{#each sortedVisits as v (`${v.restaurantUuid}-${v.index}`)}
-				<!-- The name's link covers the card (after:inset-0); note links sit above it. -->
+				<!-- The name's link covers the card (after:inset-0); note links, positioned later in
+				     the page, sit above it, and no z-index keeps them under the sticky nav. -->
 				<article class="relative min-w-0 rounded-2xl border border-line bg-panel/50 p-4">
 					<div class="flex items-start justify-between gap-3">
 						<div class="min-w-0 flex-1">
@@ -271,7 +272,7 @@
 										href={s.href}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="relative z-10 text-accent underline decoration-line-strong underline-offset-2 {noteClass(s)}"
+										class="relative text-accent underline decoration-line-strong underline-offset-2 {noteClass(s)}"
 										>{s.text}</a
 									>{:else}<span class={noteClass(s)}>{s.text}</span>{/if}{/each}
 						</p>
