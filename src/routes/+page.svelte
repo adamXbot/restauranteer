@@ -115,6 +115,11 @@
 		const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 		return `${months[Number(match[2]) - 1]} ${Number(match[3])} ${match[1]}`;
 	}
+	function noteClass(s: { strong?: boolean; em?: boolean; code?: boolean }): string {
+		return [s.strong && 'font-medium text-primary', s.em && 'italic', s.code && 'font-mono']
+			.filter(Boolean)
+			.join(' ');
+	}
 </script>
 
 <header class="px-5 pt-4 pb-3">
@@ -212,13 +217,15 @@
 		</div>
 		<section class="grid gap-3 px-5 pb-10">
 			{#each sortedVisits as v (`${v.restaurantUuid}-${v.index}`)}
-				<a
-					href={`/restaurant/${v.restaurantUuid}`}
-					class="block min-w-0 rounded-2xl border border-line bg-panel/50 p-4"
-				>
+				<!-- The name's link covers the card (after:inset-0); note links sit above it. -->
+				<article class="relative min-w-0 rounded-2xl border border-line bg-panel/50 p-4">
 					<div class="flex items-start justify-between gap-3">
 						<div class="min-w-0 flex-1">
-							<h2 class="truncate text-base font-medium text-primary">{v.restaurantName}</h2>
+							<h2 class="truncate text-base font-medium text-primary">
+								<a href={`/restaurant/${v.restaurantUuid}`} class="after:absolute after:inset-0"
+									>{v.restaurantName}</a
+								>
+							</h2>
 							<p class="mt-0.5 truncate text-xs text-secondary">
 								{shortVisitDate(v.date)}{#if v.meal} · {v.meal}{/if}{#if v.suburb} · {v.suburb}{/if}
 							</p>
@@ -258,10 +265,18 @@
 							{/each}
 						</div>
 					{/if}
-					{#if v.notesExcerpt}
-						<p class="mt-2 line-clamp-2 text-xs text-secondary">{v.notesExcerpt}</p>
+					{#if v.notes}
+						<p class="mt-2 line-clamp-2 text-xs text-secondary">
+							{#each v.notes as s, i (i)}{#if s.href}<a
+										href={s.href}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="relative z-10 text-accent underline decoration-line-strong underline-offset-2 {noteClass(s)}"
+										>{s.text}</a
+									>{:else}<span class={noteClass(s)}>{s.text}</span>{/if}{/each}
+						</p>
 					{/if}
-				</a>
+				</article>
 			{/each}
 		</section>
 	{:else}
