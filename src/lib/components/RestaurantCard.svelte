@@ -2,7 +2,8 @@
 	type Props = {
 		href: string;
 		name: string;
-		subtitle?: string | null;
+		/** Suburb, on the name line. */
+		location?: string | null;
 		rating?: number | null;
 		photoThumb?: string | null;
 		photoFull?: string | null;
@@ -17,7 +18,7 @@
 	let {
 		href,
 		name,
-		subtitle = null,
+		location = null,
 		rating = null,
 		photoThumb = null,
 		photoFull = null,
@@ -63,23 +64,25 @@
 	{/if}
 
 	<div class="flex min-w-0 flex-1 flex-col gap-2">
-		<div class="flex items-start justify-between gap-3">
+		<div class="flex items-baseline justify-between gap-3">
 			<h2 class="min-w-0 flex-1 text-base font-medium break-words text-primary">{name}</h2>
-			{#if rating != null}
-				<span class="shrink-0 pt-0.5 text-sm text-rating">★ {rating}</span>
+			{#if location}
+				<span class="max-w-[45%] shrink-0 truncate text-xs text-secondary">{location}</span>
 			{/if}
 		</div>
-		{#if subtitle}
-			<p class="text-xs text-secondary">{subtitle}</p>
-		{/if}
-		{#if cuisine.length > 0 || tags.length > 0}
-			<div class="flex flex-wrap gap-1">
-				{#each cuisine as c (c)}
-					<span class="rounded-full bg-panel-2 px-2 py-0.5 text-[11px] text-secondary">{c}</span>
-				{/each}
-				{#each tags as t (t)}
-					<span class="rounded-full bg-panel-2/60 px-2 py-0.5 text-[11px] text-secondary">#{t}</span>
-				{/each}
+		{#if cuisine.length > 0 || tags.length > 0 || rating != null}
+			<div class="flex items-center justify-between gap-3">
+				<div class="flex min-w-0 flex-wrap gap-1">
+					{#each cuisine as c (c)}
+						<span class="rounded-full bg-panel-2 px-2 py-0.5 text-[11px] text-secondary">{c}</span>
+					{/each}
+					{#each tags as t (t)}
+						<span class="rounded-full bg-panel-2/60 px-2 py-0.5 text-[11px] text-secondary">#{t}</span>
+					{/each}
+				</div>
+				{#if rating != null}
+					<span class="shrink-0 text-sm text-rating">★ {rating}</span>
+				{/if}
 			</div>
 		{/if}
 		{#if lists.length > 0}
