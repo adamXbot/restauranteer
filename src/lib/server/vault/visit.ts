@@ -558,6 +558,13 @@ export type IndexedVisitFields = {
 
 const NOTES_EXCERPT_LEN = 280;
 
+/** The note's start, minus a word the cut split — it may be a link cut mid-URL. */
+function notesExcerpt(notes: string): string | null {
+	if (notes.length <= NOTES_EXCERPT_LEN) return notes;
+	const cut = notes.slice(0, NOTES_EXCERPT_LEN);
+	return (/\s/.test(notes[NOTES_EXCERPT_LEN]) ? cut : cut.replace(/\S*$/, '')).trimEnd() || null;
+}
+
 /**
  * Parse every visit in a body into the flat shape stored in the `visits` table.
  * `overallRating` mirrors what the per-restaurant summary uses (explicit rating,
@@ -577,7 +584,7 @@ export function extractVisitsForIndex(body: string): IndexedVisitFields[] {
 			foodRating: fields.foodRating,
 			qualityRating: fields.qualityRating,
 			serviceRating: fields.serviceRating,
-			notesExcerpt: fields.notes ? fields.notes.slice(0, NOTES_EXCERPT_LEN) : null,
+			notesExcerpt: fields.notes ? notesExcerpt(fields.notes) : null,
 			photo: v.photoPaths[0] ?? null
 		};
 	});

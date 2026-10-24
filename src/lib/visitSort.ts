@@ -98,7 +98,7 @@ function byDateDescThenName(a: VisitFeedItem, b: VisitFeedItem): number {
  * Return a new array sorted by `mode`. Rating sorts always push un-rated visits
  * to the bottom (regardless of direction) and tie-break by most-recent date.
  */
-export function sortVisits(items: VisitFeedItem[], mode: VisitSortMode): VisitFeedItem[] {
+export function sortVisits<T extends VisitFeedItem>(items: T[], mode: VisitSortMode): T[] {
 	const out = [...items];
 	const rating = RATING_MODES[mode];
 

@@ -3,6 +3,7 @@ import { getAllRestaurants, getAllVisits } from '$lib/server/db/queries';
 import { getPreferences } from '$lib/server/preferences';
 import type { VisitFeedItem } from '$lib/visitSort';
 import { coverPhotoPath } from '$lib/featuredImage';
+import { noteSegments } from '$lib/noteSegments';
 
 export const load: PageServerLoad = () => {
 	const restaurants = getAllRestaurants().map((r) => ({
@@ -19,6 +20,9 @@ export const load: PageServerLoad = () => {
 		// resolved here so the card doesn't have to know the rule.
 		coverPhoto: coverPhotoPath(r.frontmatter, r.visitSummary)
 	}));
-	const visits: VisitFeedItem[] = getAllVisits();
+	const visits = getAllVisits().map((v: VisitFeedItem) => ({
+		...v,
+		notes: noteSegments(v.notesExcerpt)
+	}));
 	return { restaurants, visits, preferences: getPreferences() };
 };
