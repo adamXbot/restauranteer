@@ -11,6 +11,7 @@
 <script lang="ts">
 	import StarPicker from './StarPicker.svelte';
 	import { resizeForUpload } from '$lib/imageResize';
+	import { photoUrl } from '$lib/photoRef';
 
 	type Props = {
 		dishes: EditorDish[];
@@ -59,9 +60,7 @@
 		return URL.createObjectURL(file);
 	}
 
-	function thumbUrl(path: string): string {
-		return `/api/attachments/${path.replace(/^_attachments\//, '')}`;
-	}
+	const thumbUrl = photoUrl;
 </script>
 
 <div class="rounded-xl border border-line bg-panel/40 p-3">

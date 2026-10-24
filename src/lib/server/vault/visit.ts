@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { isVisitPhoto } from '$lib/photoRef';
 import {
 	parseOverrideLine,
 	serializeOverrides,
@@ -15,7 +16,7 @@ export type AreaRatings = {
 /**
  * A single dish within the Food area's breakdown. When a visit has dishes the
  * Food rating is derived from their average (see {@link averageDishRatings}).
- * `photoPath` is the final saved `_attachments/...` path, or null.
+ * `photoPath` is the final saved `_attachments/...` path or an `immich:` ref, or null.
  */
 export type Dish = {
 	name: string;
@@ -86,9 +87,7 @@ export function coerceDishMeta(raw: unknown): DishMeta[] {
 		const rNum = typeof e.rating === 'number' ? e.rating : Number(e.rating);
 		const rating = Number.isFinite(rNum) && rNum > 0 && rNum <= 5 ? Math.round(rNum) : null;
 		const keepPhoto =
-			typeof e.keepPhoto === 'string' && e.keepPhoto.startsWith('_attachments/')
-				? e.keepPhoto
-				: null;
+			typeof e.keepPhoto === 'string' && isVisitPhoto(e.keepPhoto) ? e.keepPhoto : null;
 		if (!name && rating === null && !note && !keepPhoto) continue;
 		out.push({ name, rating, note, keepPhoto });
 		if (out.length >= MAX_DISHES) break;
@@ -280,7 +279,7 @@ export function parseVisits(visitsSection: string): ParsedVisit[] {
 		const meal = dateMatch?.[2] ?? null;
 		const photoPaths = [...block.matchAll(IMAGE_PATTERN)]
 			.map((m) => m[1])
-			.filter((p) => p.startsWith('_attachments/'));
+			.filter(isVisitPhoto);
 		out.push({
 			id: `visit-${i}`,
 			index: i,

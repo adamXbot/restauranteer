@@ -22,6 +22,7 @@ import { attachmentsDir } from '$lib/server/config';
 import { recordVaultDeletion } from '$lib/server/sync/tombstones';
 import { log } from '$lib/server/log';
 import { slugifyLabel, type AttributeValue } from '$lib/attributes';
+import { isVisitPhoto } from '$lib/photoRef';
 
 function readAttributeOverrides(form: FormData): Record<string, AttributeValue> {
 	const out: Record<string, AttributeValue> = {};
@@ -135,7 +136,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 
 	const keepPhotos = form
 		.getAll('keep_photo')
-		.filter((v): v is string => typeof v === 'string' && v.startsWith('_attachments/'));
+		.filter((v): v is string => typeof v === 'string' && isVisitPhoto(v));
 	// Only honour keep_photo values that actually belong to this visit.
 	const keptSet = new Set(existing.photoPaths.filter((p) => keepPhotos.includes(p)));
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
+	import { photoThumbUrl, photoUrl } from '$lib/photoRef';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import RestaurantCard from '$lib/components/RestaurantCard.svelte';
 	import {
@@ -100,15 +101,8 @@
 		return out;
 	}
 
-	function thumbUrl(relativePath: string): string {
-		const rel = relativePath.replace(/^_attachments\//, '');
-		const stem = rel.replace(/\.(jpg|jpeg|png|webp)$/i, '');
-		return `/api/attachments/${encodeURI(`${stem}.thumb.jpg`)}`;
-	}
-	function fullAttachmentUrl(relativePath: string): string {
-		const rel = relativePath.replace(/^_attachments\//, '');
-		return `/api/attachments/${encodeURI(rel)}`;
-	}
+	const thumbUrl = photoThumbUrl;
+	const fullAttachmentUrl = photoUrl;
 	function shortVisitDate(iso: string): string {
 		const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
 		if (!match) return iso;

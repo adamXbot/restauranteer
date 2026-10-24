@@ -77,6 +77,7 @@ export function prettyCacheName(name: string): string {
 	if (name === 'api-views') return 'List / Near / Search / Map';
 	if (name === 'page-data') return 'Page data';
 	if (name === 'attachments') return 'Vault attachments';
+	if (name === 'immich') return 'Photos (Immich)';
 	if (name.startsWith('workbox-precache')) return 'App shell';
 	if (name.startsWith('workbox-runtime')) return 'Runtime';
 	return name;
