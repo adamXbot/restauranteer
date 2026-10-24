@@ -290,6 +290,19 @@ describe('extractVisitsForIndex', () => {
 	it('returns an empty array when there are no visits', () => {
 		expect(extractVisitsForIndex('## Overview\n\nJust prose.')).toEqual([]);
 	});
+
+	it('cuts a long note between words, never inside a link', () => {
+		const excerpt = (notes: string) =>
+			extractVisitsForIndex(`## Visits\n\n### 2026-10-18 — Dinner\n\n${notes}\n`)[0].notesExcerpt;
+		const link = '[Receipt](https://paperless.example/documents/1994/details)';
+		const long = 'x'.repeat(240);
+		expect(excerpt(`${long} ${link}`)).toBe(long);
+		const exactly280 = `${'y'.repeat(280 - link.length - 1)} ${link}`;
+		expect(excerpt(exactly280)).toBe(exactly280);
+		expect(excerpt(`${'y'.repeat(279)} more`)).toBe('y'.repeat(279));
+		expect(excerpt(`${'y'.repeat(280)} more`)).toBe('y'.repeat(280));
+		expect(excerpt(`https://maps.example/${'z'.repeat(300)}`)).toBeNull();
+	});
 });
 
 describe('updateVisitInBody', () => {
